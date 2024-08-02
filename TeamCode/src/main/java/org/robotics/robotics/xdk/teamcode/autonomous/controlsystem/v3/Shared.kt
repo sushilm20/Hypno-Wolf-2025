@@ -21,16 +21,20 @@ val blueBoardX = 80.75
 
 val blueStackPickup = Pose(-20.0, blueStackY, -90.degrees)
 val blueParkMiddle = Pose(blueBoardX + 2, -54.0, (90).degrees)
+val stack5 = 0.2
+val stack3 = 0.12
 
 val farStackPickup = Pose(12.8, redStackY, 90.degrees)
 val parkMiddle = Pose(-85.0, -54.0, (-90).degrees)
 
 fun RootExecutionGroup.dropPixels(opMode: AbstractAutoPipeline) {
+    opMode.elevatorSubsystem.configureElevatorManually(0.15)
+    Thread.sleep(250)
+
     opMode.clawSubsystem.updateClawState(
         ExtendableClaw.ClawStateUpdate.Both,
         ExtendableClaw.ClawState.Open
     )
-    opMode.elevatorSubsystem.configureElevatorManually(0.15)
 
     Thread.sleep(750)
 }
@@ -90,7 +94,7 @@ fun RootExecutionGroup.spikeMark(opMode: AbstractAutoPipeline, kms: TapeSide)
     single("purple pixel") {
         opMode.clawSubsystem.updateClawState(
             ExtendableClaw.ClawStateUpdate.Right,
-            ExtendableClaw.ClawState.Open,
+            ExtendableClaw.ClawState.Open
         )
         Thread.sleep(500L)
         opMode.clawSubsystem.toggleExtender(ExtendableClaw.ExtenderState.Deposit, force = true)

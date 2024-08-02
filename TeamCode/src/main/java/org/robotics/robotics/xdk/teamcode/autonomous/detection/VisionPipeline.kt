@@ -3,14 +3,10 @@ package org.robotics.robotics.xdk.teamcode.autonomous.detection
 import android.util.Size
 import com.acmerobotics.dashboard.FtcDashboard
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import io.liftgate.robotics.mono.pipeline.StageContext
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
-import io.liftgate.robotics.mono.subsystem.Subsystem
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.vision.VisionPortal
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
-import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.elements.GameElementDetection
 import org.robotics.robotics.xdk.teamcode.autonomous.hardware
@@ -44,8 +40,12 @@ class VisionPipeline(
      */
     fun start(destination: StreamDestination)
     {
-//        aprilTagLocalizer = AprilTagLocalizer(opMode)
         propPipeline = GameElementDetection(teamColor)
+        aprilTag = AprilTagProcessor.Builder()
+            .setTagLibrary(
+                AprilTagGameDatabase.getCenterStageTagLibrary()
+            )
+            .build()
 
         portal = VisionPortal.Builder()
             .setCamera(
@@ -54,11 +54,7 @@ class VisionPipeline(
             .setCameraResolution(Size(640, 480))
             .enableLiveView(destination.encapsulates(StreamDestination.DriverStation))
             .setAutoStopLiveView(true)
-            .addProcessors(propPipeline, AprilTagProcessor.Builder().setTagLibrary(
-                AprilTagGameDatabase.getCenterStageTagLibrary()
-            ).build().apply {
-                aprilTag = this
-            })
+            .addProcessors(propPipeline, aprilTag)
             .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
             .build()
 
@@ -70,8 +66,6 @@ class VisionPipeline(
             )
         }
     }
-
-//    fun aprilTagLocalizer() = aprilTagLocalizer
 
     fun stop() = portal.close()
 

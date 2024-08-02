@@ -1,10 +1,7 @@
 package org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import io.liftgate.robotics.mono.pipeline.ParallelExecutionGroup
-import io.liftgate.robotics.mono.pipeline.simultaneous
 import io.liftgate.robotics.mono.pipeline.single
-import io.liftgate.robotics.mono.pipeline.waitMillis
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose
@@ -14,7 +11,6 @@ import org.robotics.robotics.xdk.teamcode.autonomous.position.navigateTo
 import org.robotics.robotics.xdk.teamcode.autonomous.position.purePursuitNavigateTo
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.ActionWaypoint
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.FieldWaypoint
-import org.robotics.robotics.xdk.teamcode.subsystem.Elevator
 import org.robotics.robotics.xdk.teamcode.subsystem.claw.ExtendableClaw
 
 @Autonomous(name = "Blue 2+1 Fast", group = "Test")
@@ -29,7 +25,7 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                 ExtendableClaw.ClawStateUpdate.Right,
                 ExtendableClaw.ClawState.MosaicFix,
             )
-            opMode.elevatorSubsystem.configureElevatorManually(0.235)
+            opMode.elevatorSubsystem.configureElevatorManually(stack5)
 
             Thread.sleep(500L)
         }

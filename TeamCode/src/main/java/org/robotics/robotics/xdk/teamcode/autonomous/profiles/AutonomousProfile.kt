@@ -83,4 +83,13 @@ sealed class AutonomousProfile(
         startPosition = StartPosition.Far,
         isSpikeMarkOnly = true
     )
+
+    companion object
+    {
+        val StackPickupTest: AutonomousProfile
+            get()
+            {
+                TODO()
+            }
+    }
 }

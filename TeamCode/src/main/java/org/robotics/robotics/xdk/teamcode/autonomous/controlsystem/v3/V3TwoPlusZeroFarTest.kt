@@ -1,10 +1,7 @@
 package org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import io.liftgate.robotics.mono.pipeline.ParallelExecutionGroup
-import io.liftgate.robotics.mono.pipeline.simultaneous
 import io.liftgate.robotics.mono.pipeline.single
-import io.liftgate.robotics.mono.pipeline.waitMillis
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose
@@ -14,15 +11,126 @@ import org.robotics.robotics.xdk.teamcode.autonomous.position.navigateTo
 import org.robotics.robotics.xdk.teamcode.autonomous.position.purePursuitNavigateTo
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.ActionWaypoint
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.FieldWaypoint
-import org.robotics.robotics.xdk.teamcode.subsystem.Elevator
 import org.robotics.robotics.xdk.teamcode.subsystem.claw.ExtendableClaw
 
-@Autonomous(name = "Red 2+1 Slow", group = "Test")
+@Autonomous(name = "Red 2+1", group = "Test")
 class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
 
     AutonomousProfile.RedPlayer2TwoPlusZero,
     blockExecutionGroup = { opMode, tapeSide ->
-        waitMillis(7000)
+        fun moveStackToBackBoard() {
+            single("go to backboard from stack") {
+                purePursuitNavigateTo(
+                    FieldWaypoint(
+                        farStackPickup,
+                        20.0
+                    ),
+                    FieldWaypoint(
+                        Pose(-5.0, -56.0, (90).degrees),
+                        25.0
+                    ),
+                    FieldWaypoint(
+                        Pose(-63.0, -56.0, (90).degrees),
+                        25.0
+                    ),
+                    ActionWaypoint {
+                        opMode.elevatorSubsystem.configureElevatorManually(0.0)
+                    },
+                    FieldWaypoint(
+                        Pose(-72.0, -42.0, (180).degrees),
+                        25.0
+                    ),
+                    ActionWaypoint {
+                        opMode.clawSubsystem.toggleExtender(
+                            ExtendableClaw.ExtenderState.Deposit,
+                            force = true
+                        )
+                    },
+                    *when (tapeSide)
+                    { //backboard
+                        TapeSide.Left -> arrayOf(
+                            FieldWaypoint(
+                                Pose(-86.85, -34.5, (-90.0).degrees),
+                                5.0
+                            )
+                        )
+
+                        TapeSide.Middle -> arrayOf(
+                            FieldWaypoint(
+                                Pose(-85.85, -28.0, (-90.0).degrees),
+                                10.0
+                            )
+                        )
+
+                        TapeSide.Right -> arrayOf(
+                            FieldWaypoint(
+                                Pose(-85.85, -22.5, (-90.0).degrees),
+                                20.0
+                            )
+                        )
+                    }
+                ) {
+                    setDeathMillis(5000.0)
+                }
+            }
+        }
+        fun moveBackboardToStack() {
+            single("go to stackboard from bak") {
+                purePursuitNavigateTo(
+                    *when (tapeSide)
+                    { //backboard
+                        TapeSide.Left -> arrayOf(
+                            FieldWaypoint(
+                                Pose(-86.85, -34.5, (-90.0).degrees),
+                                5.0
+                            )
+                        )
+
+                        TapeSide.Middle -> arrayOf(
+                            FieldWaypoint(
+                                Pose(-85.85, -28.0, (-90.0).degrees),
+                                10.0
+                            )
+                        )
+
+                        TapeSide.Right -> arrayOf(
+                            FieldWaypoint(
+                                Pose(-85.85, -22.5, (-90.0).degrees),
+                                20.0
+                            )
+                        )
+                    },
+                    ActionWaypoint {
+                        opMode.clawSubsystem.toggleExtender(
+                            ExtendableClaw.ExtenderState.Deposit,
+                            force = true
+                        )
+                    },
+                    FieldWaypoint(
+                        Pose(-72.0, -42.0, (180).degrees),
+                        25.0
+                    ),
+                    ActionWaypoint {
+                        opMode.elevatorSubsystem.configureElevatorManually(0.0)
+                    },
+                    FieldWaypoint(
+                        Pose(-63.0, -56.0, (90).degrees),
+                        25.0
+                    ),
+                    FieldWaypoint(
+                        Pose(-5.0, -56.0, (90).degrees),
+                        25.0
+                    ),
+                    FieldWaypoint(
+                        farStackPickup,
+                        20.0
+                    )
+                ) {
+                    setDeathMillis(5000.0)
+                }
+            }
+        }
+
         spikeMark(opMode, tapeSide)
 
         single("prep for stak") {
@@ -31,12 +139,12 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                 ExtendableClaw.ClawState.MosaicFix,
             )
             opMode.clawSubsystem.toggleExtender(ExtendableClaw.ExtenderState.Deposit, force = true)
-            opMode.elevatorSubsystem.configureElevatorManually(0.235)
+            opMode.elevatorSubsystem.configureElevatorManually(stack5)
 
             Thread.sleep(500L)
         }
 
-        single("d") {
+        single("go to stak") {
 
             when (tapeSide)
             {
@@ -75,7 +183,6 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                         setMAX_ROTATIONAL_SPEED(0.3)
                     }
                 }
-
 
                 TapeSide.Middle ->
                 {
@@ -143,6 +250,38 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
             }
         }
 
+        single("Intake from the stack") {
+
+            opMode.clawSubsystem.updateClawState(
+                ExtendableClaw.ClawStateUpdate.Both,
+                ExtendableClaw.ClawState.Closed,
+                force = true
+            )
+            Thread.sleep(750)
+            opMode.clawSubsystem.toggleExtender(ExtendableClaw.ExtenderState.Intermediate)
+        }
+
+        moveStackToBackBoard()
+
+        single("drop on backboard") {
+            dropPixels(opMode)
+        }
+
+        single("move back to stack") {
+            moveBackboardToStack()
+        }
+
+        single("prep for stak") {
+            opMode.clawSubsystem.updateClawState(
+                ExtendableClaw.ClawStateUpdate.Right,
+                ExtendableClaw.ClawState.MosaicFix,
+            )
+            Thread.sleep(500L)
+            opMode.clawSubsystem.toggleExtender(ExtendableClaw.ExtenderState.Deposit, force = true)
+            opMode.elevatorSubsystem.configureElevatorManually(stack3)
+
+            Thread.sleep(500L)
+        }
 
         single("Intake from the stack") {
 
@@ -153,61 +292,10 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
             )
             Thread.sleep(750)
             opMode.clawSubsystem.toggleExtender(ExtendableClaw.ExtenderState.Intermediate)
-
-
-            purePursuitNavigateTo(
-                FieldWaypoint(
-                    farStackPickup,
-                    20.0
-                ),
-                FieldWaypoint(
-                    Pose(-5.0, -56.0, (90).degrees),
-                    25.0
-                ),
-                FieldWaypoint(
-                    Pose(-63.0, -56.0, (90).degrees),
-                    25.0
-                ),
-                ActionWaypoint {
-                    opMode.elevatorSubsystem.configureElevatorManually(0.0)
-                },
-                FieldWaypoint(
-                    Pose(-72.0, -42.0, (180).degrees),
-                    25.0
-                ),
-                ActionWaypoint {
-                    opMode.clawSubsystem.toggleExtender(
-                        ExtendableClaw.ExtenderState.Deposit,
-                        force = true
-                    )
-                },
-                *when (tapeSide)
-                { //backboard
-                    TapeSide.Left -> arrayOf(
-                        FieldWaypoint(
-                            Pose(-86.85, -34.5, (-90.0).degrees),
-                            5.0
-                        )
-                    )
-
-                    TapeSide.Middle -> arrayOf(
-                        FieldWaypoint(
-                            Pose(-85.85, -28.0, (-90.0).degrees),
-                            10.0
-                        )
-                    )
-
-                    TapeSide.Right -> arrayOf(
-                        FieldWaypoint(
-                            Pose(-85.85, -22.5, (-90.0).degrees),
-                            20.0
-                        )
-                    )
-                }
-            ) {
-                setDeathMillis(5000.0)
-            }
         }
+
+        moveStackToBackBoard()
+
         single("drop on backboard") {
             dropPixels(opMode)
         }
@@ -237,5 +325,6 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                 setMAX_TRANSLATIONAL_SPEED(0.5)
             }
         }
+
     }
 )
