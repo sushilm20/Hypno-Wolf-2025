@@ -70,6 +70,25 @@ public class PositionCommand {
         this.endSubscription = subscription;
     }
 
+    public void whenStuck(@NotNull RobotStuckProtection stuckProtection, @NotNull Runnable stuck) {
+        withStuckProtection(stuckProtection);
+        withEndSubscription(positionCommandEndResult -> {
+            if (positionCommandEndResult == PositionCommandEndResult.StuckDetected) {
+                stuck.run();
+            }
+            return null;
+        });
+    }
+
+    public void whenStuck(@NotNull Runnable stuck) {
+        withEndSubscription(positionCommandEndResult -> {
+            if (positionCommandEndResult == PositionCommandEndResult.StuckDetected) {
+                stuck.run();
+            }
+            return null;
+        });
+    }
+
     public void withCustomMaxRotationalSpeed(double maxRotationalSpeed) {
         this.maxRotationalSpeed = maxRotationalSpeed;
     }
@@ -103,20 +122,19 @@ public class PositionCommand {
 
             if (robotPose == null || targetPose == null) {
                 if (endSubscription != null) {
+                    ZERO.propagate(drivetrain);
                     endSubscription.invoke(PositionCommandEndResult.LocalizationFailure);
                 }
-                break;
+                return;
             }
 
             if (isFinished(robotPose, previousPose, targetPose)) {
-                break;
+                return;
             }
 
             Pose powers = getPower(robotPose, targetPose);
             MecanumTranslations.getPowers(powers).propagate(drivetrain);
         }
-
-        ZERO.propagate(drivetrain);
     }
 
     private @Nullable RobotStuckProtection robotStuckProtection = null;
@@ -140,6 +158,7 @@ public class PositionCommand {
 
                 if (stuckProtection.milliseconds() > robotStuckProtection.getMinimumMillisUntilDeemedStuck()) {
                     if (endSubscription != null) {
+                        ZERO.propagate(drivetrain);
                         endSubscription.invoke(PositionCommandEndResult.StuckDetected);
                     }
                     return true;
@@ -152,6 +171,7 @@ public class PositionCommand {
         if (pathAlgorithm != null) {
             if (pathAlgorithm.getPathComplete().invoke(currentPose, targetPose)) {
                 if (endSubscription != null) {
+                    ZERO.propagate(drivetrain);
                     endSubscription.invoke(PositionCommandEndResult.PathAlgorithmSuccessful);
                 }
                 return true;
@@ -166,6 +186,7 @@ public class PositionCommand {
 
         if (activeTimer.milliseconds() > automaticDeathMillis) {
             if (endSubscription != null) {
+                ZERO.propagate(drivetrain);
                 endSubscription.invoke(PositionCommandEndResult.ExceededTimeout);
             }
             return true;
@@ -173,6 +194,7 @@ public class PositionCommand {
 
         if (atTargetTimer.milliseconds() > AT_TARGET_AUTOMATIC_DEATH) {
             if (endSubscription != null) {
+                ZERO.propagate(drivetrain);
                 endSubscription.invoke(PositionCommandEndResult.Successful);
             }
             return true;
