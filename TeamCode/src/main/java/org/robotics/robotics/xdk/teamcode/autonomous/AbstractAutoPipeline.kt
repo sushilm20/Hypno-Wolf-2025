@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import io.liftgate.robotics.mono.Mono
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
+import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
@@ -106,8 +107,6 @@ abstract class AbstractAutoPipeline(
 
         while (opModeInInit())
         {
-            clawSubsystem.periodic()
-
             multipleTelemetry.addLine("Auto in initialized")
             multipleTelemetry.addData("Tape side", visionPipeline.getTapeSide())
 
@@ -165,7 +164,7 @@ abstract class AbstractAutoPipeline(
         thread {
             while (!isStopRequested)
             {
-                clawSubsystem.periodic()
+                subsystems.map { it as AbstractSubsystem }.forEach { it.allPeriodic() }
             }
         }
 

@@ -2,62 +2,40 @@ package org.robotics.robotics.xdk.teamcode.subsystem.motionprofile.wrappers
 
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
+import io.liftgate.robotics.mono.states.StateHolder
 import org.robotics.robotics.xdk.teamcode.subsystem.motionprofile.AsymmetricMotionProfile
 import org.robotics.robotics.xdk.teamcode.subsystem.motionprofile.ProfileConstraints
 
 /**
- * A [Servo] wrapper that keeps track of motion profile states. Requires
- * the end user to run [runPeriodic].
+ * A [Servo] wrapper that keeps track of motion profile states.
  *
  * @author Subham
  */
 class MotionProfiledServo(
     private val servo: Servo,
+    stateHolder: StateHolder,
     private val constraints: () -> ProfileConstraints
 )
 {
     private var motionProfile: AsymmetricMotionProfile? = null
-    private var timer: ElapsedTime = ElapsedTime()
+    private val timer = ElapsedTime()
 
-    fun unwrapServo() = servo
-    fun setMotionProfileTarget(target: Double)
-    {
+    val state by stateHolder.state<Double>({
         motionProfile = AsymmetricMotionProfile(
             servo.position,
-            target,
+            it,
             constraints()
         )
-        timer = ElapsedTime()
-    }
-
-    /**
-     * Sets the servo's position to the value given
-     * for the current time in the [AsymmetricMotionProfile].
-     */
-    fun runPeriodic()
-    {
-        if (motionProfile == null)
-        {
-            timer = ElapsedTime()
-            return
-        }
-
+        timer.reset()
+    }, {
         val position = motionProfile!!.calculate(timer.time())
         servo.position = position.x
+        position.x
+    })
 
-        if (servo.position == motionProfile!!.finalPosition)
-        {
-            motionProfile = null
-        }
-    }
-
-    fun cancelMotionProfile()
-    {
-        motionProfile = null
-        timer = ElapsedTime()
-    }
-
-    fun isTargetMotionActive() = motionProfile != null
+    fun unwrapServo() = servo
+    fun setMotionProfileTarget(target: Double) = state.override(target)
+    fun cancelMotionProfile() = state.reset()
 
     /**
      * Overrides any existing motion profile and sets
@@ -65,7 +43,7 @@ class MotionProfiledServo(
      */
     fun setTarget(targetPosition: Double)
     {
-        cancelMotionProfile()
+        state.reset()
         servo.position = targetPosition
     }
 }

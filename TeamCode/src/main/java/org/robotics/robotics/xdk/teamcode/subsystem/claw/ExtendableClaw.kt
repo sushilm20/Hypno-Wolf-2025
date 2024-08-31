@@ -89,6 +89,7 @@ class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
     {
         backingExtender = MotionProfiledServo(
             servo = opMode.hardware<Servo>("extender"),
+            stateHolder = this,
             constraints = {
                 ProfileConstraints(
                     ClawExpansionConstants.CLAW_MOTION_PROFILE_VELOCITY,
@@ -100,11 +101,13 @@ class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
 
         backingClawOpenerRight = MotionProfiledServo(
             servo = opMode.hardware<Servo>("clawRight"),
+            stateHolder = this,
             constraints = clawFingerMPConstraints
         )
 
         backingClawOpenerLeft = MotionProfiledServo(
             servo = opMode.hardware<Servo>("clawLeft"),
+            stateHolder = this,
             constraints = clawFingerMPConstraints
         )
 
@@ -125,13 +128,6 @@ class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
             ClawState.Closed,
             force = true
         )
-    }
-
-    fun periodic()
-    {
-        backingExtender.runPeriodic()
-        backingClawOpenerRight.runPeriodic()
-        backingClawOpenerLeft.runPeriodic()
     }
 
     /*fun incrementAddition()

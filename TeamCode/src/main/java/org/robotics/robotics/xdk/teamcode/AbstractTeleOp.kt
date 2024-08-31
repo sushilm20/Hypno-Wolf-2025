@@ -6,6 +6,7 @@ import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonDynamic
 import io.liftgate.robotics.mono.gamepad.ButtonType
 import io.liftgate.robotics.mono.gamepad.GamepadCommands
+import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
 import org.firstinspires.ftc.vision.VisionPortal
@@ -16,6 +17,7 @@ import org.robotics.robotics.xdk.teamcode.subsystem.Drivebase
 import org.robotics.robotics.xdk.teamcode.subsystem.Elevator
 import org.robotics.robotics.xdk.teamcode.subsystem.claw.ExtendableClaw
 import org.robotics.robotics.xdk.teamcode.subsystem.hang.Hang
+import kotlin.concurrent.thread
 import kotlin.math.abs
 
 /**
@@ -59,17 +61,20 @@ abstract class AbstractTeleOp : LinearOpMode(), System
         telemetry.addLine("Configured all subsystems. Waiting for start...")
         telemetry.update()
 
-        gp1Commands.doButtonUpdatesManually()
-        gp2Commands.doButtonUpdatesManually()
-
         initializeAll()
         waitForStart()
 
         telemetry.addLine("Initialized all subsystems. We're ready to go!")
         telemetry.update()
 
-        extendableClaw.toggleExtender(
-            ExtendableClaw.ExtenderState.Deposit)
+        extendableClaw.toggleExtender(ExtendableClaw.ExtenderState.Deposit)
+
+        thread {
+            while (!isStopRequested)
+            {
+                subsystems.map { it as AbstractSubsystem }.forEach { it.allPeriodic() }
+            }
+        }
 
         while (opModeIsActive())
         {
@@ -85,9 +90,6 @@ abstract class AbstractTeleOp : LinearOpMode(), System
 
             driveRobot(drivebase, driverOp, multiplier)
 
-            gp1Commands.run()
-            gp2Commands.run()
-
             telemetry.addData("Current", elevator.getCurrentElevatorPosition())
             telemetry.addData("Target", elevator.getTargetElevatorPosition())
             telemetry.update()
@@ -96,8 +98,6 @@ abstract class AbstractTeleOp : LinearOpMode(), System
             {
                 elevator.configureElevator(gamepad2.right_stick_y.toDouble())
             }
-
-            extendableClaw.periodic()
 
             if (extendableClaw.extenderState == ExtendableClaw.ExtenderState.Intake)
             {
