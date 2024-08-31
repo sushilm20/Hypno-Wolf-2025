@@ -5,27 +5,19 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
-import com.qualcomm.robotcore.hardware.DistanceSensor
 import io.liftgate.robotics.mono.Mono
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import org.robotics.robotics.xdk.teamcode.autonomous.contexts.BothClawFinger
-import org.robotics.robotics.xdk.teamcode.autonomous.contexts.ExtenderContext
-import org.robotics.robotics.xdk.teamcode.autonomous.contexts.LeftClawFinger
-import org.robotics.robotics.xdk.teamcode.autonomous.contexts.RightClawFinger
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TeamColor
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.VisionPipeline
-import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose
-import org.robotics.robotics.xdk.teamcode.autonomous.localizer.AprilTagLocalizer
 import org.robotics.robotics.xdk.teamcode.autonomous.localizer.TwoWheelLocalizer
 import org.robotics.robotics.xdk.teamcode.autonomous.profiles.AutonomousProfile
-import org.robotics.robotics.xdk.teamcode.subsystem.drone.DroneLauncher
 import org.robotics.robotics.xdk.teamcode.subsystem.Drivebase
 import org.robotics.robotics.xdk.teamcode.subsystem.Elevator
 import org.robotics.robotics.xdk.teamcode.subsystem.claw.ExtendableClaw
+import org.robotics.robotics.xdk.teamcode.subsystem.drone.DroneLauncher
 import kotlin.concurrent.thread
 
 abstract class AbstractAutoPipeline(
@@ -49,9 +41,6 @@ abstract class AbstractAutoPipeline(
     lateinit var backRight: DcMotor
     lateinit var backLeft: DcMotor
 
-//    lateinit var movementHandler: MovementHandler
-
-    var frontDistanceSensor: DistanceSensor? = null
     val drivebase by lazy { Drivebase(this) }
 
     internal val elevatorSubsystem by lazy { Elevator(this) }
@@ -86,17 +75,8 @@ abstract class AbstractAutoPipeline(
             visionPipeline
         )
 
-        runCatching {
-            hardware<DistanceSensor>("frontSensor").apply {
-                frontDistanceSensor = this
-            }
-        }
-
         // keep all log entries
         Mono.logSink = {
-            /*multipleTelemetry.addLine("[Mono] $it")
-            multipleTelemetry.update()*/
-
             println("[Mono] $it")
         }
 
@@ -182,24 +162,6 @@ abstract class AbstractAutoPipeline(
         }
 
         val tapeSide = visionPipeline.getTapeSide()
-        val executionGroup = Mono.buildExecutionGroup {
-            providesContext { _ ->
-                RightClawFinger(claw = clawSubsystem)
-            }
-
-            providesContext { _ ->
-                LeftClawFinger(claw = clawSubsystem)
-            }
-
-            providesContext { _ ->
-                BothClawFinger(claw = clawSubsystem)
-            }
-
-            providesContext { _ ->
-                ExtenderContext(claw = clawSubsystem)
-            }
-        }
-
         thread {
             while (!isStopRequested)
             {
@@ -214,7 +176,7 @@ abstract class AbstractAutoPipeline(
             }
         }
 
-        executionGroup.apply {
+        val executionGroup = Mono.buildExecutionGroup {
             blockExecutionGroup(
                 this@AbstractAutoPipeline, tapeSide
             )
@@ -227,59 +189,6 @@ abstract class AbstractAutoPipeline(
         Mono.logSink = { }
     }
 
-    fun avg(vararg poses: Pose): Pose?
-    {
-        var pose = Pose()
-        var i = 0
-        for (p in poses)
-        {
-            if (p != null)
-            {
-                pose = pose.add(p)
-                i++
-            }
-        }
-        return if (i > 0) pose.divide(Pose(i.toDouble(), i.toDouble(), i.toDouble())) else null
-    }
-
-    fun getAprilTagPosition(): Pose?
-    {
-        return run {
-            val currentDetections: List<AprilTagDetection> = visionPipeline.aprilTag.detections
-            val backdropPositions: MutableList<Pose> = ArrayList()
-
-            for (detection in currentDetections)
-            {
-                if (detection.metadata != null)
-                {
-                    when (detection.id)
-                    {
-                        1, 4 -> backdropPositions.add(Pose(detection.ftcPose).add(Pose(6.0, 0.0, 0.0)))
-                        2, 5 -> backdropPositions.add(Pose(detection.ftcPose))
-                        3, 6 -> backdropPositions.add(Pose(detection.ftcPose).subt(Pose(6.0, 0.0, 0.0)))
-                        else ->
-                        {
-                        }
-                    }
-                }
-            }
-
-            var backdropPosition = backdropPositions.stream()
-                .reduce { obj: Pose, other: Pose? -> obj.add(other) }.orElse(Pose())
-            backdropPosition = backdropPosition.divide(
-                Pose(backdropPositions.size.toDouble(),
-                    backdropPositions.size.toDouble(),
-                    backdropPositions.size.toDouble())
-            )
-
-            val globalTagPosition: Pose = if (localizer.getPose().x > 0)
-                AprilTagLocalizer.convertBlueBackdropPoseToGlobal(backdropPosition) else
-                AprilTagLocalizer.convertRedBackdropPoseToGlobal(backdropPosition)
-
-            if (java.lang.Double.isNaN(globalTagPosition.x) || java.lang.Double.isNaN(globalTagPosition.y) || java.lang.Double.isNaN(globalTagPosition.heading)) null else globalTagPosition
-        }
-    }
-
     fun stopAndResetMotors() = configureMotorsToDo {
         it.power = 0.0
         it.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -288,7 +197,6 @@ abstract class AbstractAutoPipeline(
     fun runWithoutEncoders() = configureMotorsToDo {
         it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
     }
-
 
     private fun configureMotorsToDo(consumer: (DcMotor) -> Unit)
     {

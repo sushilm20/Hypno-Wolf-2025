@@ -5,8 +5,11 @@ import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline;
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose;
+import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.PathAlgorithm;
 
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
 
@@ -37,7 +40,7 @@ public class PositionCommand {
 
     private double automaticDeathMillis = 2500;
     private final AbstractAutoPipeline drivetrain;
-    private final Pose targetPose;
+    private final @Nullable Pose targetPose;
 
     public void withAutomaticDeath(double automaticDeathMillis) {
         this.automaticDeathMillis = automaticDeathMillis;
@@ -48,13 +51,16 @@ public class PositionCommand {
 
     private final RootExecutionGroup executionGroup;
 
-    public PositionCommand(final Pose targetPose, final RootExecutionGroup executionGroup) {
+    public PositionCommand(
+            @Nullable Pose targetPose,
+            @NotNull RootExecutionGroup executionGroup
+    ) {
         this.drivetrain = AbstractAutoPipeline.getInstance();
         this.targetPose = targetPose;
         this.executionGroup = executionGroup;
     }
 
-    private Supplies<Pose, Pose> targetPoseSupplier = (pose) -> new Pose();
+    private @Nullable PathAlgorithm pathAlgorithm = null;
     public void setMaxRotationalSpeed(double maxRotationalSpeed) {
         this.maxRotationalSpeed = maxRotationalSpeed;
     }
@@ -63,11 +69,11 @@ public class PositionCommand {
         this.maxTranslationalSpeed = maxTranslationalSpeed;
     }
 
-    public void supplyCustomTargetPose(Supplies<Pose, Pose> supplier) {
-        this.targetPoseSupplier = supplier;
+    public void customPathAlgorithm(@NotNull PathAlgorithm pathAlgorithm) {
+        this.pathAlgorithm = pathAlgorithm;
     }
 
-    public void execute() {
+    public void executeBlocking() {
         while (true) {
             if (drivetrain.isStopRequested()) {
                 executionGroup.terminateMidExecution();
@@ -75,9 +81,13 @@ public class PositionCommand {
             }
 
             Pose robotPose = drivetrain.getLocalizer().getPose();
-            Pose targetPose = this.targetPose != null ? this.targetPose : targetPoseSupplier.supply(robotPose);
+            Pose targetPose = this.pathAlgorithm == null ? this.targetPose :
+                    pathAlgorithm.getTargetCompute().invoke(robotPose);
 
-            if (isFinished(robotPose, targetPose)) {
+            if (robotPose == null
+                    || targetPose == null
+                    || isFinished(robotPose, targetPose)
+            ) {
                 break;
             }
 
@@ -88,7 +98,11 @@ public class PositionCommand {
         ZERO.propagate(drivetrain);
     }
 
-    private boolean isFinished(Pose robotPose, Pose targetPose) {
+    private boolean isFinished(@NotNull Pose robotPose, @NotNull Pose targetPose) {
+        if (pathAlgorithm != null) {
+            return pathAlgorithm.getPathComplete().invoke(robotPose, targetPose);
+        }
+
         Pose delta = targetPose.subtract(robotPose);
 
         if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR) {
@@ -98,7 +112,7 @@ public class PositionCommand {
         return timer.milliseconds() > automaticDeathMillis || stable.milliseconds() > STABLE_MS;
     }
 
-    public Pose getPower(Pose robotPose, Pose targetPose) {
+    public @NotNull Pose getPower(@NotNull Pose robotPose, @NotNull Pose targetPose) {
         double headingError = targetPose.heading - robotPose.heading;
         if (headingError > Math.PI) targetPose.heading -= 2 * Math.PI;
         if (headingError < -Math.PI) targetPose.heading += 2 * Math.PI;

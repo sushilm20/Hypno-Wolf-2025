@@ -6,37 +6,39 @@ import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 public class PurePursuitPath {
-    private LinkedList<FieldWaypoint> waypoints = new LinkedList<>();
-    private LinkedList<ActionWaypoint> actionWaypoints = new LinkedList<>();
+    private final LinkedList<FieldWaypoint> waypoints = new LinkedList<>();
+    private final Map<String, ActionWaypoint> actionWaypoints;
     private int targetIdx = 1;
     private boolean finished;
 
-    public PurePursuitPath(WaypointLike... ws) {
-        if (ws.length < 2) throw new IllegalArgumentException();
+    public PurePursuitPath(WaypointLike... waypointLikes) {
+        if (waypointLikes.length < 2) throw new IllegalArgumentException();
         waypoints.addAll(
-                Arrays.stream(ws)
+                Arrays.stream(waypointLikes)
                         .filter(waypointLike -> waypointLike instanceof FieldWaypoint)
                         .map(waypointLike -> (FieldWaypoint) waypointLike)
                         .collect(Collectors.toList())
         );
 
-        actionWaypoints.addAll(
-                WaypointFilterUtilsKt.populateAndExtractActions(Arrays.asList(ws))
-        );
-
+        actionWaypoints = WaypointFilterUtilsKt.populateAndExtractActions(Arrays.asList(waypointLikes));
         if (waypoints.getLast().getType() != FieldWaypoint.Type.POSE)
             throw new IllegalArgumentException("Last waypoint is not a pose");
     }
 
     public Pose calculateTargetPose(Pose robot) {
-        FieldWaypoint prev = waypoints.get(targetIdx - 1);
+        if (finished) {
+            return getEndPose();
+        }
 
-        final ActionWaypoint incomplete = WaypointFilterUtilsKt.findWithIndexIncomplete(actionWaypoints, prev.id);
+        FieldWaypoint prev = waypoints.get(targetIdx - 1);
+        final ActionWaypoint incomplete = actionWaypoints.get(prev.id);
         if (incomplete != null) {
             incomplete.getAction().invoke();
             incomplete.setHasExecuted(true);
@@ -85,9 +87,5 @@ public class PurePursuitPath {
 
     public Pose getEndPose() {
         return (Pose) waypoints.getLast().getPoint();
-    }
-
-    public double getRadius() {
-        return waypoints.get(targetIdx).getRadius();
     }
 }

@@ -1,15 +1,21 @@
 package org.robotics.robotics.xdk.teamcode.autonomous.purepursuit
 
 fun List<WaypointLike>.populateAndExtractActions() =
-    toList().onEachIndexed { index, waypointLike ->
-        if (waypointLike is ActionWaypoint)
-        {
-            val prev = this@populateAndExtractActions.getOrNull(index - 1)
-            if (prev is FieldWaypoint)
+    toList()
+        .onEachIndexed { index, waypointLike ->
+            if (waypointLike is ActionWaypoint)
             {
-                waypointLike.afterIndex = prev.id
+                val prev = this@populateAndExtractActions.getOrNull(index - 1)
+                if (prev is FieldWaypoint)
+                {
+                    waypointLike.afterIndex = prev.id
+                } else
+                {
+                    throw IllegalArgumentException(
+                        "Cannot have two consecutive ActionWaypoints. Why the fuck are you doing it anyways? Merge it into one!"
+                    )
+                }
             }
         }
-    }.filterIsInstance<ActionWaypoint>()
-
-fun List<ActionWaypoint>.findWithIndexIncomplete(id: String) = firstOrNull { !it.hasExecuted && it.afterIndex == id }
+        .filterIsInstance<ActionWaypoint>()
+        .associateBy { it.afterIndex }
