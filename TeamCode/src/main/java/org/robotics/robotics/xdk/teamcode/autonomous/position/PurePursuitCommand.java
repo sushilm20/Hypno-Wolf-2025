@@ -9,7 +9,7 @@ public class PurePursuitCommand extends PositionCommand {
     public PurePursuitCommand(final RootExecutionGroup executionGroup,
                               final PurePursuitPath purePursuitPath) {
         super(null, executionGroup);
-        customPathAlgorithm(new PathAlgorithm(
+        withCustomPathAlgorithm(new PathAlgorithm(
                 purePursuitPath::calculateTargetPose,
                 (robotPose, targetPose) -> purePursuitPath.isFinished()
         ));

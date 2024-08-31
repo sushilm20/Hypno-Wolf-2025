@@ -20,7 +20,7 @@ class MotionProfiledServo(
     private var motionProfile: AsymmetricMotionProfile? = null
     private val timer = ElapsedTime()
 
-    val state by stateHolder.state<Double>({
+    private val state by stateHolder.state<Double>({
         motionProfile = AsymmetricMotionProfile(
             servo.position,
             it,

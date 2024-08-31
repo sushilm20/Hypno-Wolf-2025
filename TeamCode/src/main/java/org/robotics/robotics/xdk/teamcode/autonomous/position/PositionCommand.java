@@ -12,6 +12,9 @@ import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose;
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.PathAlgorithm;
 
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+import kotlin.jvm.functions.Function1;
 
 @Config
 public class PositionCommand {
@@ -27,25 +30,25 @@ public class PositionCommand {
     public static double hP = 1;
     public static double hD = 0.075;
 
-    public static double ALLOWED_TRANSLATIONAL_ERROR = 0.75;
-    public static double ALLOWED_HEADING_ERROR = 0.02;
-    public static double STABLE_MS = 100;
+    public static double MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = 0.75;
+    public static double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;
+    public static double AT_TARGET_AUTOMATIC_DEATH = 100;
 
     public PIDFController xController = new PIDFController(xP, 0.0, xD, 0);
     public PIDFController yController = new PIDFController(yP, 0.0, yD, 0);
     public PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
 
-    private final ElapsedTime timer = new ElapsedTime();
-    private final ElapsedTime stable = new ElapsedTime();
+    private final ElapsedTime activeTimer = new ElapsedTime();
+    private final ElapsedTime atTargetTimer = new ElapsedTime();
+    private final ElapsedTime stuckProtection = new ElapsedTime();
 
-    private double automaticDeathMillis = 2500;
     private final AbstractAutoPipeline drivetrain;
     private final @Nullable Pose targetPose;
 
-    public void withAutomaticDeath(double automaticDeathMillis) {
-        this.automaticDeathMillis = automaticDeathMillis;
-    }
-
+    /**
+     * Preferred to use stuck protection in this case...
+     */
+    private double automaticDeathMillis = 2500;
     private double maxTranslationalSpeed = 1.0;
     private double maxRotationalSpeed = 1.0;
 
@@ -61,18 +64,29 @@ public class PositionCommand {
     }
 
     private @Nullable PathAlgorithm pathAlgorithm = null;
-    public void setMaxRotationalSpeed(double maxRotationalSpeed) {
+    private @Nullable Function1<PositionCommandEndResult, Unit> endSubscription = null;
+
+    public void withEndSubscription(@NotNull Function1<PositionCommandEndResult, Unit> subscription) {
+        this.endSubscription = subscription;
+    }
+
+    public void withCustomMaxRotationalSpeed(double maxRotationalSpeed) {
         this.maxRotationalSpeed = maxRotationalSpeed;
     }
 
-    public void setMaxTranslationalSpeed(double maxTranslationalSpeed) {
+    public void withCustomMaxTranslationalSpeed(double maxTranslationalSpeed) {
         this.maxTranslationalSpeed = maxTranslationalSpeed;
     }
 
-    public void customPathAlgorithm(@NotNull PathAlgorithm pathAlgorithm) {
+    public void withCustomPathAlgorithm(@NotNull PathAlgorithm pathAlgorithm) {
         this.pathAlgorithm = pathAlgorithm;
     }
 
+    public void withAutomaticDeath(double automaticDeathMillis) {
+        this.automaticDeathMillis = automaticDeathMillis;
+    }
+
+    private @Nullable Pose previousPose = null;
     public void executeBlocking() {
         while (true) {
             if (drivetrain.isStopRequested()) {
@@ -80,14 +94,21 @@ public class PositionCommand {
                 return;
             }
 
+            Pose previousPose = this.previousPose;
             Pose robotPose = drivetrain.getLocalizer().getPose();
+            this.previousPose = robotPose;
+
             Pose targetPose = this.pathAlgorithm == null ? this.targetPose :
                     pathAlgorithm.getTargetCompute().invoke(robotPose);
 
-            if (robotPose == null
-                    || targetPose == null
-                    || isFinished(robotPose, targetPose)
-            ) {
+            if (robotPose == null || targetPose == null) {
+                if (endSubscription != null) {
+                    endSubscription.invoke(PositionCommandEndResult.LocalizationFailure);
+                }
+                break;
+            }
+
+            if (isFinished(robotPose, previousPose, targetPose)) {
                 break;
             }
 
@@ -98,18 +119,66 @@ public class PositionCommand {
         ZERO.propagate(drivetrain);
     }
 
-    private boolean isFinished(@NotNull Pose robotPose, @NotNull Pose targetPose) {
+    private @Nullable RobotStuckProtection robotStuckProtection = null;
+    public void withStuckProtection(@NotNull RobotStuckProtection stuckProtection) {
+        this.robotStuckProtection = stuckProtection;
+    }
+
+    private boolean isFinished(
+            @NotNull Pose currentPose,
+            @Nullable Pose previousPose,
+            @NotNull Pose targetPose
+    ) {
+        if (robotStuckProtection != null) {
+            if (previousPose != null) {
+                Pose movementDelta = currentPose.subtract(previousPose);
+
+                if (movementDelta.toVec2D().magnitude() > robotStuckProtection.getMinimumRequiredTranslationalDifference() ||
+                        Math.abs(movementDelta.heading) > robotStuckProtection.getMinimumRequiredRotationalDifference()) {
+                    stuckProtection.reset();
+                }
+
+                if (stuckProtection.milliseconds() > robotStuckProtection.getMinimumMillisUntilDeemedStuck()) {
+                    if (endSubscription != null) {
+                        endSubscription.invoke(PositionCommandEndResult.StuckDetected);
+                    }
+                    return true;
+                }
+            } else {
+                stuckProtection.reset();
+            }
+        }
+
         if (pathAlgorithm != null) {
-            return pathAlgorithm.getPathComplete().invoke(robotPose, targetPose);
+            if (pathAlgorithm.getPathComplete().invoke(currentPose, targetPose)) {
+                if (endSubscription != null) {
+                    endSubscription.invoke(PositionCommandEndResult.PathAlgorithmSuccessful);
+                }
+                return true;
+            }
         }
 
-        Pose delta = targetPose.subtract(robotPose);
+        Pose delta = targetPose.subtract(currentPose);
 
-        if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR) {
-            stable.reset();
+        if (delta.toVec2D().magnitude() > MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET || Math.abs(delta.heading) > MINIMUM_ROTATIONAL_DIFF_FROM_TARGET) {
+            atTargetTimer.reset();
         }
 
-        return timer.milliseconds() > automaticDeathMillis || stable.milliseconds() > STABLE_MS;
+        if (activeTimer.milliseconds() > automaticDeathMillis) {
+            if (endSubscription != null) {
+                endSubscription.invoke(PositionCommandEndResult.ExceededTimeout);
+            }
+            return true;
+        }
+
+        if (atTargetTimer.milliseconds() > AT_TARGET_AUTOMATIC_DEATH) {
+            if (endSubscription != null) {
+                endSubscription.invoke(PositionCommandEndResult.Successful);
+            }
+            return true;
+        }
+
+        return false;
     }
 
     public @NotNull Pose getPower(@NotNull Pose robotPose, @NotNull Pose targetPose) {

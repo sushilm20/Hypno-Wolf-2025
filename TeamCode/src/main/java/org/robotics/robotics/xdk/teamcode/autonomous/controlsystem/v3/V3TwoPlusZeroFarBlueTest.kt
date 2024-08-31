@@ -58,8 +58,8 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                 navigateTo(
                     blueStackPickup
                 ) {
-                    setMaxTranslationalSpeed(0.35)
-                    setMaxRotationalSpeed(0.35)
+                    withCustomMaxTranslationalSpeed(0.35)
+                    withCustomMaxRotationalSpeed(0.35)
                 }
             }
                 TapeSide.Right ->
@@ -88,13 +88,13 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                             10.0
                         )
                     ) {
-                        setMaxTranslationalSpeed(0.4)
-                        setMaxRotationalSpeed(0.4)
+                        withCustomMaxTranslationalSpeed(0.4)
+                        withCustomMaxRotationalSpeed(0.4)
                     }
                     Thread.sleep(750)
                     navigateTo(blueStackPickup)  {
-                        setMaxTranslationalSpeed(0.35)
-                        setMaxRotationalSpeed(0.35)
+                        withCustomMaxTranslationalSpeed(0.35)
+                        withCustomMaxRotationalSpeed(0.35)
                     }
                 }
 
@@ -123,7 +123,7 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                     navigateTo(
                         blueStackPickup
                     ) {
-                        setMaxTranslationalSpeed(0.4)
+                        withCustomMaxTranslationalSpeed(0.4)
                     }
                 }
             }
@@ -218,7 +218,7 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                 },
                 FieldWaypoint(blueParkMiddle, 10.0)
             ) {
-                setMaxTranslationalSpeed(0.5)
+                withCustomMaxTranslationalSpeed(0.5)
             }
         }
     }

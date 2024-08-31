@@ -174,13 +174,13 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                             5.0
                         )
                     ) {
-                        setMaxTranslationalSpeed(0.4)
-                        setMaxRotationalSpeed(0.4)
+                        withCustomMaxTranslationalSpeed(0.4)
+                        withCustomMaxRotationalSpeed(0.4)
                     }
                     Thread.sleep(750)
                     navigateTo(farStackPickup) {
-                        setMaxTranslationalSpeed(0.3)
-                        setMaxRotationalSpeed(0.3)
+                        withCustomMaxTranslationalSpeed(0.3)
+                        withCustomMaxRotationalSpeed(0.3)
                     }
                 }
 
@@ -209,7 +209,7 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                     navigateTo(
                         farStackPickup
                     ) {
-                        setMaxTranslationalSpeed(0.4)
+                        withCustomMaxTranslationalSpeed(0.4)
                     }
                 }
 
@@ -243,8 +243,8 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                     navigateTo(
                         farStackPickup
                     ) {
-                        setMaxTranslationalSpeed(0.35)
-                        setMaxRotationalSpeed(0.35)
+                        withCustomMaxTranslationalSpeed(0.35)
+                        withCustomMaxRotationalSpeed(0.35)
                     }
                 }
             }
@@ -322,7 +322,7 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                 },
                 FieldWaypoint(parkMiddle, 10.0)
             ) {
-                setMaxTranslationalSpeed(0.5)
+                withCustomMaxTranslationalSpeed(0.5)
             }
         }
 
