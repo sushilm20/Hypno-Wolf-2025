@@ -8,6 +8,8 @@ import io.liftgate.robotics.mono.gamepad.ButtonType
 import io.liftgate.robotics.mono.gamepad.GamepadCommands
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
+import org.firstinspires.ftc.vision.VisionPortal
+import org.firstinspires.ftc.vision.VisionProcessor
 import org.robotics.robotics.xdk.teamcode.autonomous.scheduleAsyncExecution
 import org.robotics.robotics.xdk.teamcode.subsystem.drone.DroneLauncher
 import org.robotics.robotics.xdk.teamcode.subsystem.Drivebase
@@ -68,8 +70,7 @@ abstract class AbstractTeleOp : LinearOpMode(), System
         telemetry.update()
 
         extendableClaw.toggleExtender(
-            ExtendableClaw.ExtenderState.Deposit
-        )
+            ExtendableClaw.ExtenderState.Deposit)
 
         while (opModeIsActive())
         {

@@ -48,7 +48,7 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                         20.0
                     )
                 ) {
-                    setDeathMillis(5000.0)
+                    withAutomaticDeath(5000.0)
                 }
                 opMode.clawSubsystem.toggleExtender(
                     ExtendableClaw.ExtenderState.Intake,
@@ -58,8 +58,8 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                 navigateTo(
                     blueStackPickup
                 ) {
-                    setMAX_TRANSLATIONAL_SPEED(0.35)
-                    setMAX_ROTATIONAL_SPEED(0.35)
+                    setMaxTranslationalSpeed(0.35)
+                    setMaxRotationalSpeed(0.35)
                 }
             }
                 TapeSide.Right ->
@@ -88,13 +88,13 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                             10.0
                         )
                     ) {
-                        setMAX_TRANSLATIONAL_SPEED(0.4)
-                        setMAX_ROTATIONAL_SPEED(0.4)
+                        setMaxTranslationalSpeed(0.4)
+                        setMaxRotationalSpeed(0.4)
                     }
                     Thread.sleep(750)
                     navigateTo(blueStackPickup)  {
-                        setMAX_TRANSLATIONAL_SPEED(0.35)
-                        setMAX_ROTATIONAL_SPEED(0.35)
+                        setMaxTranslationalSpeed(0.35)
+                        setMaxRotationalSpeed(0.35)
                     }
                 }
 
@@ -123,7 +123,7 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                     navigateTo(
                         blueStackPickup
                     ) {
-                        setMAX_TRANSLATIONAL_SPEED(0.4)
+                        setMaxTranslationalSpeed(0.4)
                     }
                 }
             }
@@ -189,7 +189,7 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                     )
                 }
             ) {
-                setDeathMillis(5000.0)
+                withAutomaticDeath(5000.0)
             }
             dropPixels(opMode)
         }
@@ -218,7 +218,7 @@ class V3TwoPlusZeroFarBlueTest : AbstractAutoPipeline(
                 },
                 FieldWaypoint(blueParkMiddle, 10.0)
             ) {
-                setMAX_TRANSLATIONAL_SPEED(0.5)
+                setMaxTranslationalSpeed(0.5)
             }
         }
     }

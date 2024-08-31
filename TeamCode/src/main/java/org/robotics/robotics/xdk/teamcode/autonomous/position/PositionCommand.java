@@ -2,21 +2,18 @@ package org.robotics.robotics.xdk.teamcode.autonomous.position;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline;
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose;
 
-import java.util.List;
-
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
 
 @Config
 public class PositionCommand {
-    private final AbstractAutoPipeline drivetrain;
-    private final Pose targetPose;
+    private static final double K_STATIC = 1.85;
+    private static final DrivetrainUpdates ZERO = new DrivetrainUpdates(0.0, 0.0, 0.0, 0.0);
 
     public static double xP = 0.07;
     public static double xD = 0.012;
@@ -27,57 +24,43 @@ public class PositionCommand {
     public static double hP = 1;
     public static double hD = 0.075;
 
-    public static PIDFController xController = new PIDFController(xP, 0.0, xD, 0);
-    public static PIDFController yController = new PIDFController(yP, 0.0, yD, 0);
-    public static PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
-
     public static double ALLOWED_TRANSLATIONAL_ERROR = 0.75;
     public static double ALLOWED_HEADING_ERROR = 0.02;
+    public static double STABLE_MS = 100;
+
+    public PIDFController xController = new PIDFController(xP, 0.0, xD, 0);
+    public PIDFController yController = new PIDFController(yP, 0.0, yD, 0);
+    public PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
 
     private final ElapsedTime timer = new ElapsedTime();
     private final ElapsedTime stable = new ElapsedTime();
 
-    public static double STABLE_MS = 100;
-    private double deathMillis = 2500;
+    private double automaticDeathMillis = 2500;
+    private final AbstractAutoPipeline drivetrain;
+    private final Pose targetPose;
 
-    public void setDeathMillis(double deathMillis) {
-        this.deathMillis = deathMillis;
+    public void withAutomaticDeath(double automaticDeathMillis) {
+        this.automaticDeathMillis = automaticDeathMillis;
     }
 
-    private double MAX_TRANSLATIONAL_SPEED = 1.0;
-    private double MAX_ROTATIONAL_SPEED = 1.0;
-    private static double K_STATIC = 1.85;
+    private double maxTranslationalSpeed = 1.0;
+    private double maxRotationalSpeed = 1.0;
 
-    private final MecanumAutoDrive mecanumAutoDrive;
     private final RootExecutionGroup executionGroup;
 
     public PositionCommand(final Pose targetPose, final RootExecutionGroup executionGroup) {
         this.drivetrain = AbstractAutoPipeline.getInstance();
         this.targetPose = targetPose;
-
-        xController.reset();
-        yController.reset();
-        hController.reset();
-
         this.executionGroup = executionGroup;
-        this.mecanumAutoDrive = new MecanumAutoDrive();
     }
 
     private Supplies<Pose, Pose> targetPoseSupplier = (pose) -> new Pose();
-    private Pose getTargetPose(Pose robotPose) {
-        if (targetPose != null) {
-            return targetPose;
-        }
-
-        return targetPoseSupplier.supply(robotPose);
+    public void setMaxRotationalSpeed(double maxRotationalSpeed) {
+        this.maxRotationalSpeed = maxRotationalSpeed;
     }
 
-    public void setMAX_ROTATIONAL_SPEED(double MAX_ROTATIONAL_SPEED) {
-        this.MAX_ROTATIONAL_SPEED = MAX_ROTATIONAL_SPEED;
-    }
-
-    public void setMAX_TRANSLATIONAL_SPEED(double MAX_TRANSLATIONAL_SPEED) {
-        this.MAX_TRANSLATIONAL_SPEED = MAX_TRANSLATIONAL_SPEED;
+    public void setMaxTranslationalSpeed(double maxTranslationalSpeed) {
+        this.maxTranslationalSpeed = maxTranslationalSpeed;
     }
 
     public void supplyCustomTargetPose(Supplies<Pose, Pose> supplier) {
@@ -91,45 +74,34 @@ public class PositionCommand {
                 return;
             }
 
-            final Pose robotPose = drivetrain.getLocalizer().getPose();
-            final Pose targetPose = getTargetPose(robotPose);
-            if (isFinished(targetPose)) {
+            Pose robotPose = drivetrain.getLocalizer().getPose();
+            Pose targetPose = this.targetPose != null ? this.targetPose : targetPoseSupplier.supply(robotPose);
+
+            if (isFinished(robotPose, targetPose)) {
                 break;
             }
 
-            final Pose powers = getPower(robotPose, targetPose);
-
-            final double[] drivetrainPowers = mecanumAutoDrive.getPowers(powers);
-            driveWithPowers(drivetrainPowers);
+            Pose powers = getPower(robotPose, targetPose);
+            MecanumTranslations.getPowers(powers).propagate(drivetrain);
         }
 
-        driveWithPowers(mecanumAutoDrive.getPowers(new Pose()));
+        ZERO.propagate(drivetrain);
     }
 
-    private void driveWithPowers(double[] drivetrainPowers) {
-        final List<DcMotor> motors = drivetrain.getDrivebase().getAllDriveBaseMotors();
-
-        motors.get(0).setPower(drivetrainPowers[0]);
-        motors.get(1).setPower(drivetrainPowers[1]);
-        motors.get(2).setPower(drivetrainPowers[2]);
-        motors.get(3).setPower(drivetrainPowers[3]);
-    }
-
-    public boolean isFinished(Pose targetPose) {
-        Pose robotPose = drivetrain.getLocalizer().getPose();
+    private boolean isFinished(Pose robotPose, Pose targetPose) {
         Pose delta = targetPose.subtract(robotPose);
 
-        if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR
-                || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR) {
+        if (delta.toVec2D().magnitude() > ALLOWED_TRANSLATIONAL_ERROR || Math.abs(delta.heading) > ALLOWED_HEADING_ERROR) {
             stable.reset();
         }
 
-        return timer.milliseconds() > deathMillis || stable.milliseconds() > STABLE_MS;
+        return timer.milliseconds() > automaticDeathMillis || stable.milliseconds() > STABLE_MS;
     }
 
     public Pose getPower(Pose robotPose, Pose targetPose) {
-        if (targetPose.heading - robotPose.heading > Math.PI) targetPose.heading -= 2 * Math.PI;
-        if (targetPose.heading - robotPose.heading < -Math.PI) targetPose.heading += 2 * Math.PI;
+        double headingError = targetPose.heading - robotPose.heading;
+        if (headingError > Math.PI) targetPose.heading -= 2 * Math.PI;
+        if (headingError < -Math.PI) targetPose.heading += 2 * Math.PI;
 
         double xPower = xController.calculate(robotPose.x, targetPose.x);
         double yPower = yController.calculate(robotPose.y, targetPose.y);
@@ -138,9 +110,9 @@ public class PositionCommand {
         double x_rotated = xPower * Math.cos(-robotPose.heading) - yPower * Math.sin(-robotPose.heading);
         double y_rotated = xPower * Math.sin(-robotPose.heading) + yPower * Math.cos(-robotPose.heading);
 
-        hPower = Range.clip(hPower, -MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED);
-        x_rotated = Range.clip(x_rotated, -MAX_TRANSLATIONAL_SPEED / K_STATIC, MAX_TRANSLATIONAL_SPEED / K_STATIC);
-        y_rotated = Range.clip(y_rotated, -MAX_TRANSLATIONAL_SPEED, MAX_TRANSLATIONAL_SPEED);
+        hPower = Range.clip(hPower, -maxRotationalSpeed, maxRotationalSpeed);
+        x_rotated = Range.clip(x_rotated, -maxTranslationalSpeed / K_STATIC, maxTranslationalSpeed / K_STATIC);
+        y_rotated = Range.clip(y_rotated, -maxTranslationalSpeed, maxTranslationalSpeed);
 
         return new Pose(x_rotated * K_STATIC, y_rotated, hPower);
     }

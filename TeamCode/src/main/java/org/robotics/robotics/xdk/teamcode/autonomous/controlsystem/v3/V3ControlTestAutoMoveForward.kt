@@ -2,6 +2,7 @@ package org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3
 
 import com.arcrobotics.ftclib.purepursuit.Waypoint
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import io.liftgate.robotics.mono.pipeline.simultaneous
 import io.liftgate.robotics.mono.pipeline.single
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose

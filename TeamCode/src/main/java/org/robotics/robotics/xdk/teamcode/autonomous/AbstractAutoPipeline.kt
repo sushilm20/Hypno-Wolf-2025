@@ -214,23 +214,11 @@ abstract class AbstractAutoPipeline(
             }
         }
 
-        thread {
-            while (!isStopRequested)
-            {
-                voltage = hardwareMap.voltageSensor.first().voltage
-                Thread.sleep(50L)
-            }
-        }
         executionGroup.apply {
             blockExecutionGroup(
                 this@AbstractAutoPipeline, tapeSide
             )
         }
-
-        /*movementHandler = MovementHandler(
-            opMode = this,
-            executionGroup = executionGroup
-        )*/
 
         runWithoutEncoders()
         executionGroup.executeBlocking()
@@ -292,30 +280,6 @@ abstract class AbstractAutoPipeline(
         }
     }
 
-  /*  fun move(ticks: Double, heading: Double) = movementHandler.move(ticks, heading)
-    fun turn(ticks: Double) = movementHandler.turn(ticks)
-    fun strafe(ticks: Double) = movementHandler.strafe(ticks)
-*/
-    fun lockUntilMotorsFree(maximumTimeMillis: Long = 1500L)
-    {
-        val start = System.currentTimeMillis()
-        while (
-            System.currentTimeMillis() < start + maximumTimeMillis &&
-            (frontLeft.isBusy ||
-                frontRight.isBusy ||
-                backLeft.isBusy ||
-                backRight.isBusy)
-        )
-        {
-            if (isStopRequested)
-            {
-                return
-            }
-
-            sleep(50L)
-        }
-    }
-
     fun stopAndResetMotors() = configureMotorsToDo {
         it.power = 0.0
         it.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -325,40 +289,6 @@ abstract class AbstractAutoPipeline(
         it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
     }
 
-    fun runMotors() = configureMotorsToDo {
-        it.mode = DcMotor.RunMode.RUN_USING_ENCODER
-    }
-
-    fun setPower(power: Double) = configureMotorsToDo {
-        it.power = power
-    }
-
-    fun setRelativePowers(left: Double, right: Double)
-    {
-        frontLeft.power = left
-        frontRight.power = right
-
-        backLeft.power = left
-        backRight.power = right
-    }
-
-    fun setTurnPower(power: Double)
-    {
-        frontLeft.power = power
-        frontRight.power = -power
-
-        backLeft.power = power
-        backRight.power = -power
-    }
-
-    fun setRelativeStrafePower(left: Double, right: Double)
-    {
-        frontLeft.power = left
-        frontRight.power = -right
-
-        backLeft.power = -left
-        backRight.power = right
-    }
 
     private fun configureMotorsToDo(consumer: (DcMotor) -> Unit)
     {

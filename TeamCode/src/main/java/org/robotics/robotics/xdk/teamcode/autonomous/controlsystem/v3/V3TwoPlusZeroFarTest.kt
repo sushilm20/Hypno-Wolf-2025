@@ -70,7 +70,7 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                         )
                     }
                 ) {
-                    setDeathMillis(5000.0)
+                    withAutomaticDeath(5000.0)
                 }
             }
         }
@@ -126,7 +126,7 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                         20.0
                     )
                 ) {
-                    setDeathMillis(5000.0)
+                    withAutomaticDeath(5000.0)
                 }
             }
         }
@@ -174,13 +174,13 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                             5.0
                         )
                     ) {
-                        setMAX_TRANSLATIONAL_SPEED(0.4)
-                        setMAX_ROTATIONAL_SPEED(0.4)
+                        setMaxTranslationalSpeed(0.4)
+                        setMaxRotationalSpeed(0.4)
                     }
                     Thread.sleep(750)
                     navigateTo(farStackPickup) {
-                        setMAX_TRANSLATIONAL_SPEED(0.3)
-                        setMAX_ROTATIONAL_SPEED(0.3)
+                        setMaxTranslationalSpeed(0.3)
+                        setMaxRotationalSpeed(0.3)
                     }
                 }
 
@@ -209,7 +209,7 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                     navigateTo(
                         farStackPickup
                     ) {
-                        setMAX_TRANSLATIONAL_SPEED(0.4)
+                        setMaxTranslationalSpeed(0.4)
                     }
                 }
 
@@ -233,7 +233,7 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                             20.0
                         )
                     ) {
-                        setDeathMillis(5000.0)
+                        withAutomaticDeath(5000.0)
                     }
                     opMode.clawSubsystem.toggleExtender(
                         ExtendableClaw.ExtenderState.Intake,
@@ -243,8 +243,8 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                     navigateTo(
                         farStackPickup
                     ) {
-                        setMAX_TRANSLATIONAL_SPEED(0.35)
-                        setMAX_ROTATIONAL_SPEED(0.35)
+                        setMaxTranslationalSpeed(0.35)
+                        setMaxRotationalSpeed(0.35)
                     }
                 }
             }
@@ -322,7 +322,7 @@ class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
                 },
                 FieldWaypoint(parkMiddle, 10.0)
             ) {
-                setMAX_TRANSLATIONAL_SPEED(0.5)
+                setMaxTranslationalSpeed(0.5)
             }
         }
 

@@ -7,13 +7,13 @@ import com.qualcomm.robotcore.util.Range;
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline;
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose;
 
-public class MecanumAutoDrive {
+public class MecanumTranslations {
 
-    public double[] getPowers(Pose pose) {
+    public static DrivetrainUpdates getPowers(Pose pose) {
         return getPowers(pose, 0);
     }
 
-    public double[] getPowers(double strafeSpeed, double forwardSpeed,
+    public static DrivetrainUpdates getPowers(double strafeSpeed, double forwardSpeed,
                               double turnSpeed, double gyroAngle) {
         Vector2d input = new Vector2d(strafeSpeed, forwardSpeed).rotateBy(-gyroAngle);
 
@@ -47,15 +47,15 @@ public class MecanumAutoDrive {
             wheelSpeeds[RobotDrive.MotorType.kBackRight.value] /= max;
         }
 
-        final double[] ws = new double[4];
-        ws[0] = wheelSpeeds[0];
-        ws[1] = wheelSpeeds[1];
-        ws[2] = wheelSpeeds[2];
-        ws[3] = wheelSpeeds[3];
-        return ws;
+        return new DrivetrainUpdates(
+                wheelSpeeds[0],
+                wheelSpeeds[1],
+                wheelSpeeds[2],
+                wheelSpeeds[3]
+        );
     }
 
-    public double[] getPowers(Pose pose, double angle) {
+    public static DrivetrainUpdates getPowers(Pose pose, double angle) {
         return getPowers(pose.x, pose.y, pose.heading, angle);
     }
 }
