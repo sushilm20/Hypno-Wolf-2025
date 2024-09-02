@@ -75,6 +75,10 @@ class StatePIDFMotor(
         pidfController.block()
     }
 
+    fun configureMotor(block: DcMotorEx.() -> Unit) = apply {
+        motor.block()
+    }
+
     fun isTravelling() = state.inProgress()
     fun goTo(target: Int) = state.override(target)
     fun reset() = state.reset()

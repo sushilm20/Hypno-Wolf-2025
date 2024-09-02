@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.Mono
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
@@ -60,6 +61,7 @@ abstract class AbstractAutoPipeline(
         )
     }
 
+    val runTimer = ElapsedTime()
     val localizer by lazy {
         TwoWheelLocalizer(this@AbstractAutoPipeline)
     }
@@ -153,6 +155,7 @@ abstract class AbstractAutoPipeline(
         }
 
         waitForStart()
+        runTimer.reset()
 
         // protect against premature stops before we even start the execution group
         if (isStopRequested)
