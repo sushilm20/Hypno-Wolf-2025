@@ -67,9 +67,11 @@ public class PositionCommand {
     private @Nullable Function1<PositionCommandEndResult, Unit> endSubscription = null;
 
     protected void finish(@NotNull PositionCommandEndResult result) {
-        ZERO.propagate(drivetrain);
-        if (endSubscription != null) {
-            endSubscription.invoke(result);
+        if (result != PositionCommandEndResult.ForcefulTermination) {
+            ZERO.propagate(drivetrain);
+            if (endSubscription != null) {
+                endSubscription.invoke(result);
+            }
         }
 
         Mono.INSTANCE.getLogSink().invoke("[position] ended with result of " + result.name());
@@ -84,6 +86,15 @@ public class PositionCommand {
         withEndSubscription(positionCommandEndResult -> {
             if (positionCommandEndResult == PositionCommandEndResult.StuckDetected) {
                 stuck.run();
+            }
+            return null;
+        });
+    }
+
+    public void whenTimeOutExceeded(@NotNull Runnable timeoutExceed) {
+        withEndSubscription(positionCommandEndResult -> {
+            if (positionCommandEndResult == PositionCommandEndResult.ExceededTimeout) {
+                timeoutExceed.run();
             }
             return null;
         });
@@ -119,6 +130,7 @@ public class PositionCommand {
         while (true) {
             if (drivetrain.isStopRequested()) {
                 executionGroup.terminateMidExecution();
+                finish(PositionCommandEndResult.ForcefulTermination);
                 return;
             }
 
