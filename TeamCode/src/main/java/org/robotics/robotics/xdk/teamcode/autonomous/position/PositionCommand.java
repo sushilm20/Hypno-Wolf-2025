@@ -11,9 +11,9 @@ import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline;
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose;
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.PathAlgorithm;
 
+import io.liftgate.robotics.mono.Mono;
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 
 @Config
@@ -65,6 +65,15 @@ public class PositionCommand {
 
     private @Nullable PathAlgorithm pathAlgorithm = null;
     private @Nullable Function1<PositionCommandEndResult, Unit> endSubscription = null;
+
+    protected void finish(@NotNull PositionCommandEndResult result) {
+        ZERO.propagate(drivetrain);
+        if (endSubscription != null) {
+            endSubscription.invoke(result);
+        }
+
+        Mono.INSTANCE.getLogSink().invoke("[position] ended with result of " + result.name());
+    }
 
     public void withEndSubscription(@NotNull Function1<PositionCommandEndResult, Unit> subscription) {
         this.endSubscription = subscription;
@@ -121,14 +130,13 @@ public class PositionCommand {
                     pathAlgorithm.getTargetCompute().invoke(robotPose);
 
             if (robotPose == null || targetPose == null) {
-                if (endSubscription != null) {
-                    ZERO.propagate(drivetrain);
-                    endSubscription.invoke(PositionCommandEndResult.LocalizationFailure);
-                }
+                finish(PositionCommandEndResult.LocalizationFailure);
                 return;
             }
 
-            if (isFinished(robotPose, previousPose, targetPose)) {
+            PositionCommandEndResult result = getState(robotPose, previousPose, targetPose);
+            if (result != null) {
+                finish(result);
                 return;
             }
 
@@ -142,7 +150,7 @@ public class PositionCommand {
         this.robotStuckProtection = stuckProtection;
     }
 
-    private boolean isFinished(
+    private @Nullable PositionCommandEndResult getState(
             @NotNull Pose currentPose,
             @Nullable Pose previousPose,
             @NotNull Pose targetPose
@@ -157,11 +165,7 @@ public class PositionCommand {
                 }
 
                 if (stuckProtection.milliseconds() > robotStuckProtection.getMinimumMillisUntilDeemedStuck()) {
-                    if (endSubscription != null) {
-                        ZERO.propagate(drivetrain);
-                        endSubscription.invoke(PositionCommandEndResult.StuckDetected);
-                    }
-                    return true;
+                    return PositionCommandEndResult.StuckDetected;
                 }
             } else {
                 stuckProtection.reset();
@@ -170,11 +174,7 @@ public class PositionCommand {
 
         if (pathAlgorithm != null) {
             if (pathAlgorithm.getPathComplete().invoke(currentPose, targetPose)) {
-                if (endSubscription != null) {
-                    ZERO.propagate(drivetrain);
-                    endSubscription.invoke(PositionCommandEndResult.PathAlgorithmSuccessful);
-                }
-                return true;
+                return PositionCommandEndResult.PathAlgorithmSuccessful;
             }
         }
 
@@ -185,22 +185,14 @@ public class PositionCommand {
         }
 
         if (activeTimer.milliseconds() > automaticDeathMillis) {
-            if (endSubscription != null) {
-                ZERO.propagate(drivetrain);
-                endSubscription.invoke(PositionCommandEndResult.ExceededTimeout);
-            }
-            return true;
+            return PositionCommandEndResult.ExceededTimeout;
         }
 
         if (atTargetTimer.milliseconds() > AT_TARGET_AUTOMATIC_DEATH) {
-            if (endSubscription != null) {
-                ZERO.propagate(drivetrain);
-                endSubscription.invoke(PositionCommandEndResult.Successful);
-            }
-            return true;
+            return PositionCommandEndResult.Successful;
         }
 
-        return false;
+        return null;
     }
 
     public @NotNull Pose getPower(@NotNull Pose robotPose, @NotNull Pose targetPose) {
