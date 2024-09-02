@@ -1,5 +1,6 @@
 package org.robotics.robotics.xdk.teamcode.autonomous
 
+import android.util.Log
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
@@ -78,9 +79,12 @@ abstract class AbstractAutoPipeline(
             visionPipeline
         )
 
+        multipleTelemetry.isAutoClear = false
+
         // keep all log entries
         Mono.logSink = {
-            println("[Mono] $it")
+            multipleTelemetry.addLine("[mono] $it")
+            Log.i("mono", it)
         }
 
         localizer
@@ -103,6 +107,7 @@ abstract class AbstractAutoPipeline(
 
         multipleTelemetry.addLine("Waiting for start. Started detection...")
         multipleTelemetry.update()
+        multipleTelemetry.clearAll()
 
         initializeAll()
         stopAndResetMotors()
@@ -155,6 +160,7 @@ abstract class AbstractAutoPipeline(
         }
 
         waitForStart()
+        multipleTelemetry.clearAll()
         runTimer.reset()
 
         // protect against premature stops before we even start the execution group
