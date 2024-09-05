@@ -14,7 +14,7 @@ import org.robotics.robotics.xdk.teamcode.autonomous.profiles.AutonomousProfile
 class V3ControlBackTrackTest : AbstractAutoPipeline(
     AutonomousProfile.RedPlayer1TwoPlusZero,
     blockExecutionGroup = { _, _ ->
-        navigateToPosition(Pose(100.0, 0.0, 0.degrees)) {
+        navigateToPosition(Pose(0.0, 100.0, 0.degrees)) {
             whenStuck(RobotStuckProtection(
                 minimumRequiredRotationalDifference = 0.2,
                 minimumMillisUntilDeemedStuck = 1500L,
