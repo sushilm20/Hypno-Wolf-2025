@@ -79,11 +79,12 @@ abstract class AbstractAutoPipeline(
             visionPipeline
         )
 
-        multipleTelemetry.isAutoClear = false
+        telemetry.isAutoClear = false
 
         // keep all log entries
         Mono.logSink = {
             multipleTelemetry.addLine("[mono] $it")
+            multipleTelemetry.update()
             Log.i("mono", it)
         }
 
@@ -174,6 +175,14 @@ abstract class AbstractAutoPipeline(
             while (!isStopRequested)
             {
                 subsystems.map { it as AbstractSubsystem }.forEach { it.allPeriodic() }
+            }
+        }
+
+        thread {
+            while (!isStopRequested)
+            {
+                voltage = hardwareMap.voltageSensor.first().voltage
+                Thread.sleep(50L)
             }
         }
 

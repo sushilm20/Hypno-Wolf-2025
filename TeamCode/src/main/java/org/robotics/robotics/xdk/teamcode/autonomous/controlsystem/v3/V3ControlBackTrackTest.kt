@@ -7,25 +7,20 @@ import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose
 import org.robotics.robotics.xdk.teamcode.autonomous.position.RobotStuckProtection
 import org.robotics.robotics.xdk.teamcode.autonomous.position.degrees
 import org.robotics.robotics.xdk.teamcode.autonomous.position.navigateTo
+import org.robotics.robotics.xdk.teamcode.autonomous.position.navigateToPosition
 import org.robotics.robotics.xdk.teamcode.autonomous.profiles.AutonomousProfile
 
 @Autonomous(name = "Test | BackTrack", group = "Test")
 class V3ControlBackTrackTest : AbstractAutoPipeline(
     AutonomousProfile.RedPlayer1TwoPlusZero,
     blockExecutionGroup = { _, _ ->
-        single("turn") {
-            navigateTo(Pose(-0.0, -0.0, 90.degrees))
-        }
-
-        single("go forward") {
-            navigateTo(Pose(-0.0, 15.0, 90.degrees)) {
-                whenStuck(RobotStuckProtection(
-                    minimumRequiredRotationalDifference = 0.2,
-                    minimumMillisUntilDeemedStuck = 1500L,
-                    minimumRequiredTranslationalDifference = 0.1
-                )) {
-                    backtrack(1)
-                }
+        navigateToPosition(Pose(100.0, 0.0, 90.degrees)) {
+            whenStuck(RobotStuckProtection(
+                minimumRequiredRotationalDifference = 0.2,
+                minimumMillisUntilDeemedStuck = 1500L,
+                minimumRequiredTranslationalDifference = 0.1
+            )) {
+                backtrack(1)
             }
         }
     }

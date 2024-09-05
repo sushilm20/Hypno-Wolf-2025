@@ -28,7 +28,8 @@ class MotionProfiledServo(
         )
         timer.reset()
     }, {
-        val position = motionProfile!!.calculate(timer.time())
+        val position = motionProfile?.calculate(timer.time())
+            ?: return@state servo.position
         servo.position = position.x
         position.x
     })
