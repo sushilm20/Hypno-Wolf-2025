@@ -1,23 +1,26 @@
-package org.riverdell.robotics.autonomous.movement.guidedvectorfield;
+package org.riverdell.robotics.autonomous.movement.guidedvectorfield
 
-import org.jetbrains.annotations.NotNull;
-import org.riverdell.robotics.autonomous.movement.PositionChangeAction;
-import org.riverdell.robotics.autonomous.movement.PositionChangeAction;
-import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm;
+import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
+import org.riverdell.robotics.autonomous.geometry.Pose
+import org.riverdell.robotics.autonomous.movement.PositionChangeAction
+import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm
 
-import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
-
-public class GuidedVectorFieldPositionChangeAction extends PositionChangeAction {
-    public GuidedVectorFieldPositionChangeAction(
-            @NotNull CubicBezierCurve cubicBezierCurve,
-            @NotNull RootExecutionGroup executionGroup) {
-        super(null, executionGroup);
-
-        final GuidedVectorField vectorField = new GuidedVectorField(cubicBezierCurve);
-        withCustomPathAlgorithm(new PathAlgorithm(
-                vectorField::calculateGuidanceVector,
-                (robotPose, targetPose) -> false,
-                true
-        ));
+class GuidedVectorFieldPositionChangeAction(
+    cubicBezierCurve: CubicBezierCurve,
+    executionGroup: RootExecutionGroup
+) : PositionChangeAction(null, executionGroup)
+{
+    init
+    {
+        val vectorField = GuidedVectorField(cubicBezierCurve)
+        withCustomPathAlgorithm(
+            PathAlgorithm(
+                { currentPose ->
+                    vectorField.calculateGuidanceVector(currentPose)
+                },
+                { _, _ -> false },
+                euclideanCompletionCheck = true
+            )
+        )
     }
 }
