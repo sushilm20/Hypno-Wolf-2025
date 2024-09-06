@@ -8,7 +8,7 @@ import org.riverdell.robotics.autonomous.movement.guidedvectorfield.GuidedVector
 import org.riverdell.robotics.autonomous.movement.guidedvectorfield.Vector2D
 import org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPositionChangeAction
 import org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPath
-import org.robotics.robotics.xdk.teamcode.autonomous.movement.purepursuit.WaypointLike
+import org.riverdell.robotics.autonomous.movement.purepursuit.WaypointLike
 
 val Double.degrees: Double
     get() = Math.toRadians(this)
@@ -20,8 +20,8 @@ val Int.degrees: Double
     message = "Recommended to use new API navigateToPosition",
     replaceWith = ReplaceWith("navigateToPosition(pose, optBlock)")
 )
-fun RootExecutionGroup.navigateTo(pose: _root_ide_package_.org.riverdell.robotics.autonomous.geometry.Pose, optBlock: _root_ide_package_.org.riverdell.robotics.autonomous.movement.PositionChangeAction.() -> Unit = {}) =
-    _root_ide_package_.org.riverdell.robotics.autonomous.movement.PositionChangeAction(
+fun RootExecutionGroup.navigateTo(pose: Pose, optBlock: PositionChangeAction.() -> Unit = {}) =
+    PositionChangeAction(
         pose,
         this
     ).apply(optBlock).executeBlocking()
@@ -32,37 +32,37 @@ fun RootExecutionGroup.navigateTo(pose: _root_ide_package_.org.riverdell.robotic
 )
 fun RootExecutionGroup.purePursuitNavigateTo(
     vararg waypoints: WaypointLike,
-    optBlock: _root_ide_package_.org.riverdell.robotics.autonomous.movement.PositionChangeAction.() -> Unit = {}
+    optBlock: PositionChangeAction.() -> Unit = {}
 ) =
-    _root_ide_package_.org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPositionChangeAction(
+    PurePursuitPositionChangeAction(
         this,
-        _root_ide_package_.org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPath(*waypoints)
+        PurePursuitPath(*waypoints)
     ).apply(optBlock).executeBlocking()
 
 
-fun cubicBezier(vararg waypoints: _root_ide_package_.org.riverdell.robotics.autonomous.geometry.Pose): _root_ide_package_.org.riverdell.robotics.autonomous.movement.guidedvectorfield.CubicBezierCurve
+fun cubicBezier(vararg waypoints: Pose): CubicBezierCurve
 {
     if (waypoints.size != 4)
     {
         throw IllegalArgumentException("Cubic Bezier Curve requires 4 points")
     }
 
-    return _root_ide_package_.org.riverdell.robotics.autonomous.movement.guidedvectorfield.CubicBezierCurve(
+    return CubicBezierCurve(
         waypoints[0].toVector2D(), waypoints[1].toVector2D(),
         waypoints[2].toVector2D(), waypoints[3].toVector2D()
     )
 }
 
-fun _root_ide_package_.org.riverdell.robotics.autonomous.geometry.Pose.toVector2D() =
-    _root_ide_package_.org.riverdell.robotics.autonomous.movement.guidedvectorfield.Vector2D(x, y)
+fun Pose.toVector2D() =
+    Vector2D(x, y)
 
 fun RootExecutionGroup.navigateUnstableGVF(
-    curve: _root_ide_package_.org.riverdell.robotics.autonomous.movement.guidedvectorfield.CubicBezierCurve,
-    configure: _root_ide_package_.org.riverdell.robotics.autonomous.movement.PositionChangeAction.() -> Unit = {}
+    curve: CubicBezierCurve,
+    configure: PositionChangeAction.() -> Unit = {}
 )
 {
     val command =
-        _root_ide_package_.org.riverdell.robotics.autonomous.movement.guidedvectorfield.GuidedVectorFieldPositionChangeAction(
+        GuidedVectorFieldPositionChangeAction(
             curve,
             this
         )
@@ -75,13 +75,13 @@ fun RootExecutionGroup.navigateUnstableGVF(
 
 fun RootExecutionGroup.navigatePurePursuit(
     vararg waypoints: WaypointLike,
-    configure: _root_ide_package_.org.riverdell.robotics.autonomous.movement.PositionChangeAction.() -> Unit = { }
+    configure: PositionChangeAction.() -> Unit = { }
 )
 {
     val command =
-        _root_ide_package_.org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPositionChangeAction(
+        PurePursuitPositionChangeAction(
             this,
-            _root_ide_package_.org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPath(
+            PurePursuitPath(
                 *waypoints
             )
         )
@@ -93,12 +93,12 @@ fun RootExecutionGroup.navigatePurePursuit(
 }
 
 fun RootExecutionGroup.navigateToPosition(
-    pose: _root_ide_package_.org.riverdell.robotics.autonomous.geometry.Pose,
-    configure: _root_ide_package_.org.riverdell.robotics.autonomous.movement.PositionChangeAction.() -> Unit = { }
+    pose: Pose,
+    configure: PositionChangeAction.() -> Unit = { }
 )
 {
     val command =
-        _root_ide_package_.org.riverdell.robotics.autonomous.movement.PositionChangeAction(
+        PositionChangeAction(
             pose,
             this
         )

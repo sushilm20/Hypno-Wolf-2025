@@ -3,7 +3,7 @@ package org.riverdell.robotics.autonomous.movement.guidedvectorfield;
 import org.jetbrains.annotations.NotNull;
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction;
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction;
-import org.robotics.robotics.xdk.teamcode.autonomous.movement.purepursuit.PathAlgorithm;
+import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm;
 
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
 

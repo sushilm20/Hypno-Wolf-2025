@@ -26,8 +26,8 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.riverdell.robotics.autonomous.detection.TapeSide;
 import org.riverdell.robotics.autonomous.detection.TeamColor;
-import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide;
-import org.robotics.robotics.xdk.teamcode.autonomous.detection.TeamColor;
+import org.riverdell.robotics.autonomous.detection.TapeSide;
+import org.riverdell.robotics.autonomous.detection.TeamColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;

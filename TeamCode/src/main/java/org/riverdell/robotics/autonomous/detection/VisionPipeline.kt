@@ -9,7 +9,7 @@ import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import org.riverdell.robotics.autonomous.detection.elements.GameElementDetection
-import org.robotics.robotics.xdk.teamcode.utilities.hardware
+import org.riverdell.robotics.utilities.hardware
 
 /**
  * Manages and configures all [VisionPortal] processors
@@ -21,7 +21,7 @@ class VisionPipeline(
 ) : AbstractSubsystem()
 {
     private lateinit var portal: VisionPortal
-    lateinit var propPipeline: _root_ide_package_.org.riverdell.robotics.autonomous.detection.elements.GameElementDetection
+    lateinit var propPipeline: GameElementDetection
     lateinit var aprilTag: AprilTagProcessor
 
     fun getTapeSide() = propPipeline.tapeSide
@@ -41,7 +41,7 @@ class VisionPipeline(
     fun start(destination: StreamDestination)
     {
         propPipeline =
-            _root_ide_package_.org.riverdell.robotics.autonomous.detection.elements.GameElementDetection(
+            GameElementDetection(
                 teamColor
             )
         aprilTag = AprilTagProcessor.Builder()

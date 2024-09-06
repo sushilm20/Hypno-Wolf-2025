@@ -12,22 +12,22 @@ import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
-import org.robotics.robotics.xdk.teamcode.autonomous.detection.TeamColor
-import org.robotics.robotics.xdk.teamcode.autonomous.detection.VisionPipeline
+import org.riverdell.robotics.autonomous.detection.TapeSide
+import org.riverdell.robotics.autonomous.detection.TeamColor
+import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.localizer.TwoWheelLocalizer
-import org.robotics.robotics.xdk.teamcode.drivebase.Drivebase
-import org.robotics.robotics.xdk.teamcode.utilities.hardware
+import org.riverdell.robotics.drivebase.Drivebase
+import org.riverdell.robotics.utilities.hardware
 import kotlin.concurrent.thread
 
 abstract class AutonomousWrapper(
-    internal val blockExecutionGroup: RootExecutionGroup.(_root_ide_package_.org.riverdell.robotics.autonomous.AutonomousWrapper, TapeSide) -> Unit
+    internal val blockExecutionGroup: RootExecutionGroup.(AutonomousWrapper, TapeSide) -> Unit
 ) : LinearOpMode(), io.liftgate.robotics.mono.subsystem.System
 {
     companion object
     {
         @JvmStatic
-        lateinit var instance: _root_ide_package_.org.riverdell.robotics.autonomous.AutonomousWrapper
+        lateinit var instance: AutonomousWrapper
     }
 
     override val subsystems = mutableSetOf<Subsystem>()
@@ -53,12 +53,12 @@ abstract class AutonomousWrapper(
 
     val runTimer = ElapsedTime()
     val localizer by lazy {
-        _root_ide_package_.org.riverdell.robotics.autonomous.localizer.TwoWheelLocalizer(this@AutonomousWrapper)
+        TwoWheelLocalizer(this@AutonomousWrapper)
     }
 
     override fun runOpMode()
     {
-        _root_ide_package_.org.riverdell.robotics.autonomous.AutonomousWrapper.Companion.instance = this
+        AutonomousWrapper.Companion.instance = this
 
         register(
             drivebase,

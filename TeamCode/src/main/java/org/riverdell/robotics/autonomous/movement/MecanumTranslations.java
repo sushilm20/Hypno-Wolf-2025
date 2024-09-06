@@ -4,7 +4,7 @@ import com.arcrobotics.ftclib.drivebase.RobotDrive;
 import com.arcrobotics.ftclib.geometry.Vector2d;
 import com.qualcomm.robotcore.util.Range;
 
-import org.robotics.robotics.xdk.teamcode.autonomous.AutonomousWrapper;
+import org.riverdell.robotics.autonomous.AutonomousWrapper;
 import org.riverdell.robotics.autonomous.geometry.Pose;
 
 public class MecanumTranslations {

@@ -1,6 +1,6 @@
 package org.riverdell.robotics.autonomous.movement
 
-import org.robotics.robotics.xdk.teamcode.autonomous.AutonomousWrapper
+import org.riverdell.robotics.autonomous.AutonomousWrapper
 
 data class DrivetrainUpdates(
     val newFrontLeft: Double,

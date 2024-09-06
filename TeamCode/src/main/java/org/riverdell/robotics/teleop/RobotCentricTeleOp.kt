@@ -2,7 +2,7 @@ package org.riverdell.robotics.teleop
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.robotics.robotics.xdk.teamcode.drivebase.Drivebase
+import org.riverdell.robotics.drivebase.Drivebase
 
 /**
  * A TeleOp implementation which drives a mecanum drivebase

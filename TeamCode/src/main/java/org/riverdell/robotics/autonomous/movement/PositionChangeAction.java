@@ -7,9 +7,9 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.robotics.robotics.xdk.teamcode.autonomous.AutonomousWrapper;
+import org.riverdell.robotics.autonomous.AutonomousWrapper;
 import org.riverdell.robotics.autonomous.geometry.Pose;
-import org.robotics.robotics.xdk.teamcode.autonomous.movement.purepursuit.PathAlgorithm;
+import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm;
 
 import io.liftgate.robotics.mono.Mono;
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;

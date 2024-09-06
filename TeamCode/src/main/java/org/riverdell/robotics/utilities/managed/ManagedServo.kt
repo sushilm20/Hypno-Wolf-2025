@@ -14,15 +14,15 @@ import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 class ManagedServo(
     private val servo: Servo,
     stateHolder: StateHolder,
-    private val constraints: () -> _root_ide_package_.org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
+    private val constraints: () -> ProfileConstraints
 )
 {
-    private var motionProfile: _root_ide_package_.org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile? = null
+    private var motionProfile: AsymmetricMotionProfile? = null
     private val timer = ElapsedTime()
 
     private val state by stateHolder.state<Double>({
         motionProfile =
-            _root_ide_package_.org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile(
+            AsymmetricMotionProfile(
                 servo.position,
                 it,
                 constraints()
