@@ -18,8 +18,9 @@ import kotlin.jvm.functions.Function1;
 
 @Config
 public class PositionChangeAction {
-    private static final double K_STATIC = 1.85;
     private static final DrivetrainUpdates ZERO = new DrivetrainUpdates(0.0, 0.0, 0.0, 0.0);
+
+    public static double K_STATIC = 1.85;
 
     public static double xP = 0.07;
     public static double xD = 0.012;
