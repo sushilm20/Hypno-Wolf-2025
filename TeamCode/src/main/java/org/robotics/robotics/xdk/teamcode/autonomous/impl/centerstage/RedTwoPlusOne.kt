@@ -1,6 +1,7 @@
-package org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3
+package org.robotics.robotics.xdk.teamcode.autonomous.impl.centerstage
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import io.liftgate.robotics.mono.pipeline.single
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
@@ -13,8 +14,9 @@ import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.ActionWaypoint
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.FieldWaypoint
 import org.robotics.robotics.xdk.teamcode.subsystem.claw.ExtendableClaw
 
+@Disabled
 @Autonomous(name = "Red 2+1", group = "Test")
-class V3TwoPlusZeroFarTest : AbstractAutoPipeline(
+class RedTwoPlusOne : AbstractAutoPipeline(
 
     AutonomousProfile.RedPlayer2TwoPlusZero,
     blockExecutionGroup = { opMode, tapeSide ->

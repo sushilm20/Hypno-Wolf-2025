@@ -3,7 +3,7 @@ package org.robotics.robotics.xdk.teamcode.autonomous.profiles
 import io.liftgate.robotics.mono.pipeline.ExecutionGroup
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline
-import org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3.spikeMark
+import org.robotics.robotics.xdk.teamcode.autonomous.impl.centerstage.spikeMark
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.StartPosition
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TeamColor

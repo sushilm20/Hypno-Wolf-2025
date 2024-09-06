@@ -1,6 +1,7 @@
-package org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3
+package org.robotics.robotics.xdk.teamcode.autonomous.impl.centerstage.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import io.liftgate.robotics.mono.pipeline.simultaneous
 import io.liftgate.robotics.mono.pipeline.single
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline
@@ -14,8 +15,9 @@ import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.FieldWaypoint
 import org.robotics.robotics.xdk.teamcode.autonomous.shared.GlobalConstants
 import org.robotics.robotics.xdk.teamcode.subsystem.claw.ExtendableClaw
 
+@Disabled
 @Autonomous(name = "Test | 2+0 V2", group = "Test")
-class V3TwoPlusZeroTest : AbstractAutoPipeline(
+class TestTwoPlusZero : AbstractAutoPipeline(
     AutonomousProfile.RedPlayer1TwoPlusZero,
     blockExecutionGroup = { opMode, kms ->
         single("Pixel Deposit") {

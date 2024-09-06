@@ -2,7 +2,6 @@ package org.robotics.robotics.xdk.teamcode.autonomous.position;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -12,15 +11,13 @@ import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline;
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose;
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.PathAlgorithm;
 
-import java.util.List;
-
 import io.liftgate.robotics.mono.Mono;
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
 @Config
-public class PositionCommand {
+public class PositionChangeAction {
     private static final double K_STATIC = 1.85;
     private static final DrivetrainUpdates ZERO = new DrivetrainUpdates(0.0, 0.0, 0.0, 0.0);
 
@@ -57,7 +54,7 @@ public class PositionCommand {
 
     private final RootExecutionGroup executionGroup;
 
-    public PositionCommand(
+    public PositionChangeAction(
             @Nullable Pose targetPose,
             @NotNull RootExecutionGroup executionGroup
     ) {
@@ -67,10 +64,10 @@ public class PositionCommand {
     }
 
     private @Nullable PathAlgorithm pathAlgorithm = null;
-    private @Nullable Function1<PositionCommandEndResult, Unit> endSubscription = null;
+    private @Nullable Function1<PositionChangeActionEndResult, Unit> endSubscription = null;
 
-    protected void finish(@NotNull PositionCommandEndResult result) {
-        if (result != PositionCommandEndResult.ForcefulTermination) {
+    protected void finish(@NotNull PositionChangeActionEndResult result) {
+        if (result != PositionChangeActionEndResult.ForcefulTermination) {
             ZERO.propagate(drivetrain);
             if (endSubscription != null) {
                 endSubscription.invoke(result);
@@ -80,14 +77,14 @@ public class PositionCommand {
         Mono.INSTANCE.getLogSink().invoke("[position] ended with result of " + result.name());
     }
 
-    public void withEndSubscription(@NotNull Function1<PositionCommandEndResult, Unit> subscription) {
+    public void withEndSubscription(@NotNull Function1<PositionChangeActionEndResult, Unit> subscription) {
         this.endSubscription = subscription;
     }
 
     public void whenStuck(@NotNull RobotStuckProtection stuckProtection, @NotNull Runnable stuck) {
         withStuckProtection(stuckProtection);
-        withEndSubscription(positionCommandEndResult -> {
-            if (positionCommandEndResult == PositionCommandEndResult.StuckDetected) {
+        withEndSubscription(positionChangeActionEndResult -> {
+            if (positionChangeActionEndResult == PositionChangeActionEndResult.StuckDetected) {
                 stuck.run();
             }
             return null;
@@ -95,8 +92,8 @@ public class PositionCommand {
     }
 
     public void whenTimeOutExceeded(@NotNull Runnable timeoutExceed) {
-        withEndSubscription(positionCommandEndResult -> {
-            if (positionCommandEndResult == PositionCommandEndResult.ExceededTimeout) {
+        withEndSubscription(positionChangeActionEndResult -> {
+            if (positionChangeActionEndResult == PositionChangeActionEndResult.ExceededTimeout) {
                 timeoutExceed.run();
             }
             return null;
@@ -104,8 +101,8 @@ public class PositionCommand {
     }
 
     public void whenStuck(@NotNull Runnable stuck) {
-        withEndSubscription(positionCommandEndResult -> {
-            if (positionCommandEndResult == PositionCommandEndResult.StuckDetected) {
+        withEndSubscription(positionChangeActionEndResult -> {
+            if (positionChangeActionEndResult == PositionChangeActionEndResult.StuckDetected) {
                 stuck.run();
             }
             return null;
@@ -133,7 +130,7 @@ public class PositionCommand {
         while (true) {
             if (drivetrain.isStopRequested()) {
                 executionGroup.terminateMidExecution();
-                finish(PositionCommandEndResult.ForcefulTermination);
+                finish(PositionChangeActionEndResult.ForcefulTermination);
                 return;
             }
 
@@ -145,11 +142,11 @@ public class PositionCommand {
                     pathAlgorithm.getTargetCompute().invoke(robotPose);
 
             if (robotPose == null || targetPose == null) {
-                finish(PositionCommandEndResult.LocalizationFailure);
+                finish(PositionChangeActionEndResult.LocalizationFailure);
                 return;
             }
 
-            PositionCommandEndResult result = getState(robotPose, previousPose, targetPose);
+            PositionChangeActionEndResult result = getState(robotPose, previousPose, targetPose);
             if (result != null) {
                 finish(result);
                 return;
@@ -165,7 +162,7 @@ public class PositionCommand {
         this.robotStuckProtection = stuckProtection;
     }
 
-    private @Nullable PositionCommandEndResult getState(
+    private @Nullable PositionChangeActionEndResult getState(
             @NotNull Pose currentPose,
             @Nullable Pose previousPose,
             @NotNull Pose targetPose
@@ -176,11 +173,12 @@ public class PositionCommand {
 
                 if (movementDelta.toVec2D().magnitude() > robotStuckProtection.getMinimumRequiredTranslationalDifference() ||
                         Math.abs(movementDelta.heading) > robotStuckProtection.getMinimumRequiredRotationalDifference()) {
+                    System.out.println("Not stuck");
                     stuckProtection.reset();
                 }
 
                 if (stuckProtection.milliseconds() > robotStuckProtection.getMinimumMillisUntilDeemedStuck()) {
-                    return PositionCommandEndResult.StuckDetected;
+                    return PositionChangeActionEndResult.StuckDetected;
                 }
             } else {
                 stuckProtection.reset();
@@ -189,7 +187,7 @@ public class PositionCommand {
 
         if (pathAlgorithm != null) {
             if (pathAlgorithm.getPathComplete().invoke(currentPose, targetPose)) {
-                return PositionCommandEndResult.PathAlgorithmSuccessful;
+                return PositionChangeActionEndResult.PathAlgorithmSuccessful;
             }
         }
 
@@ -200,11 +198,11 @@ public class PositionCommand {
         }
 
         if (activeTimer.milliseconds() > automaticDeathMillis) {
-            return PositionCommandEndResult.ExceededTimeout;
+            return PositionChangeActionEndResult.ExceededTimeout;
         }
 
         if (atTargetTimer.milliseconds() > AT_TARGET_AUTOMATIC_DEATH) {
-            return PositionCommandEndResult.Successful;
+            return PositionChangeActionEndResult.Successful;
         }
 
         return null;

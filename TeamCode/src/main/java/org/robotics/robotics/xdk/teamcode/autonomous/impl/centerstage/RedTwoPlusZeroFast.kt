@@ -1,6 +1,7 @@
-package org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3
+package org.robotics.robotics.xdk.teamcode.autonomous.impl.centerstage
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import io.liftgate.robotics.mono.pipeline.single
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
@@ -11,8 +12,11 @@ import org.robotics.robotics.xdk.teamcode.autonomous.position.navigateTo
 import org.robotics.robotics.xdk.teamcode.autonomous.position.purePursuitNavigateTo
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.FieldWaypoint
 
-@Autonomous(name = "Red Close 2+0 Fast Park Middle", group = "Test")
-class RedTwoPlusZeroCloseFastParkCorner : AbstractAutoPipeline(
+val boardX = -40.0
+
+@Disabled
+@Autonomous(name = "Red Close 2+0 Fast", group = "Test")
+class TwoPlusZeroCloseFast : AbstractAutoPipeline(
 
 
     AutonomousProfile.RedPlayer2TwoPlusZero,
@@ -51,7 +55,8 @@ class RedTwoPlusZeroCloseFastParkCorner : AbstractAutoPipeline(
                     TapeSide.Middle -> FieldWaypoint(Pose(boardX + 15, -40.0, -90.degrees), 10.0)
                     TapeSide.Right -> FieldWaypoint(Pose(boardX + 15, -40.0, -90.degrees), 10.0)
                 },
-                FieldWaypoint(Pose(boardX + 10, 0.0, -90.degrees), 15.0)
+                FieldWaypoint(Pose(boardX + 10, -50.0, -90.degrees), 15.0),
+                FieldWaypoint(Pose(boardX - 6, -56.5, -90.degrees), 15.0)
             )
         }
     }

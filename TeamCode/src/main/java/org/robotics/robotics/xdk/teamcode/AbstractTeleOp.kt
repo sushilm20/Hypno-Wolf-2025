@@ -72,7 +72,9 @@ abstract class AbstractTeleOp : LinearOpMode(), System
         thread {
             while (!isStopRequested)
             {
-                subsystems.map { it as AbstractSubsystem }.forEach { it.allPeriodic() }
+                subsystems
+                    .map { it as AbstractSubsystem }
+                    .forEach { it.allPeriodic() }
             }
         }
 

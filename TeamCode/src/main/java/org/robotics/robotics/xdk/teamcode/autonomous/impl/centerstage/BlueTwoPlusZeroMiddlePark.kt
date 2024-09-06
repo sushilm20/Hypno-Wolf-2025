@@ -1,10 +1,8 @@
-package org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3
+package org.robotics.robotics.xdk.teamcode.autonomous.impl.centerstage
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import io.liftgate.robotics.mono.pipeline.ParallelExecutionGroup
-import io.liftgate.robotics.mono.pipeline.simultaneous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import io.liftgate.robotics.mono.pipeline.single
-import io.liftgate.robotics.mono.pipeline.waitMillis
 import org.robotics.robotics.xdk.teamcode.autonomous.AbstractAutoPipeline
 import org.robotics.robotics.xdk.teamcode.autonomous.detection.TapeSide
 import org.robotics.robotics.xdk.teamcode.autonomous.geometry.Pose
@@ -12,13 +10,11 @@ import org.robotics.robotics.xdk.teamcode.autonomous.profiles.AutonomousProfile
 import org.robotics.robotics.xdk.teamcode.autonomous.position.degrees
 import org.robotics.robotics.xdk.teamcode.autonomous.position.navigateTo
 import org.robotics.robotics.xdk.teamcode.autonomous.position.purePursuitNavigateTo
-import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.ActionWaypoint
 import org.robotics.robotics.xdk.teamcode.autonomous.purepursuit.FieldWaypoint
-import org.robotics.robotics.xdk.teamcode.subsystem.Elevator
-import org.robotics.robotics.xdk.teamcode.subsystem.claw.ExtendableClaw
 
 val blueCloseBoardX = 35.0
 
+@Disabled
 @Autonomous(name = "Blue Close 2+0 Fast Park Middle", group = "Test")
 class BlueTwoPlusZeroCloseFast : AbstractAutoPipeline(
 

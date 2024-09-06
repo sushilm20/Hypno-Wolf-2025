@@ -1,4 +1,4 @@
-package org.robotics.robotics.xdk.teamcode.subsystem.motionprofile.wrappers
+package org.robotics.robotics.xdk.teamcode.subsystem.managed
 
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
@@ -11,7 +11,7 @@ import org.robotics.robotics.xdk.teamcode.subsystem.motionprofile.ProfileConstra
  *
  * @author Subham
  */
-class MotionProfiledServo(
+class ManagedServo(
     private val servo: Servo,
     stateHolder: StateHolder,
     private val constraints: () -> ProfileConstraints
@@ -42,7 +42,7 @@ class MotionProfiledServo(
      * Overrides any existing motion profile and sets
      * the target position of the backing servo.
      */
-    fun setTarget(targetPosition: Double)
+    fun forcefullySetTarget(targetPosition: Double)
     {
         state.reset()
         servo.position = targetPosition

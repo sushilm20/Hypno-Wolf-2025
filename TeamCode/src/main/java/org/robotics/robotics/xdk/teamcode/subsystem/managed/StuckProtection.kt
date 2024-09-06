@@ -1,4 +1,4 @@
-package org.robotics.robotics.xdk.teamcode.subsystem.pidf
+package org.robotics.robotics.xdk.teamcode.subsystem.managed
 
 data class StuckProtection(
     val minimumRequiredPositionDifference: Int,

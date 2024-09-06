@@ -6,12 +6,12 @@ import io.liftgate.robotics.mono.pipeline.StageContext
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.robotics.robotics.xdk.teamcode.autonomous.hardware
 import org.robotics.robotics.xdk.teamcode.autonomous.scheduleAsyncExecution
-import org.robotics.robotics.xdk.teamcode.subsystem.motionprofile.wrappers.MotionProfiledServo
+import org.robotics.robotics.xdk.teamcode.subsystem.managed.ManagedServo
 import org.robotics.robotics.xdk.teamcode.subsystem.motionprofile.ProfileConstraints
 
 class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
 {
-    lateinit var backingExtender: MotionProfiledServo
+    lateinit var backingExtender: ManagedServo
 
     private val clawFingerMPConstraints = {
         ProfileConstraints(
@@ -21,15 +21,15 @@ class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
         )
     }
 
-    lateinit var backingClawOpenerRight: MotionProfiledServo
-    lateinit var backingClawOpenerLeft: MotionProfiledServo
+    lateinit var backingClawOpenerRight: ManagedServo
+    lateinit var backingClawOpenerLeft: ManagedServo
 
     override fun composeStageContext() = object : StageContext
     {
         override fun isCompleted() = true
     }
 
-    enum class ClawType(val servo: (ExtendableClaw) -> MotionProfiledServo)
+    enum class ClawType(val servo: (ExtendableClaw) -> ManagedServo)
     {
         Left({ it.backingClawOpenerLeft }),
         Right({ it.backingClawOpenerRight })
@@ -87,7 +87,7 @@ class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
 
     override fun doInitialize()
     {
-        backingExtender = MotionProfiledServo(
+        backingExtender = ManagedServo(
             servo = opMode.hardware<Servo>("extender"),
             stateHolder = this,
             constraints = {
@@ -99,13 +99,13 @@ class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
             }
         )
 
-        backingClawOpenerRight = MotionProfiledServo(
+        backingClawOpenerRight = ManagedServo(
             servo = opMode.hardware<Servo>("clawRight"),
             stateHolder = this,
             constraints = clawFingerMPConstraints
         )
 
-        backingClawOpenerLeft = MotionProfiledServo(
+        backingClawOpenerLeft = ManagedServo(
             servo = opMode.hardware<Servo>("clawLeft"),
             stateHolder = this,
             constraints = clawFingerMPConstraints
@@ -158,7 +158,7 @@ class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
         if (force)
         {
             println("Setting extender target FORCE to ${extenderState.targetPosition()} -> ${extenderState.name}")
-            backingExtender.setTarget(extenderState.targetPosition())
+            backingExtender.forcefullySetTarget(extenderState.targetPosition())
             return
         }
 
@@ -196,7 +196,7 @@ class ExtendableClaw(private val opMode: LinearOpMode) : AbstractSubsystem()
             this.leftClawState = state
         }
 
-        servo.setTarget(position)
+        servo.forcefullySetTarget(position)
 
         /*if (force)
         {

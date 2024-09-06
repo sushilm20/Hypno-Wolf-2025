@@ -37,7 +37,7 @@ import java.util.List;
 public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
 
     public static double TICKS_PER_REV = 2000;
-    public static double WHEEL_RADIUS = 0.94488; // 48
+    public static double WHEEL_RADIUS = 0.94488189; // 48
     public static double GEAR_RATIO = 1;
 
     private final AbstractAutoPipeline pipeline;
@@ -54,7 +54,10 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
         this.pipeline = pipeline;
 
         this.lateral = new Motor(pipeline.hardwareMap, "backRight").encoder;
+        lateral.setDirection(Motor.Direction.FORWARD);
+
         this.perpendicular = new Motor(pipeline.hardwareMap, "frontLeft").encoder;
+        perpendicular.setDirection(Motor.Direction.FORWARD);
     }
 
     public static double encoderTicksToInches(double ticks) {

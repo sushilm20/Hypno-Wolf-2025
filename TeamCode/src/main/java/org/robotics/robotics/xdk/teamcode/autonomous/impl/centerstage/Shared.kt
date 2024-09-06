@@ -1,4 +1,4 @@
-package org.robotics.robotics.xdk.teamcode.autonomous.controlsystem.v3
+package org.robotics.robotics.xdk.teamcode.autonomous.impl.centerstage
 
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.pipeline.single
