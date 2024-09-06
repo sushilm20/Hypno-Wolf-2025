@@ -165,6 +165,7 @@ public class PositionChangeAction {
 
     private @Nullable RobotStuckProtection robotStuckProtection = null;
     public void withStuckProtection(@NotNull RobotStuckProtection stuckProtection) {
+        disableAutomaticDeath();
         this.robotStuckProtection = stuckProtection;
     }
 
