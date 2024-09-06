@@ -58,7 +58,7 @@ abstract class AutonomousWrapper(
 
     override fun runOpMode()
     {
-        AutonomousWrapper.Companion.instance = this
+        instance = this
 
         register(
             drivebase,

@@ -56,6 +56,14 @@ fun cubicBezier(vararg waypoints: Pose): CubicBezierCurve
 fun Pose.toVector2D() =
     Vector2D(x, y)
 
+fun RootExecutionGroup.lockToPosition(at: Pose, unlockConsumer: (Pose, Pose) -> Boolean)
+{
+    val command = LockPositionChangeAction(at, unlockConsumer, this)
+    single("Locking at $at") {
+        command.executeBlocking()
+    }
+}
+
 fun RootExecutionGroup.navigateUnstableGVF(
     curve: CubicBezierCurve,
     configure: PositionChangeAction.() -> Unit = {}
