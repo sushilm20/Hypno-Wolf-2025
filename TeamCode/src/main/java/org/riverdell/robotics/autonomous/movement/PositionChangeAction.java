@@ -48,7 +48,8 @@ public class PositionChangeAction {
     /**
      * Preferred to use stuck protection in this case...
      */
-    private double automaticDeathMillis = 2500;
+    private @Nullable Double automaticDeathMillis = 2500.0;
+
     private double maxTranslationalSpeed = 1.0;
     private double maxRotationalSpeed = 1.0;
 
@@ -125,6 +126,10 @@ public class PositionChangeAction {
         this.automaticDeathMillis = automaticDeathMillis;
     }
 
+    public void disableAutomaticDeath() {
+        this.automaticDeathMillis = null;
+    }
+
     private @Nullable Pose previousPose = null;
     public void executeBlocking() {
         while (true) {
@@ -167,6 +172,12 @@ public class PositionChangeAction {
             @Nullable Pose previousPose,
             @NotNull Pose targetPose
     ) {
+        if (automaticDeathMillis != null) {
+            if (activeTimer.milliseconds() > automaticDeathMillis) {
+                return PositionChangeActionEndResult.ExceededTimeout;
+            }
+        }
+
         if (robotStuckProtection != null) {
             if (previousPose != null) {
                 Pose movementDelta = currentPose.subtract(previousPose);
@@ -185,7 +196,7 @@ public class PositionChangeAction {
             }
         }
 
-        if (pathAlgorithm != null) {
+        if (pathAlgorithm != null && !pathAlgorithm.getEuclideanCompletionCheck()) {
             if (pathAlgorithm.getPathComplete().invoke(currentPose, targetPose)) {
                 return PositionChangeActionEndResult.PathAlgorithmSuccessful;
             }
@@ -195,10 +206,6 @@ public class PositionChangeAction {
 
         if (delta.toVec2D().magnitude() > MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET || Math.abs(delta.heading) > MINIMUM_ROTATIONAL_DIFF_FROM_TARGET) {
             atTargetTimer.reset();
-        }
-
-        if (activeTimer.milliseconds() > automaticDeathMillis) {
-            return PositionChangeActionEndResult.ExceededTimeout;
         }
 
         if (atTargetTimer.milliseconds() > AT_TARGET_AUTOMATIC_DEATH) {

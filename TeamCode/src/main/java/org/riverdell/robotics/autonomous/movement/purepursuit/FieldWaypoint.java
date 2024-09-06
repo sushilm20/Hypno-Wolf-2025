@@ -2,8 +2,6 @@ package org.riverdell.robotics.autonomous.movement.purepursuit;
 
 import org.riverdell.robotics.autonomous.geometry.Point;
 import org.riverdell.robotics.autonomous.geometry.Pose;
-import org.riverdell.robotics.autonomous.geometry.Point;
-import org.riverdell.robotics.autonomous.geometry.Pose;
 
 import java.util.Locale;
 import java.util.UUID;

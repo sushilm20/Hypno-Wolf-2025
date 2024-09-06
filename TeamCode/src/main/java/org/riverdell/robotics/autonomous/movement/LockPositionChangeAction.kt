@@ -12,7 +12,7 @@ class LockPositionChangeAction(
 {
     init
     {
-        withAutomaticDeath(Long.MAX_VALUE.toDouble())
+        disableAutomaticDeath()
         withCustomPathAlgorithm(PathAlgorithm(
             { lockPosition },
             unlockConsumer
