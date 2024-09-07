@@ -15,7 +15,8 @@ class LockPositionChangeAction(
         disableAutomaticDeath()
         withCustomPathAlgorithm(PathAlgorithm(
             { lockPosition },
-            unlockConsumer
+            unlockConsumer,
+            strict = true
         ))
     }
 }

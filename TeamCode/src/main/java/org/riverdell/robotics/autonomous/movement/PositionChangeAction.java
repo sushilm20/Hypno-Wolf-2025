@@ -11,6 +11,8 @@ import org.riverdell.robotics.autonomous.AutonomousWrapper;
 import org.riverdell.robotics.autonomous.geometry.Pose;
 import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.liftgate.robotics.mono.Mono;
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
 import kotlin.Unit;
@@ -93,6 +95,22 @@ public class PositionChangeAction {
         });
     }
 
+    public void whenStuckWithMaxAttempts(@NotNull RobotStuckProtection stuckProtection, AtomicInteger accumulator, int maxAttempts, @NotNull Runnable stuck) {
+        disableAutomaticDeath();
+        withStuckProtection(stuckProtection);
+        withEndSubscription(positionChangeActionEndResult -> {
+            if (positionChangeActionEndResult == PositionChangeActionEndResult.StuckDetected) {
+                if (accumulator.getAndIncrement() < maxAttempts) {
+                    stuck.run();
+                } else {
+                    executionGroup.terminateMidExecution();
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
     public void whenTimeOutExceeded(@NotNull Runnable timeoutExceed) {
         withEndSubscription(positionChangeActionEndResult -> {
             if (positionChangeActionEndResult == PositionChangeActionEndResult.ExceededTimeout) {
@@ -132,6 +150,7 @@ public class PositionChangeAction {
     }
 
     private @Nullable Pose previousPose = null;
+
     public void executeBlocking() {
         while (true) {
             if (drivetrain.isStopRequested()) {
@@ -164,6 +183,7 @@ public class PositionChangeAction {
     }
 
     private @Nullable RobotStuckProtection robotStuckProtection = null;
+
     public void withStuckProtection(@NotNull RobotStuckProtection stuckProtection) {
         disableAutomaticDeath();
         this.robotStuckProtection = stuckProtection;
@@ -182,11 +202,11 @@ public class PositionChangeAction {
 
         if (robotStuckProtection != null) {
             if (previousPose != null) {
-                Pose movementDelta = currentPose.subtract(previousPose);
+                Pose movementDelta = currentPose.subtract(previousPose); // chore: do buffer system
+                System.out.println("--- " + movementDelta.toVec2D().magnitude() + " | " + Math.abs(movementDelta.heading) + " ---");
 
                 if (movementDelta.toVec2D().magnitude() > robotStuckProtection.getMinimumRequiredTranslationalDifference() ||
                         Math.abs(movementDelta.heading) > robotStuckProtection.getMinimumRequiredRotationalDifference()) {
-                    System.out.println("Not stuck");
                     stuckProtection.reset();
                 }
 
@@ -201,12 +221,15 @@ public class PositionChangeAction {
         if (pathAlgorithm != null && !pathAlgorithm.getEuclideanCompletionCheck()) {
             if (pathAlgorithm.getPathComplete().invoke(currentPose, targetPose)) {
                 return PositionChangeActionEndResult.PathAlgorithmSuccessful;
+            } else if (pathAlgorithm.getStrict()) {
+                return null;
             }
         }
 
         Pose delta = targetPose.subtract(currentPose);
 
-        if (delta.toVec2D().magnitude() > MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET || Math.abs(delta.heading) > MINIMUM_ROTATIONAL_DIFF_FROM_TARGET) {
+        if (delta.toVec2D().magnitude() > MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET ||
+                Math.abs(delta.heading) > MINIMUM_ROTATIONAL_DIFF_FROM_TARGET) {
             atTargetTimer.reset();
         }
 

@@ -58,8 +58,8 @@ fun Pose.toVector2D() =
 
 fun RootExecutionGroup.lockToPosition(at: Pose, unlockConsumer: (Pose, Pose) -> Boolean)
 {
-    val command = LockPositionChangeAction(at, unlockConsumer, this)
     single("Locking at $at") {
+        val command = LockPositionChangeAction(at, unlockConsumer, this@lockToPosition)
         command.executeBlocking()
     }
 }
@@ -69,14 +69,17 @@ fun RootExecutionGroup.navigateUnstableGVF(
     configure: PositionChangeAction.() -> Unit = {}
 )
 {
-    val command =
-        GuidedVectorFieldPositionChangeAction(
-            curve,
-            this
-        )
-    command.configure()
+
 
     single("Unstable GVF navigation") {
+
+        val command =
+            GuidedVectorFieldPositionChangeAction(
+                curve,
+                this@navigateUnstableGVF
+            )
+        command.configure()
+
         command.executeBlocking()
     }
 }
@@ -86,16 +89,18 @@ fun RootExecutionGroup.navigatePurePursuit(
     configure: PositionChangeAction.() -> Unit = { }
 )
 {
-    val command =
-        PurePursuitPositionChangeAction(
-            this,
-            PurePursuitPath(
-                *waypoints
-            )
-        )
-    command.configure()
+
 
     single("PurePursuit navigation with ${waypoints.size} waypoints") {
+        val command =
+            PurePursuitPositionChangeAction(
+                this@navigatePurePursuit,
+                PurePursuitPath(
+                    *waypoints
+                )
+            )
+        command.configure()
+
         command.executeBlocking()
     }
 }
@@ -105,14 +110,14 @@ fun RootExecutionGroup.navigateToPosition(
     configure: PositionChangeAction.() -> Unit = { }
 )
 {
-    val command =
-        PositionChangeAction(
-            pose,
-            this
-        )
-    command.configure()
-
     single("Position navigation to $pose") {
+        val command =
+            PositionChangeAction(
+                pose,
+                this@navigateToPosition
+            )
+        command.configure()
+
         command.executeBlocking()
     }
 }

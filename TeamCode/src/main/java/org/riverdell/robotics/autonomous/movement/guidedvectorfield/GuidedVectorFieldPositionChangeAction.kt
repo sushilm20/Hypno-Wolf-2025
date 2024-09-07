@@ -1,7 +1,6 @@
 package org.riverdell.robotics.autonomous.movement.guidedvectorfield
 
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
-import org.riverdell.robotics.autonomous.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction
 import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm
 
@@ -22,5 +21,7 @@ class GuidedVectorFieldPositionChangeAction(
                 euclideanCompletionCheck = true
             )
         )
+
+        disableAutomaticDeath()
     }
 }

@@ -55,10 +55,7 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
         this.pipeline = pipeline;
 
         this.lateral = new Motor(pipeline.hardwareMap, "backRight").encoder;
-        lateral.setDirection(Motor.Direction.FORWARD);
-
         this.perpendicular = new Motor(pipeline.hardwareMap, "frontLeft").encoder;
-        perpendicular.setDirection(Motor.Direction.FORWARD);
     }
 
     public static double encoderTicksToInches(double ticks) {
@@ -68,9 +65,11 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
     @NonNull
     @Override
     public List<Double> getWheelPositions() {
+        double lateralPos = lateral.getPosition();
+        double  perpPos = perpendicular.getPosition();
         return Arrays.asList(
-                encoderTicksToInches(lateral.getPosition()),
-                encoderTicksToInches(perpendicular.getPosition())
+                encoderTicksToInches(lateralPos),
+                encoderTicksToInches(perpPos)
         );
     }
 
@@ -92,9 +91,5 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
     public Pose getPose() {
         Pose2d pose = getPoseEstimate();
         return new Pose(-pose.getY(), pose.getX(), pose.getHeading());
-    }
-
-    public void setPose(Pose pose) {
-        super.setPoseEstimate(new Pose2d(pose.y, -pose.x, pose.heading));
     }
 }

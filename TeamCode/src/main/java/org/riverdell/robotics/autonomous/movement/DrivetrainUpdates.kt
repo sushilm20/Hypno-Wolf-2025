@@ -15,10 +15,5 @@ data class DrivetrainUpdates(
         pipeline.frontRight.power = newFrontRight
         pipeline.backLeft.power = newBackLeft
         pipeline.backRight.power = newBackRight
-
-        println(pipeline.frontLeft.power)
-        println(pipeline.frontRight.power)
-        println(pipeline.backLeft.power)
-        println(pipeline.backRight.power)
     }
 }
