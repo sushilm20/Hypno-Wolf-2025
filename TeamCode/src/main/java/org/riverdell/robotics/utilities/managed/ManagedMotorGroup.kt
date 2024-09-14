@@ -35,12 +35,15 @@ class ManagedMotorGroup(
         write = {
             stable = System.currentTimeMillis()
             pidfController.targetPosition = it.toDouble()
+            println("Writing target position to ${it.toDouble()}")
         },
         read = {
-            master.currentPosition
+            master.currentPosition.apply {
+                println("reading current position: at $this")
+            }
         },
         complete = { current, target ->
-            current == target || if (stuckProtection == null)
+            (current == target || if (stuckProtection == null)
             {
                 false
             } else
@@ -56,16 +59,19 @@ class ManagedMotorGroup(
                 {
                     System.currentTimeMillis() - stable > stuckProtection!!.timeStuckUnderMinimumMillis
                 }
+            }).apply {
+                println("State is complete? $this")
             }
         }
     )
 
     init
     {
-        master.mode = DcMotor.RunMode.RUN_USING_ENCODER
+        master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         slaves.forEach {
             it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         }
+        println("Updated motors for the master to use W/O encoder")
 
         /**
          * Continuously update the power of the motor to keep it at the
@@ -73,6 +79,7 @@ class ManagedMotorGroup(
          */
         if (slaves.isEmpty())
         {
+            println("No slaves")
             state.additionalPeriodic { current, _ ->
                 val velocity = master.velocity
                 master.power = pidfController
@@ -83,6 +90,7 @@ class ManagedMotorGroup(
             }
         } else
         {
+            println("Slave motor count: ${slaves.size}")
             state.additionalPeriodic { current, _ ->
                 val velocity = master.velocity // TODO: avg velocity? no clue
                 val pidf = pidfController
