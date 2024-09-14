@@ -7,6 +7,10 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
 import org.riverdell.robotics.subsystems.Drivetrain
+import org.riverdell.robotics.subsystems.Extension
+import org.riverdell.robotics.subsystems.Intake
+import org.riverdell.robotics.subsystems.Lift
+import org.riverdell.robotics.subsystems.V4B
 
 /**
  * A base implementation of a TeleOp. Contains lifecycles for
@@ -23,6 +27,10 @@ abstract class AbstractTeleOp : LinearOpMode(), System
     private val gp2Commands by lazy { commands(gamepad2) }
 
     private val drivetrain by lazy { Drivetrain(this) }
+    private val v4b by lazy { V4B(this) }
+    private val intake by lazy { Intake(this) }
+    private val lift by lazy { Lift(this) }
+    private val extension by lazy { Extension(this) }
 
     abstract fun driveRobot(
         drivetrain: Drivetrain,
@@ -33,7 +41,7 @@ abstract class AbstractTeleOp : LinearOpMode(), System
     override fun runOpMode()
     {
         register(
-            drivetrain,
+            drivetrain, v4b, intake, lift, extension,
             gp1Commands, gp2Commands
         )
 

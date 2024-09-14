@@ -7,17 +7,18 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import io.liftgate.robotics.mono.states.StateHolder
 import kotlin.math.abs
 
-class ManagedMotor(
+class ManagedMotorGroup(
     stateHolder: StateHolder,
-    pid: PIDCoefficients,
-    kV: Double = 0.0,
-    kA: Double = 0.0,
-    kStatic: Double = 0.0,
+    var pid: PIDCoefficients,
+    var kV: Double = 0.0,
+    var kA: Double = 0.0,
+    var kStatic: Double = 0.0,
     /**
      * Inputs: Measured position, measured velocity
      */
     private var kF: (Double, Double?) -> Double = { _, _ -> 0.0 },
-    private val motor: DcMotorEx
+    private val master: DcMotorEx,
+    private val slaves: List<DcMotorEx> = listOf()
 )
 {
     private var stuckProtection: StuckProtection? = null
@@ -36,7 +37,7 @@ class ManagedMotor(
             pidfController.targetPosition = it.toDouble()
         },
         read = {
-            motor.currentPosition
+            master.currentPosition
         },
         complete = { current, target ->
             current == target || if (stuckProtection == null)
@@ -61,20 +62,46 @@ class ManagedMotor(
 
     init
     {
-        motor.mode = DcMotor.RunMode.RUN_USING_ENCODER
+        master.mode = DcMotor.RunMode.RUN_USING_ENCODER
+        slaves.forEach {
+            it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        }
 
         /**
          * Continuously update the power of the motor to keep it at the
          * desired target value set in the [PIDFController].
          */
-        state.additionalPeriodic { current, _ ->
-            val velocity = motor.velocity
-            motor.power = pidfController
-                .update(
-                    measuredPosition = current.toDouble(),
-                    measuredVelocity = velocity
-                )
+        if (slaves.isEmpty())
+        {
+            state.additionalPeriodic { current, _ ->
+                val velocity = master.velocity
+                master.power = pidfController
+                    .update(
+                        measuredPosition = current.toDouble(),
+                        measuredVelocity = velocity
+                    )
+            }
+        } else
+        {
+            state.additionalPeriodic { current, _ ->
+                val velocity = master.velocity // TODO: avg velocity? no clue
+                val pidf = pidfController
+                    .update(
+                        measuredPosition = current.toDouble(),
+                        measuredVelocity = velocity
+                    )
+
+                master.power = pidf
+                slaves.forEach { slave ->
+                    slave.power = pidf
+                }
+            }
         }
+    }
+
+    fun rebuild()
+    {
+        pidfController = pidfBuilder()
     }
 
     inner class FeedForwardDSL
@@ -110,8 +137,9 @@ class ManagedMotor(
         pidfController.block()
     }
 
-    fun configureMotor(block: DcMotorEx.() -> Unit) = apply {
-        motor.block()
+    fun configureMotors(block: DcMotorEx.() -> Unit) = apply {
+        master.block()
+        slaves.forEach(block)
     }
 
     fun isTravelling() = state.inProgress()

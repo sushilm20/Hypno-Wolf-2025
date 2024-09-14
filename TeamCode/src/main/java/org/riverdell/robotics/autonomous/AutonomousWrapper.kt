@@ -17,6 +17,10 @@ import org.riverdell.robotics.autonomous.detection.TeamColor
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.localizer.TwoWheelLocalizer
 import org.riverdell.robotics.subsystems.Drivetrain
+import org.riverdell.robotics.subsystems.Extension
+import org.riverdell.robotics.subsystems.Intake
+import org.riverdell.robotics.subsystems.Lift
+import org.riverdell.robotics.subsystems.V4B
 import org.riverdell.robotics.utilities.hardware
 import kotlin.concurrent.thread
 
@@ -39,8 +43,12 @@ abstract class AutonomousWrapper(
     lateinit var backLeft: DcMotor
 
     val drivetrain by lazy { Drivetrain(this) }
-    val visionPipeline by lazy { VisionPipeline(TeamColor.Red, this) } // TODO: new season
+    val v4b by lazy { V4B(this) }
+    val intake by lazy { Intake(this) }
+    val lift by lazy { Lift(this) }
+    val extension by lazy { Extension(this) }
 
+    val visionPipeline by lazy { VisionPipeline(TeamColor.Red, this) } // TODO: new season
     var voltage: Double = 0.0
         private set
 
@@ -61,7 +69,7 @@ abstract class AutonomousWrapper(
         instance = this
 
         register(
-            drivetrain,
+            drivetrain, intake, v4b, lift, extension,
             visionPipeline
         )
 
