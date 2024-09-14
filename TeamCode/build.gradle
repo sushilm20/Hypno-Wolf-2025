@@ -21,7 +21,6 @@ buildscript {
 
 // Custom definitions may go here
 plugins {
-    id "io.freefair.lombok" version "8.3"
     id "org.jetbrains.kotlin.android" version "2.0.20"
     id "org.jetbrains.kotlin.plugin.serialization" version "2.0.20"
 }
@@ -48,7 +47,7 @@ repositories {
 
 dependencies {
     implementation 'org.ftclib.ftclib:core:2.1.1'
-    implementation "io.liftgate.robotics.mono:mono:5.2-SNAPSHOT" //
+    implementation "io.liftgate.robotics.mono:mono:5.3-SNAPSHOT" //
 
     implementation 'com.acmerobotics.roadrunner:core:0.5.5'
     implementation "com.acmerobotics.dashboard:dashboard:0.4.14"
