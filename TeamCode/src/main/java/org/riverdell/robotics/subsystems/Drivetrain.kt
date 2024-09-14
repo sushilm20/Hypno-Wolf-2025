@@ -1,4 +1,4 @@
-package org.riverdell.robotics.drivebase
+package org.riverdell.robotics.subsystems
 
 import com.arcrobotics.ftclib.drivebase.MecanumDrive
 import com.arcrobotics.ftclib.gamepad.GamepadEx
@@ -6,19 +6,28 @@ import com.arcrobotics.ftclib.hardware.motors.Motor
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.IMU
+import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles
 import org.riverdell.robotics.utilities.hardware
 
-class Drivebase(private val opMode: LinearOpMode) : AbstractSubsystem()
+class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
 {
+    @Serializable
+    data class Config(val someNumber: Int = 14)
+
+    val config = opMode.konfig<Config> {
+        onHotReload {
+            println(someNumber)
+        }
+    }
+
     private lateinit var imu: IMU
     private var imuYPR: YawPitchRollAngles? = null
 
     lateinit var backingDriveBase: MecanumDrive
-
-    override fun composeStageContext() = TODO()
 
     fun driveRobotCentric(driverOp: GamepadEx, scaleFactor: Double)
     {

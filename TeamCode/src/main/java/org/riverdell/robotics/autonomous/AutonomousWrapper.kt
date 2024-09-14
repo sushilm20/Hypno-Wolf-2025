@@ -16,7 +16,7 @@ import org.riverdell.robotics.autonomous.detection.TapeSide
 import org.riverdell.robotics.autonomous.detection.TeamColor
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.localizer.TwoWheelLocalizer
-import org.riverdell.robotics.drivebase.Drivebase
+import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.utilities.hardware
 import kotlin.concurrent.thread
 
@@ -38,7 +38,7 @@ abstract class AutonomousWrapper(
     lateinit var backRight: DcMotor
     lateinit var backLeft: DcMotor
 
-    val drivebase by lazy { Drivebase(this) }
+    val drivetrain by lazy { Drivetrain(this) }
     val visionPipeline by lazy { VisionPipeline(TeamColor.Red, this) } // TODO: new season
 
     var voltage: Double = 0.0
@@ -61,7 +61,7 @@ abstract class AutonomousWrapper(
         instance = this
 
         register(
-            drivebase,
+            drivetrain,
             visionPipeline
         )
 
@@ -136,7 +136,7 @@ abstract class AutonomousWrapper(
             runCatching {
                 multipleTelemetry.addData(
                     "IMU",
-                    drivebase.getIMUYawPitchRollAngles()
+                    drivetrain.getIMUYawPitchRollAngles()
                         .getYaw(AngleUnit.DEGREES)
                 )
             }.onFailure {

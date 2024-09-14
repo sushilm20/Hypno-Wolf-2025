@@ -6,7 +6,7 @@ import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
-import org.riverdell.robotics.drivebase.Drivebase
+import org.riverdell.robotics.subsystems.Drivetrain
 
 /**
  * A base implementation of a TeleOp. Contains lifecycles for
@@ -22,10 +22,10 @@ abstract class AbstractTeleOp : LinearOpMode(), System
     private val gp1Commands by lazy { commands(gamepad1) }
     private val gp2Commands by lazy { commands(gamepad2) }
 
-    private val drivebase by lazy { Drivebase(this) }
+    private val drivetrain by lazy { Drivetrain(this) }
 
     abstract fun driveRobot(
-        drivebase: Drivebase,
+        drivetrain: Drivetrain,
         driverOp: GamepadEx,
         multiplier: Double
     )
@@ -33,7 +33,7 @@ abstract class AbstractTeleOp : LinearOpMode(), System
     override fun runOpMode()
     {
         register(
-            drivebase,
+            drivetrain,
             gp1Commands, gp2Commands
         )
 
@@ -52,7 +52,7 @@ abstract class AbstractTeleOp : LinearOpMode(), System
         while (opModeIsActive())
         {
             val multiplier = 0.5 + gamepad1.right_trigger * 0.5
-            driveRobot(drivebase, driverOp, multiplier)
+            driveRobot(drivetrain, driverOp, multiplier)
 
             subsystems
                 .map { it as AbstractSubsystem }

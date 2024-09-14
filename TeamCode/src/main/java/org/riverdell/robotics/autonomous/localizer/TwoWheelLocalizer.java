@@ -9,7 +9,6 @@ import com.arcrobotics.ftclib.hardware.motors.Motor;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.riverdell.robotics.autonomous.geometry.Pose;
 import org.riverdell.robotics.autonomous.AutonomousWrapper;
-import org.riverdell.robotics.autonomous.geometry.Pose;
 
 import java.util.Arrays;
 import java.util.List;
@@ -75,7 +74,7 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
 
     @Override
     public double getHeading() {
-        return pipeline.getDrivebase().getIMUYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        return pipeline.getDrivetrain().getIMUYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
     }
 
     @NonNull

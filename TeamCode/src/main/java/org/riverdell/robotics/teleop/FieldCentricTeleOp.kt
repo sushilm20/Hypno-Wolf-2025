@@ -3,7 +3,7 @@ package org.riverdell.robotics.teleop
 import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.riverdell.robotics.drivebase.Drivebase
+import org.riverdell.robotics.subsystems.Drivetrain
 
 /**
  * A TeleOp implementation which drives a mecanum drivebase
@@ -16,11 +16,11 @@ import org.riverdell.robotics.drivebase.Drivebase
 class FieldCentricTeleOp : AbstractTeleOp()
 {
     override fun driveRobot(
-        drivebase: Drivebase,
+        drivetrain: Drivetrain,
         driverOp: GamepadEx,
         multiplier: Double
     )
     {
-        drivebase.driveFieldCentric(driverOp, multiplier)
+        drivetrain.driveFieldCentric(driverOp, multiplier)
     }
 }
