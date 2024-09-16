@@ -32,7 +32,7 @@ class Intake(opMode: LinearOpMode) : AbstractSubsystem()
         var acceleration: Double = 0.0,
         var deceleration: Double = 0.0,
         var velocity: Double = 0.0,
-        val leftIsReversed1Dot0Position: Boolean
+        val leftIsReversed1Dot0Position: Boolean = false
     )
 
     private val gripConfig = opMode.konfig<GripConfig>()

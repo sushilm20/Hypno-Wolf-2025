@@ -46,7 +46,7 @@ abstract class AbstractTeleOp : LinearOpMode(), System
     override fun runOpMode()
     {
         register(
-            test,
+            test, drivetrain,
             gp1Commands, gp2Commands
         )
 

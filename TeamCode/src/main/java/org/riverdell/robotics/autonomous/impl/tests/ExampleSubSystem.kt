@@ -16,7 +16,7 @@ class ExampleSubSystem(opMode: LinearOpMode) : AbstractSubsystem()
         var acceleration: Double = 8.0,
         var deceleration: Double = 8.0,
         var velocity: Double = 2.0,
-        val leftIsReversed1Dot0Position: Boolean
+        val leftIsReversed1Dot0Position: Boolean = false
     )
 
     // 0.68
