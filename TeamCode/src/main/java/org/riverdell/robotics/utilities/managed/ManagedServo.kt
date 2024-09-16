@@ -30,12 +30,17 @@ class ManagedServo(
             )
         timer.reset()
     }, {
+        val servoCurrentPosition = servo.position
         val position = motionProfile?.calculate(timer.time())
-            ?: return@state servo.position.apply {
-                println("Servo at position")
-            }
+            ?: return@state servoCurrentPosition
+
+        if (servoCurrentPosition == position.x)
+        {
+            motionProfile = null
+            return@state servoCurrentPosition
+        }
+
         servo.position = position.x
-        println("Moving servo to ${position.x}")
         position.x
     })
 
