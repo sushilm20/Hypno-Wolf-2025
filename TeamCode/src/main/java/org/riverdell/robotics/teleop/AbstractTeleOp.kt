@@ -6,6 +6,7 @@ import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
+import org.riverdell.robotics.autonomous.impl.tests.ExampleSubSystem
 import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.Extension
 import org.riverdell.robotics.subsystems.Intake
@@ -27,10 +28,14 @@ abstract class AbstractTeleOp : LinearOpMode(), System
     private val gp2Commands by lazy { commands(gamepad2) }
 
     private val drivetrain by lazy { Drivetrain(this) }
+/*
     private val v4b by lazy { V4B(this) }
     private val intake by lazy { Intake(this) }
     private val lift by lazy { Lift(this) }
-    private val extension by lazy { Extension(this) }
+    private val extension by lazy { Extension(this) }*/
+    private val test by lazy {
+    ExampleSubSystem(this)
+}
 
     abstract fun driveRobot(
         drivetrain: Drivetrain,
@@ -41,7 +46,7 @@ abstract class AbstractTeleOp : LinearOpMode(), System
     override fun runOpMode()
     {
         register(
-            drivetrain, v4b, intake, lift, extension,
+            test,
             gp1Commands, gp2Commands
         )
 
