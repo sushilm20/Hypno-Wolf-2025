@@ -1,3 +1,6 @@
 package org.riverdell.robotics.autonomous.movement.purepursuit
 
-interface WaypointLike
+import kotlinx.serialization.Serializable
+
+@Serializable
+sealed interface WaypointLike

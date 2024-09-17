@@ -9,7 +9,7 @@ import org.riverdell.robotics.autonomous.movement.navigateToPosition
 import java.util.concurrent.atomic.AtomicInteger
 
 @Autonomous(name = "Test | BackTrack", group = "Test")
-class TestBackTrack : AutonomousWrapper({ _, _ ->
+class TestBackTrack : AutonomousWrapper({ _ ->
     navigateToPosition(Pose(0.0, 20.0, 0.degrees))
     navigateToPosition(
         Pose(

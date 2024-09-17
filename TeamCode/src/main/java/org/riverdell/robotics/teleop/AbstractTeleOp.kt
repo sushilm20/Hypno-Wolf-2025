@@ -6,12 +6,8 @@ import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
-import org.riverdell.robotics.autonomous.impl.tests.ExampleSubSystem
+import org.riverdell.robotics.autonomous.impl.tests.ExampleSystem
 import org.riverdell.robotics.subsystems.Drivetrain
-import org.riverdell.robotics.subsystems.Extension
-import org.riverdell.robotics.subsystems.Intake
-import org.riverdell.robotics.subsystems.Lift
-import org.riverdell.robotics.subsystems.V4B
 
 /**
  * A base implementation of a TeleOp. Contains lifecycles for
@@ -34,7 +30,7 @@ abstract class AbstractTeleOp : LinearOpMode(), System
     private val lift by lazy { Lift(this) }
     private val extension by lazy { Extension(this) }*/
     private val test by lazy {
-    ExampleSubSystem(this)
+    ExampleSystem(this)
 }
 
     abstract fun driveRobot(

@@ -12,7 +12,7 @@ import org.riverdell.robotics.autonomous.movement.purepursuit.ActionWaypoint
 import org.riverdell.robotics.autonomous.movement.purepursuit.FieldWaypoint
 
 @Autonomous(name = "Test | Move Backwards", group = "Test")
-class TestMoveBackwards : AutonomousWrapper({ _, _ ->
+class TestMoveBackwards : AutonomousWrapper({ _ ->
     single("go to position") {
         navigateTo(Pose(-5.0, -5.0, 45.degrees))
     }

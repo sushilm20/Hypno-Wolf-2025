@@ -11,7 +11,7 @@ import org.riverdell.robotics.autonomous.movement.purePursuitNavigateTo
 import org.riverdell.robotics.autonomous.movement.purepursuit.FieldWaypoint
 
 @Autonomous(name = "Test | Move Forward", group = "Test")
-class TestMoveForward : AutonomousWrapper({ opMode, _ ->
+class TestMoveForward : AutonomousWrapper({ opMode ->
     navigateToPosition(
         Pose(
             0.0,

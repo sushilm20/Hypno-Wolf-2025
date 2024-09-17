@@ -45,15 +45,37 @@ repositories {
     maven { url = "https://artifactory.scala.gg/artifactory/opensource" }
 }
 
+var mockitoVersion = "5.13.0"
+var mockitoKotlinVersion = "5.4.0"
+var jUnitVersion = "4.13.2"
+var mockkVersion = "1.13.12"
+tasks.withType(Test).configureEach {
+    println it.name
+    useJUnitPlatform()
+
+    maxHeapSize = '1G'
+
+    testLogging {
+        events "passed"
+    }
+}
+
 dependencies {
     implementation 'org.ftclib.ftclib:core:2.1.1'
-    implementation "io.liftgate.robotics.mono:mono:5.5-SNAPSHOT" //
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2"
-    implementation "com.charleskorn.kaml:kaml:0.61.0"
+    implementation "io.liftgate.robotics.mono:mono:5.6-SNAPSHOT"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2" // Kaml will supply the implementation, we just need Core.
+    implementation "com.charleskorn.kaml:kaml:0.61.0" // Kaml for kotlinx.serialization YAML support, for Konfig.
 
     implementation 'com.acmerobotics.roadrunner:core:0.5.5'
     implementation "com.acmerobotics.dashboard:dashboard:0.4.14"
     implementation 'org.team11260:fast-load:0.1.2'
+
+    testImplementation "junit:junit:$jUnitVersion"// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0'
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
+    testImplementation "io.mockk:mockk:$mockkVersion"
 
     implementation project(":FtcRobotController")
     annotationProcessor files("lib/OpModeAnnotationProcessor.jar")

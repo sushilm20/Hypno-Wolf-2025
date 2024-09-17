@@ -8,7 +8,7 @@ import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.navigateTo
 
 @Autonomous(name = "Test | Turn", group = "Test")
-class TestTurn : AutonomousWrapper({ opMode, _ ->
+class TestTurn : AutonomousWrapper({ opMode ->
     single("turn") {
         navigateTo(
             Pose(

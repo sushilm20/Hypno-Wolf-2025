@@ -8,14 +8,15 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.Mono
+import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.riverdell.robotics.autonomous.detection.TapeSide
 import org.riverdell.robotics.autonomous.detection.TeamColor
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.localizer.TwoWheelLocalizer
+import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.Extension
 import org.riverdell.robotics.subsystems.Intake
@@ -25,7 +26,7 @@ import org.riverdell.robotics.utilities.hardware
 import kotlin.concurrent.thread
 
 abstract class AutonomousWrapper(
-    internal val blockExecutionGroup: RootExecutionGroup.(AutonomousWrapper, TapeSide) -> Unit
+    internal val blockExecutionGroup: RootExecutionGroup.(AutonomousWrapper) -> Unit
 ) : LinearOpMode(), io.liftgate.robotics.mono.subsystem.System
 {
     companion object
@@ -47,6 +48,12 @@ abstract class AutonomousWrapper(
     val intake by lazy { Intake(this) }
     val lift by lazy { Lift(this) }
     val extension by lazy { Extension(this) }
+
+    val navigationConfig by lazy {
+        konfig<NavigationConfig> {
+            withCustomFileID("navigation")
+        }
+    }
 
     val visionPipeline by lazy { VisionPipeline(TeamColor.Red, this) } // TODO: new season
     var voltage: Double = 0.0
@@ -109,9 +116,7 @@ abstract class AutonomousWrapper(
 
         while (opModeInInit())
         {
-            multipleTelemetry.addLine("Auto in initialized")
-            multipleTelemetry.addData("Tape side", visionPipeline.getTapeSide())
-
+            multipleTelemetry.addLine("Auto initialization...")
             multipleTelemetry.addLine("=== PID Tuning Graph Outputs ===")
 
             /**
@@ -164,7 +169,6 @@ abstract class AutonomousWrapper(
             return
         }
 
-        val tapeSide = visionPipeline.getTapeSide()
         thread {
             while (!isStopRequested)
             {
@@ -189,7 +193,7 @@ abstract class AutonomousWrapper(
 
         val executionGroup = Mono.buildExecutionGroup {
             blockExecutionGroup(
-                this@AutonomousWrapper, tapeSide
+                this@AutonomousWrapper
             )
         }
 

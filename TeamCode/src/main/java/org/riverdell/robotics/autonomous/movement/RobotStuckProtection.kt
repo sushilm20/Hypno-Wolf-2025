@@ -1,7 +1,10 @@
 package org.riverdell.robotics.autonomous.movement
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class RobotStuckProtection(
-    val minimumRequiredTranslationalDifference: Double,
-    val minimumRequiredRotationalDifference: Double,
-    val minimumMillisUntilDeemedStuck: Long
+    val minimumRequiredTranslationalDifference: Double = 0.5,
+    val minimumRequiredRotationalDifference: Double = 0.05,
+    val minimumMillisUntilDeemedStuck: Long = 2500L
 )

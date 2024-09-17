@@ -7,25 +7,21 @@ import kotlinx.serialization.Serializable
 import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedServo
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
-import java.util.concurrent.CompletableFuture
 
-class ExampleSubSystem(opMode: LinearOpMode) : AbstractSubsystem()
+class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
 {
     @Serializable
-    data class V4BRotationConfig(
+    data class CSClawConfig(
         var acceleration: Double = 8.0,
         var deceleration: Double = 8.0,
         var velocity: Double = 2.0,
         val leftIsReversed1Dot0Position: Boolean = false
     )
 
-    // 0.68
-    //0.87
-
-    private val rotationConfig = opMode.konfig<V4BRotationConfig>()
+    private val rotationConfig = opMode.konfig<CSClawConfig>()
     private val leftRotation = ManagedServo(
         opMode.hardware("extender"),
-        this@ExampleSubSystem
+        this@ExampleSystem
     ) {
         val config = rotationConfig.get()
         ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
@@ -34,8 +30,8 @@ class ExampleSubSystem(opMode: LinearOpMode) : AbstractSubsystem()
     override fun doInitialize()
     {
         leftRotation.setMotionProfileTarget(0.68)
-            .thenRun {
-                println("HEYY")
+            .thenCompose {
+                leftRotation.setMotionProfileTarget(0.87)
             }
     }
 }

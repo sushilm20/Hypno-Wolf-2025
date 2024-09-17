@@ -37,7 +37,7 @@ public class PurePursuitPath {
         }
 
         FieldWaypoint prev = waypoints.get(targetIdx - 1);
-        final ActionWaypoint incomplete = actionWaypoints.get(prev.id);
+        final ActionWaypoint incomplete = actionWaypoints.get(prev.getId());
         if (incomplete != null) {
             incomplete.getAction().invoke();
             incomplete.setHasExecuted(true);

@@ -7,7 +7,7 @@ import org.riverdell.robotics.autonomous.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.navigateTo
 
 @Autonomous(name = "Test | Strafe", group = "Test")
-class TestStrafe : AutonomousWrapper({ opMode, _ ->
+class TestStrafe : AutonomousWrapper({ opMode ->
     single("strafe") {
         navigateTo(
             Pose(

@@ -1,6 +1,5 @@
 package org.riverdell.robotics.autonomous.movement;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -9,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.riverdell.robotics.autonomous.AutonomousWrapper;
 import org.riverdell.robotics.autonomous.geometry.Pose;
+import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig;
 import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,34 +18,35 @@ import io.liftgate.robotics.mono.pipeline.RootExecutionGroup;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
-@Config
 public class PositionChangeAction {
     private static final DrivetrainUpdates ZERO = new DrivetrainUpdates(0.0, 0.0, 0.0, 0.0);
 
-    public static double K_STATIC = 1.85;
+    private final AutonomousWrapper instance;
+    private final RootExecutionGroup executionGroup;
 
-    public static double xP = 0.07;
-    public static double xD = 0.012;
+    public double K_STATIC = 1.85;
 
-    public static double yP = 0.07;
-    public static double yD = 0.012;
+    public double xP = 0.07;
+    public double xD = 0.012;
 
-    public static double hP = 1;
-    public static double hD = 0.075;
+    public double yP = 0.07;
+    public double yD = 0.012;
 
-    public static double MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = 0.75;
-    public static double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;
-    public static double AT_TARGET_AUTOMATIC_DEATH = 100;
+    public double hP = 1;
+    public double hD = 0.075;
 
-    public PIDFController xController = new PIDFController(xP, 0.0, xD, 0);
-    public PIDFController yController = new PIDFController(yP, 0.0, yD, 0);
-    public PIDFController hController = new PIDFController(hP, 0.0, hD, 0);
+    public double MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = 0.75;
+    public double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;
+    public double AT_TARGET_AUTOMATIC_DEATH = 100;
+
+    public PIDFController xController;
+    public PIDFController yController;
+    public PIDFController hController;
 
     private final ElapsedTime activeTimer = new ElapsedTime();
     private final ElapsedTime atTargetTimer = new ElapsedTime();
     private final ElapsedTime stuckProtection = new ElapsedTime();
 
-    private final AutonomousWrapper drivetrain;
     private final @Nullable Pose targetPose;
 
     /**
@@ -56,15 +57,34 @@ public class PositionChangeAction {
     private double maxTranslationalSpeed = 1.0;
     private double maxRotationalSpeed = 1.0;
 
-    private final RootExecutionGroup executionGroup;
-
-    public PositionChangeAction(
-            @Nullable Pose targetPose,
-            @NotNull RootExecutionGroup executionGroup
-    ) {
-        this.drivetrain = AutonomousWrapper.getInstance();
+    public PositionChangeAction(@Nullable Pose targetPose, @NotNull RootExecutionGroup executionGroup) {
+        this.instance = AutonomousWrapper.getInstance();
         this.targetPose = targetPose;
         this.executionGroup = executionGroup;
+
+        populateDefaults();
+
+        xController = new PIDFController(xP, 0.0, xD, 0);
+        yController = new PIDFController(yP, 0.0, yD, 0);
+        hController = new PIDFController(hP, 0.0, hD, 0);
+    }
+
+    private void populateDefaults() {
+        final NavigationConfig config = instance.getNavigationConfig().get();
+        K_STATIC = config.getKStatic();
+
+        MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = config.getMinimumRotationalDifferenceFromTarget();
+        MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = config.getMinimumTranslationDifferenceFromTarget();
+        AT_TARGET_AUTOMATIC_DEATH = config.getAutomaticDeathMillis();
+
+        xP = config.getXP();
+        xD = config.getXD();
+
+        yP = config.getYP();
+        yD = config.getYD();
+
+        hP = config.getHP();
+        hD = config.getHD();
     }
 
     private @Nullable PathAlgorithm pathAlgorithm = null;
@@ -72,7 +92,7 @@ public class PositionChangeAction {
 
     protected void finish(@NotNull PositionChangeActionEndResult result) {
         if (result != PositionChangeActionEndResult.ForcefulTermination) {
-            ZERO.propagate(drivetrain);
+            ZERO.propagate(instance);
             if (endSubscription != null) {
                 endSubscription.invoke(result);
             }
@@ -153,14 +173,14 @@ public class PositionChangeAction {
 
     public void executeBlocking() {
         while (true) {
-            if (drivetrain.isStopRequested()) {
+            if (instance.isStopRequested()) {
                 executionGroup.terminateMidExecution();
                 finish(PositionChangeActionEndResult.ForcefulTermination);
                 return;
             }
 
             Pose previousPose = this.previousPose;
-            Pose robotPose = drivetrain.getLocalizer().getPose();
+            Pose robotPose = instance.getLocalizer().getPose();
             this.previousPose = robotPose;
 
             Pose targetPose = this.pathAlgorithm == null ? this.targetPose :
@@ -178,7 +198,7 @@ public class PositionChangeAction {
             }
 
             Pose powers = getPower(robotPose, targetPose);
-            MecanumTranslations.getPowers(powers).propagate(drivetrain);
+            MecanumTranslations.getPowers(powers).propagate(instance);
         }
     }
 
@@ -203,8 +223,6 @@ public class PositionChangeAction {
         if (robotStuckProtection != null) {
             if (previousPose != null) {
                 Pose movementDelta = currentPose.subtract(previousPose); // chore: do buffer system
-                System.out.println("--- " + movementDelta.toVec2D().magnitude() + " | " + Math.abs(movementDelta.heading) + " ---");
-
                 if (movementDelta.toVec2D().magnitude() > robotStuckProtection.getMinimumRequiredTranslationalDifference() ||
                         Math.abs(movementDelta.heading) > robotStuckProtection.getMinimumRequiredRotationalDifference()) {
                     stuckProtection.reset();
