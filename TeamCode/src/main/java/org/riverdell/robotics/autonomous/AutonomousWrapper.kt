@@ -117,34 +117,6 @@ abstract class AutonomousWrapper(
         while (opModeInInit())
         {
             multipleTelemetry.addLine("Auto initialization...")
-            multipleTelemetry.addLine("=== PID Tuning Graph Outputs ===")
-
-            /**
-             *             drivetrain.getMultipleTelemetry().addData("Current Pose Y", robotPose.y);
-             *             drivetrain.getMultipleTelemetry().addData("Current Pose X", robotPose.x);
-             *             drivetrain.getMultipleTelemetry().addData("Current Pose Heading", robotPose.heading);
-             *
-             *             drivetrain.getMultipleTelemetry().addData("Power for Y", powers.y);
-             *             drivetrain.getMultipleTelemetry().addData("Power for X", powers.y);
-             *             drivetrain.getMultipleTelemetry().addData("Power for Turn", powers.heading);
-             */
-            /*multipleTelemetry.addData("Error", 0.0)
-            multipleTelemetry.addData("Target", 0.0)
-            multipleTelemetry.addData("Input", 0.0)
-            multipleTelemetry.addData("Output", 0.0)
-            multipleTelemetry.addData("Velocity", 0.0)*/
-
-            multipleTelemetry.addData("Target Pose Y", 0.0)
-            multipleTelemetry.addData("Target Pose X", 0.0)
-            multipleTelemetry.addData("Target Pose Heading", 0.0)
-
-            multipleTelemetry.addData("Current Pose Y", 0.0)
-            multipleTelemetry.addData("Current Pose X", 0.0)
-            multipleTelemetry.addData("Current Pose Heading", 0.0)
-            multipleTelemetry.addData("Power for Y", 0.0)
-            multipleTelemetry.addData("Power for X", 0.0)
-            multipleTelemetry.addData("Power for Turn", 0.0)
-//            multipleTelemetry.addData("Prev. Loop Time", 0)
 
             runCatching {
                 multipleTelemetry.addData(
@@ -172,22 +144,10 @@ abstract class AutonomousWrapper(
         thread {
             while (!isStopRequested)
             {
-                subsystems.map { it as AbstractSubsystem }.forEach { it.allPeriodic() }
-            }
-        }
-
-        thread {
-            while (!isStopRequested)
-            {
                 voltage = hardwareMap.voltageSensor.first().voltage
-                Thread.sleep(50L)
-            }
-        }
-
-        thread {
-            while (!isStopRequested)
-            {
                 localizer.update()
+
+                subsystems.map { it as AbstractSubsystem }.forEach { it.allPeriodic() }
             }
         }
 
