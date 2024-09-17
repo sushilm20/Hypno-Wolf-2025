@@ -69,6 +69,7 @@ abstract class AbstractLinearOpMode : LinearOpMode(), System
         }
 
         initializeAll()
+        initialize()
 
         multipleTelemetry.addLine("Configured all subsystems. Waiting for start...")
         multipleTelemetry.update()

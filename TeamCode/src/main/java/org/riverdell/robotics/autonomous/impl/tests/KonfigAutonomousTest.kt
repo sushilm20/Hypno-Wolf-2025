@@ -9,7 +9,7 @@ class KonfigAutonomousTest : KonfigAutonomous("testing")
     override fun definitions()
     {
         action("pickup_sample") {
-            // do work here
+            println("Pickup sample shit")
         }
     }
 }

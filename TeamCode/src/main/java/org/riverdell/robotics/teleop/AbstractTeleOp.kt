@@ -22,7 +22,6 @@ abstract class AbstractTeleOp : AbstractLinearOpMode()
         multiplier: Double
     )
 
-
     override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands)
     override fun initialize()
     {

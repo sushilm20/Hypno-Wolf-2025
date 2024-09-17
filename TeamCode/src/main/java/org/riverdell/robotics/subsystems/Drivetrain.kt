@@ -13,6 +13,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles
+import org.riverdell.robotics.autonomous.AutonomousWrapper
 import org.riverdell.robotics.utilities.hardware
 
 class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
@@ -57,22 +58,10 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
     override fun doInitialize()
     {
         frontLeft = opMode.hardware<DcMotor>("frontLeft")
-        frontLeft.direction = DcMotorSimple.Direction.REVERSE
-        frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-
         frontRight = opMode.hardware<DcMotor>("frontRight")
-        frontRight.direction = DcMotorSimple.Direction.FORWARD
-        frontRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-
         backLeft = opMode.hardware<DcMotor>("backLeft")
-        backLeft.direction = DcMotorSimple.Direction.REVERSE
-        backLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-
         backRight = opMode.hardware<DcMotor>("backRight")
-        backRight.direction = DcMotorSimple.Direction.FORWARD
-        backRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-        runWithoutEncoders()
 
         imu = opMode.hardware<IMU>("imu")
         imu.resetDeviceConfigurationForOpMode()
@@ -85,6 +74,20 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
             )
         )
         imu.resetYaw()
+
+        if (opMode is AutonomousWrapper)
+        {
+            frontLeft.direction = DcMotorSimple.Direction.REVERSE
+            frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            frontRight.direction = DcMotorSimple.Direction.FORWARD
+            frontRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            backLeft.direction = DcMotorSimple.Direction.REVERSE
+            backLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            backRight.direction = DcMotorSimple.Direction.FORWARD
+            backRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            runWithoutEncoders()
+        }
+
         setupDriveBase()
     }
 
@@ -120,6 +123,9 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
     override fun isCompleted() = true
     override fun dispose()
     {
-        stopAndResetMotors()
+        if (opMode is AutonomousWrapper)
+        {
+            stopAndResetMotors()
+        }
     }
 }

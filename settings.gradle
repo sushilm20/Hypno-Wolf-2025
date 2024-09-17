@@ -1,2 +1,11 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url "https://artifactory.scala.gg/artifactory/opensource"
+        }
+    }
+}
+
 include ':FtcRobotController'
 include ':TeamCode'
