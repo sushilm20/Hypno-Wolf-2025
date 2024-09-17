@@ -7,7 +7,25 @@ import kotlin.math.abs
 class PurePursuitPath(vararg waypointLikes: WaypointLike)
 {
     private val fieldWaypoints = waypointLikes.filter { it is PoseWaypoint || it is PositionWaypoint }
-    private val actionWaypoints = waypointLikes.toList().populateAndExtractActions()
+    private val actionWaypoints = waypointLikes.toList()
+        .onEachIndexed { index, waypointLike ->
+            if (waypointLike is ActionWaypoint)
+            {
+                val prev = waypointLikes.getOrNull(index - 1)
+                if (prev is PositionWaypoint)
+                {
+                    waypointLike.afterIndex = prev.id
+                } else
+                {
+                    throw IllegalArgumentException(
+                        "Cannot have two consecutive ActionWaypoints. Why the fuck are you doing it anyways? Merge it into one!"
+                    )
+                }
+            }
+        }
+        .filterIsInstance<ActionWaypoint>()
+        .associateBy { it.afterIndex }
+
     private var currentWaypointIndex = 1
 
     var isFinished = false
