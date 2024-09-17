@@ -32,7 +32,15 @@ data class NavigationNode(
         "---",
         "Start your path below!"
     )
-    val waypoints: Set<String> = setOf(),
+    val waypoints: Set<String> = setOf(
+        """
+                point:
+                  x: 6.0
+                  y: 6.0
+                radius: 20.0
+                type: "POSE"
+            """.trimIndent()
+    ),
     @SerializedName("stuck-recovery")
     val stuckProtection: InternalStuckProtectionConfig = InternalStuckProtectionConfig(),
     @SerializedName("maximum-translation-speed")
@@ -42,3 +50,10 @@ data class NavigationNode(
     @SerializedName("automatic-death-after-millis")
     val automaticDeathMillis: Double = 2500.0
 )
+{
+    fun sanitize(globals: AutonomousDefaults)
+    {
+        // {&pose1,"radius":20.0}
+        waypoints.
+    }
+}

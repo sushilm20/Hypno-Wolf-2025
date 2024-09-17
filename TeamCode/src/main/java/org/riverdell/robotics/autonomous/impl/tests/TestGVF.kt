@@ -2,7 +2,7 @@ package org.riverdell.robotics.autonomous.impl.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import org.riverdell.robotics.autonomous.AutonomousWrapper
-import org.riverdell.robotics.autonomous.geometry.Pose
+import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.cubicBezier
 import org.riverdell.robotics.autonomous.movement.navigateUnstableGVF
 

@@ -3,7 +3,7 @@ package org.riverdell.robotics.autonomous.movement.guidedvectorfield;
 import com.acmerobotics.dashboard.config.Config;
 
 import org.jetbrains.annotations.NotNull;
-import org.riverdell.robotics.autonomous.geometry.Pose;
+import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 
 // realtime bezier guided vector field navigation
 @Config

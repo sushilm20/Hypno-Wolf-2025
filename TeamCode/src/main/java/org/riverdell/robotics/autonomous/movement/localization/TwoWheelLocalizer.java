@@ -1,4 +1,4 @@
-package org.riverdell.robotics.autonomous.localizer;
+package org.riverdell.robotics.autonomous.movement.localization;
 
 import androidx.annotation.NonNull;
 
@@ -7,7 +7,7 @@ import com.acmerobotics.roadrunner.localization.TwoTrackingWheelLocalizer;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.riverdell.robotics.autonomous.geometry.Pose;
+import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 import org.riverdell.robotics.autonomous.AutonomousWrapper;
 
 import java.util.Arrays;

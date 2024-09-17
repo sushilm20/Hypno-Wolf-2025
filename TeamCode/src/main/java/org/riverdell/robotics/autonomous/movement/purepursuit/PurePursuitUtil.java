@@ -1,7 +1,7 @@
 package org.riverdell.robotics.autonomous.movement.purepursuit;
 
-import org.riverdell.robotics.autonomous.geometry.Point;
-import org.riverdell.robotics.autonomous.geometry.Point;
+import org.riverdell.robotics.autonomous.movement.geometry.Point;
+import org.riverdell.robotics.autonomous.movement.geometry.Point;
 
 public class PurePursuitUtil {
     public static Point lineCircleIntersection(Point pointA, Point pointB, Point center, double radius) {

@@ -1,4 +1,4 @@
-package org.riverdell.robotics.autonomous.geometry
+package org.riverdell.robotics.autonomous.movement.geometry
 
 import com.arcrobotics.ftclib.geometry.Vector2d
 import kotlinx.serialization.Serializable

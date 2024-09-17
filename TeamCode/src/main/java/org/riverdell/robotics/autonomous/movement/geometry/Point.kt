@@ -1,4 +1,4 @@
-package org.riverdell.robotics.autonomous.geometry
+package org.riverdell.robotics.autonomous.movement.geometry
 
 import kotlinx.serialization.Serializable
 import kotlin.math.atan2

@@ -6,7 +6,7 @@ fun List<WaypointLike>.populateAndExtractActions() =
             if (waypointLike is ActionWaypoint)
             {
                 val prev = this@populateAndExtractActions.getOrNull(index - 1)
-                if (prev is FieldWaypoint)
+                if (prev is PositionWaypoint)
                 {
                     waypointLike.afterIndex = prev.id
                 } else

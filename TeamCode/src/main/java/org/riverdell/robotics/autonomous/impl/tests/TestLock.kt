@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import io.liftgate.robotics.mono.pipeline.simultaneous
 import io.liftgate.robotics.mono.pipeline.single
 import org.riverdell.robotics.autonomous.AutonomousWrapper
-import org.riverdell.robotics.autonomous.geometry.Pose
+import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.lockToPosition
 

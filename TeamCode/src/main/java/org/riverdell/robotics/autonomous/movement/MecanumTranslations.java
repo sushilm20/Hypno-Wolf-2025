@@ -5,7 +5,7 @@ import com.arcrobotics.ftclib.geometry.Vector2d;
 import com.qualcomm.robotcore.util.Range;
 
 import org.riverdell.robotics.autonomous.AutonomousWrapper;
-import org.riverdell.robotics.autonomous.geometry.Pose;
+import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 
 public class MecanumTranslations {
 

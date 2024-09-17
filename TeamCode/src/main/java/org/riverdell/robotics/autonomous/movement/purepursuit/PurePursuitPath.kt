@@ -1,90 +1,101 @@
-package org.riverdell.robotics.autonomous.movement.purepursuit;
+package org.riverdell.robotics.autonomous.movement.purepursuit
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.riverdell.robotics.autonomous.geometry.Point;
-import org.riverdell.robotics.autonomous.geometry.Pose;
-import org.riverdell.robotics.autonomous.geometry.Point;
-import org.riverdell.robotics.autonomous.geometry.Pose;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.riverdell.robotics.autonomous.movement.geometry.Pose
+import kotlin.math.abs
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.stream.Collectors;
+class PurePursuitPath(vararg waypointLikes: WaypointLike)
+{
+    private val fieldWaypoints = waypointLikes.filter { it is PoseWaypoint || it is PositionWaypoint }
+    private val actionWaypoints = waypointLikes.toList().populateAndExtractActions()
+    private var currentWaypointIndex = 1
 
-public class PurePursuitPath {
-    private final LinkedList<FieldWaypoint> waypoints = new LinkedList<>();
-    private final Map<String, ActionWaypoint> actionWaypoints;
-    private int targetIdx = 1;
-    private boolean finished;
+    var isFinished = false
 
-    public PurePursuitPath(WaypointLike... waypointLikes) {
-        if (waypointLikes.length < 2) throw new IllegalArgumentException();
-        waypoints.addAll(
-                Arrays.stream(waypointLikes)
-                        .filter(waypointLike -> waypointLike instanceof FieldWaypoint)
-                        .map(waypointLike -> (FieldWaypoint) waypointLike)
-                        .collect(Collectors.toList())
-        );
-
-        actionWaypoints = WaypointFilterUtilsKt.populateAndExtractActions(Arrays.asList(waypointLikes));
-        if (waypoints.getLast().getType() != FieldWaypoint.Type.POSE)
-            throw new IllegalArgumentException("Last waypoint is not a pose");
+    init
+    {
+        require(waypointLikes.size >= 2)
+        if (fieldWaypoints.isEmpty() || (fieldWaypoints.last() !is PoseWaypoint))
+        {
+            throw IllegalArgumentException("Last waypoint is not a pose")
+        }
     }
 
-    public Pose calculateTargetPose(Pose robot) {
-        if (finished) {
-            return getEndPose();
+    fun calculateTargetPose(robot: Pose): Pose
+    {
+        if (isFinished)
+        {
+            return endPose()
         }
 
-        FieldWaypoint prev = waypoints.get(targetIdx - 1);
-        final ActionWaypoint incomplete = actionWaypoints.get(prev.getId());
-        if (incomplete != null) {
-            incomplete.getAction().invoke();
-            incomplete.setHasExecuted(true);
-            return robot;
+        val prev = fieldWaypoints[currentWaypointIndex - 1]
+
+        val incomplete = actionWaypoints[prev.id]
+        if (incomplete != null)
+        {
+            incomplete.action.invoke()
+            incomplete.hasExecuted = true
+            return robot
         }
 
-        FieldWaypoint target = waypoints.get(targetIdx);
+        val target = fieldWaypoints[currentWaypointIndex]
+        val point = if (target is PoseWaypoint)
+        {
+            target.pose
+        } else if (target is PositionWaypoint)
+        {
+            target.point
+        } else
+        {
+            throw IllegalArgumentException("What?")
+        }
 
-        double distance = robot.distanceTo(target.getPoint());
+        val radius = if (target is PoseWaypoint)
+        {
+            target.radius
+        } else if (target is PositionWaypoint)
+        {
+            target.radius
+        } else
+        {
+            throw IllegalArgumentException("What?")
+        }
 
-        if (distance > target.getRadius()) {
-            Point intersection = PurePursuitUtil.lineCircleIntersection(
-                    prev.getPoint(), target.getPoint(), robot, target.getRadius());
-            Pose targetPose;
+        val distance = robot.distanceTo(point)
 
-            if (target.getType() == FieldWaypoint.Type.POSE) {
-                targetPose = new Pose(intersection, ((Pose) target.getPoint()).heading);
-            } else {
-                double robotAngle = AngleUnit.normalizeRadians(robot.heading);
-                double forwardAngle = intersection.subtract(robot).atan() - (Math.PI / 2);
-                double backwardsAngle = AngleUnit.normalizeRadians(forwardAngle + Math.PI);
+        return if (distance > radius)
+        {
+            val intersection = PurePursuitUtil.lineCircleIntersection(
+                point, point, robot, radius)
 
-                double autoAngle =
-                        Math.abs(AngleUnit.normalizeRadians(robotAngle - forwardAngle)) <
-                                Math.abs(AngleUnit.normalizeRadians(robotAngle - backwardsAngle)) ?
-                                forwardAngle : backwardsAngle;
-
-                targetPose = new Pose(intersection, autoAngle);
+            if (target is PoseWaypoint)
+            {
+                Pose(intersection, target.pose.heading)
+            } else
+            {
+                val robotAngle = AngleUnit.normalizeRadians(robot.heading)
+                val forwardAngle = intersection.subtract(robot).atan() - Math.PI / 2
+                val backwardsAngle = AngleUnit.normalizeRadians(forwardAngle + Math.PI)
+                val autoAngle = if (abs(AngleUnit.normalizeRadians(robotAngle - forwardAngle)) < abs(AngleUnit.normalizeRadians(robotAngle - backwardsAngle))) forwardAngle else backwardsAngle
+                Pose(intersection, autoAngle)
             }
-
-            return targetPose;
-        } else {
-            if (targetIdx == waypoints.size() - 1) {
-                finished = true;
-                return getEndPose();
-            } else {
-                targetIdx++;
-                return calculateTargetPose(robot);
+        } else
+        {
+            if (currentWaypointIndex == fieldWaypoints.size - 1)
+            {
+                isFinished = true
+                endPose()
+            } else
+            {
+                currentWaypointIndex++
+                calculateTargetPose(robot)
             }
         }
     }
 
-    public boolean isFinished() {
-        return finished;
-    }
-
-    public Pose getEndPose() {
-        return (Pose) waypoints.getLast().getPoint();
+    private fun endPose(): Pose
+    {
+        val last = fieldWaypoints.last()
+        return (last as PoseWaypoint).pose
     }
 }

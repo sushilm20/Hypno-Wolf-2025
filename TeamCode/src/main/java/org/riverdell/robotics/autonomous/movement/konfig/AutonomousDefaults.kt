@@ -1,7 +1,7 @@
 package org.riverdell.robotics.autonomous.movement.konfig
 
 import kotlinx.serialization.Serializable
-import org.riverdell.robotics.autonomous.geometry.Pose
+import org.riverdell.robotics.autonomous.movement.geometry.Pose
 
 @Serializable
 data class AutonomousDefaults(

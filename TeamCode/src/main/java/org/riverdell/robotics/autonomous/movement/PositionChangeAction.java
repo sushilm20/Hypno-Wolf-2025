@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.riverdell.robotics.autonomous.AutonomousWrapper;
-import org.riverdell.robotics.autonomous.geometry.Pose;
+import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig;
 import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm;
 

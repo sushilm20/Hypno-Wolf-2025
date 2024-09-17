@@ -4,3 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface WaypointLike
+{
+    val id: String
+}

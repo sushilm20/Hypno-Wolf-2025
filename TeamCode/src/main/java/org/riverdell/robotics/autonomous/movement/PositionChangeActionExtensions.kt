@@ -2,7 +2,7 @@ package org.riverdell.robotics.autonomous.movement
 
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.pipeline.single
-import org.riverdell.robotics.autonomous.geometry.Pose
+import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.guidedvectorfield.CubicBezierCurve
 import org.riverdell.robotics.autonomous.movement.guidedvectorfield.GuidedVectorFieldPositionChangeAction
 import org.riverdell.robotics.autonomous.movement.guidedvectorfield.Vector2D

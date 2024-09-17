@@ -1,7 +1,6 @@
-package org.riverdell.robotics.autonomous.localizer;
+package org.riverdell.robotics.autonomous.movement.localization;
 
-import org.riverdell.robotics.autonomous.geometry.Pose;
-import org.riverdell.robotics.autonomous.geometry.Pose;
+import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 
 public class AprilTagLocalizer {
     public static final double Y_OFFSET = 6.65;

@@ -1,7 +1,7 @@
 package org.riverdell.robotics.autonomous.movement
 
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
-import org.riverdell.robotics.autonomous.geometry.Pose
+import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm
 
 class LockPositionChangeAction(

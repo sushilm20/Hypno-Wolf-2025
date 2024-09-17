@@ -15,7 +15,7 @@ import io.liftgate.robotics.mono.subsystem.Subsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.riverdell.robotics.autonomous.detection.TeamColor
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
-import org.riverdell.robotics.autonomous.localizer.TwoWheelLocalizer
+import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.Extension
