@@ -3,28 +3,31 @@ package org.riverdell.robotics.autonomous.movement.guidedvectorfield;
 import com.acmerobotics.dashboard.config.Config;
 
 import org.jetbrains.annotations.NotNull;
+import org.riverdell.robotics.autonomous.movement.geometry.CubicBezierCurve;
 import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 
-// realtime bezier guided vector field navigation
 @Config
-public class GuidedVectorField {
+public class EnhancedGuidedVectorField {
 
     public static double CORRECTION_DISTANCE = 100;
     public static double SAVING_THROW_DISTANCE = 100;
     public static int SAMPLE_DENSITY = 100;
 
     private final @NotNull CubicBezierCurve curve;
-    public GuidedVectorField(@NotNull CubicBezierCurve curve) {
+    private final @NotNull PathLengthLookupTable lengthTable;
+    public EnhancedGuidedVectorField(@NotNull CubicBezierCurve curve) {
         this.curve = curve;
+        this.lengthTable = new PathLengthLookupTable(curve, SAMPLE_DENSITY);
     }
 
-    public @NotNull Pose calculateGuidanceVector(@NotNull Pose currentPose) {
+    public @NotNull Pose calculateNextPose(@NotNull Pose currentPose) {
         Vector2D currentLocation = new Vector2D(currentPose.x, currentPose.y);
         double closestT = findClosestPoint(curve, currentLocation);
         Vector2D closestPoint = curve.calculate(closestT);
         Vector2D curveDerivative = curve.derivative(closestT);
         Vector2D robotToClosestPoint = closestPoint.subtract(currentLocation);
         Vector2D endPoint = curve.calculate(1);
+
         double directPursuitThreshold = 1;
         {
             for (double i = 1; i >= 0; i -= 1 / 100.0) {
@@ -35,27 +38,23 @@ public class GuidedVectorField {
                 }
             }
         }
-        Vector2D robotToEnd = endPoint.subtract(currentLocation);
+
         double correctionFactor = Math.min(1, robotToClosestPoint.getMagnitude() / CORRECTION_DISTANCE);
         double movementDirection = hlerp(curveDerivative.getHeading(), robotToClosestPoint.getHeading(), correctionFactor);
         if ((closestT == 1 && Math.abs(currentLocation.subtract(closestPoint).getHeading() - curveDerivative.getHeading()) <= 0.5 * Math.PI) ||
-            closestT >= directPursuitThreshold) {
+                closestT >= directPursuitThreshold) {
             movementDirection = endPoint.subtract(currentLocation).getHeading();
         }
 
         Vector2D movementVector = new Vector2D(Math.cos(movementDirection), Math.sin(movementDirection));
         double speed = 1;
-        // i'd like to change this logic to distance along the path.
-        // maybe use something like euler's method?
-        // split the curve into intervals, calculate delta vectors
-        // between intervals, store in a lookup table
-        if (robotToEnd.getMagnitude() < 200) {
-            speed = lerp(0.2, speed, robotToEnd.getMagnitude() / 200);
+        double pathLength = lengthTable.getCumulativeLength(closestT);
+        if (pathLength < 200) {
+            speed = lerp(0.2, speed, pathLength / 200);
         }
 
         movementVector = movementVector.scalarMultiply(speed);
-        //System.out.println(String.format("Navigation Calculation Took %.3fms", (System.nanoTime() - startTime) / 1e6));
-        return new Pose(movementVector.getX(), movementVector.getY(), movementVector.getHeading());
+        return currentPose.add(movementVector);
     }
 
     /*
@@ -89,7 +88,6 @@ public class GuidedVectorField {
     }
 
     public double findClosestPoint(CubicBezierCurve curve, Vector2D point) {
-        //long startTime = System.nanoTime();
         double minT = -1;
         double minDist = Double.POSITIVE_INFINITY;
         for (int i = 0; i < SAMPLE_DENSITY + 1; i++) {
@@ -100,7 +98,6 @@ public class GuidedVectorField {
                 minT = t;
             }
         }
-        //System.out.println(String.format("Calculated closest point in %.3f ms", (System.nanoTime() - startTime) / 1e6));
         return minT;
     }
 

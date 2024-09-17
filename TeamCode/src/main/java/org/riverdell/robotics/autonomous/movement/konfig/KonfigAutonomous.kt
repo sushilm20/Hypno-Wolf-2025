@@ -3,9 +3,11 @@ package org.riverdell.robotics.autonomous.movement.konfig
 import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import org.riverdell.robotics.autonomous.AutonomousWrapper
+import org.riverdell.robotics.autonomous.movement.geometry.CubicBezierCurve
 import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.navigatePurePursuit
 import org.riverdell.robotics.autonomous.movement.navigateToPosition
+import org.riverdell.robotics.autonomous.movement.navigateGVF
 import org.riverdell.robotics.autonomous.movement.purepursuit.ActionWaypoint
 import org.riverdell.robotics.autonomous.movement.purepursuit.PoseWaypoint
 import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
@@ -62,7 +64,13 @@ abstract class KonfigAutonomous(
 
         if (node.navigationMode == NavigationMode.GVF)
         {
-            throw IllegalArgumentException("GVF is unsupported right now.")
+            val curve = runCatching { globalJson.decodeFromString<CubicBezierCurve>(nodeLines.first()) }
+                .getOrElse { throw IllegalArgumentException("Failed to parse GVF curve. It must be a CubicBezierCurve model as the first waypoint.") }
+
+            navigateGVF(curve) {
+                node.applyToPositionChange(this@root, this)
+            }
+            return@root
         }
 
         nodeLines.onEach {

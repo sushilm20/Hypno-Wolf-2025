@@ -3,7 +3,7 @@ package org.riverdell.robotics.autonomous.movement
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.pipeline.single
 import org.riverdell.robotics.autonomous.movement.geometry.Pose
-import org.riverdell.robotics.autonomous.movement.guidedvectorfield.CubicBezierCurve
+import org.riverdell.robotics.autonomous.movement.geometry.CubicBezierCurve
 import org.riverdell.robotics.autonomous.movement.guidedvectorfield.GuidedVectorFieldPositionChangeAction
 import org.riverdell.robotics.autonomous.movement.guidedvectorfield.Vector2D
 import org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPositionChangeAction
@@ -64,22 +64,19 @@ fun RootExecutionGroup.lockToPosition(at: Pose, unlockConsumer: (Pose, Pose) -> 
     }
 }
 
-fun RootExecutionGroup.navigateUnstableGVF(
+fun RootExecutionGroup.navigateGVF(
     curve: CubicBezierCurve,
     configure: PositionChangeAction.() -> Unit = {}
 )
 {
-
-
-    single("Unstable GVF navigation") {
-
+    single("GVF navigation") {
         val command =
             GuidedVectorFieldPositionChangeAction(
                 curve,
-                this@navigateUnstableGVF
+                this@navigateGVF
             )
-        command.configure()
 
+        command.configure()
         command.executeBlocking()
     }
 }

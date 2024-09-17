@@ -54,6 +54,8 @@ data class NavigationNode(
         "",
         "For pure pursuit, you may NOT have an action waypoint start your path, and you must have a POSE to end your path.",
         "---",
+        "FOR GVF, you must provide a single CubicBezierCurve as your waypoint.",
+        "---",
         "Start your path below!"
     )
     val waypoints: Set<String> = setOf(

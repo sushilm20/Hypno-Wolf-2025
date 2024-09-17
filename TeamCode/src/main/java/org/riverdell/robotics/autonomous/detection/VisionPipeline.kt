@@ -14,7 +14,6 @@ import org.riverdell.robotics.utilities.hardware
  * for an op mode.
  */
 class VisionPipeline(
-    private val teamColor: TeamColor,
     private val opMode: LinearOpMode
 ) : AbstractSubsystem()
 {

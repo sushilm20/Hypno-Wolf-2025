@@ -1,9 +1,11 @@
 package org.riverdell.robotics.autonomous.movement.geometry
 
 import com.arcrobotics.ftclib.geometry.Vector2d
+import com.arcrobotics.ftclib.kotlin.extensions.geometry.angle
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc
+import org.riverdell.robotics.autonomous.movement.guidedvectorfield.Vector2D
 import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
@@ -11,7 +13,6 @@ import kotlin.math.sin
 @Serializable
 class Pose : Point
 {
-    @JvmField
     var heading: Double
 
     @JvmOverloads
@@ -38,6 +39,11 @@ class Pose : Point
     }
 
     fun add(other: Pose): Pose
+    {
+        return Pose(x + other.x, y + other.y, heading + other.heading)
+    }
+
+    fun add(other: Vector2D): Pose
     {
         return Pose(x + other.x, y + other.y, heading + other.heading)
     }

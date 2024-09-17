@@ -1,13 +1,12 @@
 package test
 
+import com.charleskorn.kaml.Yaml
+import kotlinx.serialization.encodeToString
 import org.junit.jupiter.api.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
-import org.riverdell.robotics.autonomous.movement.degrees
-import org.riverdell.robotics.autonomous.movement.geometry.Point
-import org.riverdell.robotics.autonomous.movement.geometry.Pose
-import org.riverdell.robotics.autonomous.movement.konfig.AutonomousDefaults
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationNode
+import org.riverdell.robotics.autonomous.movement.konfig.NavigationNodeCollection
 
 @RunWith(MockitoJUnitRunner::class)
 class KonfigTest
@@ -15,9 +14,8 @@ class KonfigTest
     @Test
     fun whatYamlFormatAmIExpecting()
     {
-        println(NavigationNode().prepareForApplication(AutonomousDefaults(
-            poses = mapOf("pose1" to Pose(6.0, 9.0, 1.0.degrees)),
-            points = mapOf("point1" to Point(6.0, 9.0)),
+        println(Yaml().encodeToString(NavigationNodeCollection(
+            nodes = mapOf("main" to NavigationNode())
         )))
     }
 }

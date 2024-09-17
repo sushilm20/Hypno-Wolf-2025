@@ -3,9 +3,7 @@ package org.riverdell.robotics.autonomous
 import io.liftgate.robotics.mono.Mono
 import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
-import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.riverdell.robotics.autonomous.detection.TeamColor
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
@@ -28,7 +26,7 @@ abstract class AutonomousWrapper(
         }
     }
 
-    val visionPipeline by lazy { VisionPipeline(TeamColor.Red, this) } // TODO: new season
+    val visionPipeline by lazy { VisionPipeline(this) } // TODO: new season
     var voltage: Double = 0.0
         private set
 

@@ -1,84 +1,73 @@
-package org.riverdell.robotics.autonomous.movement.guidedvectorfield;
+package org.riverdell.robotics.autonomous.movement.guidedvectorfield
 
-public class Vector2D {
-    private double x, y;
+import kotlinx.serialization.Serializable
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.sin
 
-    public Vector2D(double x, double y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public static Vector2D polar(double r, double t) {
-        return new Vector2D(r * Math.cos(t), r * Math.sin(t));
-    }
-
-    public double getX() {
-        return x;
-    }
-
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public double getHeading() {
-        return Math.atan2(y, x);
-    }
-
-    public double getMagnitude() {
-        return Math.hypot(x, y);
-    }
-
-    public double getMagSq() {
-        return x * x + y * y;
-    }
+@Serializable
+class Vector2D(val x: Double, val y: Double)
+{
+    val heading: Double
+        get() = atan2(y, x)
+    val magnitude: Double
+        get() = hypot(x, y)
+    val magSq: Double
+        get() = x * x + y * y
 
     // Operations
-
-    public Vector2D add(Vector2D other) {
-        return add(this, other);
+    fun add(other: Vector2D): Vector2D
+    {
+        return add(this, other)
     }
 
-    public Vector2D subtract(Vector2D other) {
-        return subtract(this, other);
+    fun subtract(other: Vector2D): Vector2D
+    {
+        return subtract(this, other)
     }
 
-    public Vector2D scalarMultiply(double scalar) {
-        return scalarMultiply(this, scalar);
+    fun scalarMultiply(scalar: Double): Vector2D
+    {
+        return scalarMultiply(this, scalar)
     }
 
-    public Vector2D scalarDivide(double scalar) {
-        return scalarDivide(this, scalar);
+    fun scalarDivide(scalar: Double): Vector2D
+    {
+        return scalarDivide(this, scalar)
     }
 
-    public static Vector2D add(Vector2D a, Vector2D b) {
-        return new Vector2D(a.x + b.x, a.y + b.y);
+    fun polar(r: Double, t: Double): Vector2D
+    {
+        return Vector2D(r * cos(t), r * sin(t))
     }
 
-    public static Vector2D subtract(Vector2D a, Vector2D b) {
-        return new Vector2D(a.x - b.x, a.y - b.y);
+    fun add(a: Vector2D, b: Vector2D): Vector2D
+    {
+        return Vector2D(a.x + b.x, a.y + b.y)
     }
 
-    public static Vector2D scalarMultiply(Vector2D vec, double scalar) {
-        return new Vector2D(vec.x * scalar, vec.y * scalar);
+    fun subtract(a: Vector2D, b: Vector2D): Vector2D
+    {
+        return Vector2D(a.x - b.x, a.y - b.y)
     }
 
-    public static Vector2D scalarDivide(Vector2D vec, double scalar) {
-        return new Vector2D(vec.x / scalar, vec.y / scalar);
+    fun scalarMultiply(vec: Vector2D, scalar: Double): Vector2D
+    {
+        return Vector2D(vec.x * scalar, vec.y * scalar)
     }
 
-    public static Vector2D slerp(Vector2D a, Vector2D b, double t) {
-        double aMag = a.getMagnitude();
-        double aHead = a.getHeading();
-        double bMag = b.getMagnitude();
-        double bHead = b.getHeading();
-        return polar((1 - t) * aMag + t * bMag, (1 - t) * aHead + t * bHead);
+    fun scalarDivide(vec: Vector2D, scalar: Double): Vector2D
+    {
+        return Vector2D(vec.x / scalar, vec.y / scalar)
+    }
+
+    fun slerp(a: Vector2D, b: Vector2D, t: Double): Vector2D
+    {
+        val aMag = a.magnitude
+        val aHead = a.heading
+        val bMag = b.magnitude
+        val bHead = b.heading
+        return polar((1 - t) * aMag + t * bMag, (1 - t) * aHead + t * bHead)
     }
 }
