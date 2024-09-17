@@ -5,6 +5,8 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.arcrobotics.ftclib.hardware.motors.Motor
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
 import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
@@ -15,14 +17,11 @@ import org.riverdell.robotics.utilities.hardware
 
 class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
 {
-    @Serializable
-    data class Config(val someNumber: Int = 14)
+    lateinit var frontRight: DcMotor
+    lateinit var frontLeft: DcMotor
 
-    val config = opMode.konfig<Config> {
-        onHotReload {
-            println(someNumber)
-        }
-    }
+    lateinit var backRight: DcMotor
+    lateinit var backLeft: DcMotor
 
     private lateinit var imu: IMU
     private var imuYPR: YawPitchRollAngles? = null
@@ -57,6 +56,24 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
      */
     override fun doInitialize()
     {
+        frontLeft = opMode.hardware<DcMotor>("frontLeft")
+        frontLeft.direction = DcMotorSimple.Direction.REVERSE
+        frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        frontRight = opMode.hardware<DcMotor>("frontRight")
+        frontRight.direction = DcMotorSimple.Direction.FORWARD
+        frontRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        backLeft = opMode.hardware<DcMotor>("backLeft")
+        backLeft.direction = DcMotorSimple.Direction.REVERSE
+        backLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        backRight = opMode.hardware<DcMotor>("backRight")
+        backRight.direction = DcMotorSimple.Direction.FORWARD
+        backRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        runWithoutEncoders()
+
         imu = opMode.hardware<IMU>("imu")
         imu.resetDeviceConfigurationForOpMode()
         imu.initialize(
@@ -68,7 +85,11 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
             )
         )
         imu.resetYaw()
+        setupDriveBase()
+    }
 
+    fun setupDriveBase()
+    {
         val backLeft = Motor(opMode.hardwareMap, "backLeft")
         val backRight = Motor(opMode.hardwareMap, "backRight")
         val frontLeft = Motor(opMode.hardwareMap, "frontLeft")
@@ -79,12 +100,26 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
         )
     }
 
+    fun stopAndResetMotors() = configureMotorsToDo {
+        it.power = 0.0
+        it.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+    }
+
+    fun runWithoutEncoders() = configureMotorsToDo {
+        it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+    }
+
+    private fun configureMotorsToDo(consumer: (DcMotor) -> Unit)
+    {
+        listOf(backLeft, frontLeft, frontRight, backRight).forEach(consumer::invoke)
+    }
+
     fun getIMUYawPitchRollAngles() = imuYPR ?: imu.robotYawPitchRollAngles
     fun backingImu() = imu
 
     override fun isCompleted() = true
     override fun dispose()
     {
-
+        stopAndResetMotors()
     }
 }

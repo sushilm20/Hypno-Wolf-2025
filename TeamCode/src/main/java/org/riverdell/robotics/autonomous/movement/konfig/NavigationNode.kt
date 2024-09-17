@@ -30,7 +30,7 @@ data class NavigationNode(
         "{\"x\":6.0,\"y\":6.0,\"heading\":0.10471975511965978}",
         "",
         "or referencing a pose/point in the \"globals\" Konfig file:",
-        "{&point1,\"heading\":0.10471975511965978}",
+        "hors()",
         "",
         "or a pose in the \"globals\" Konfig file:",
         "&pose1",
