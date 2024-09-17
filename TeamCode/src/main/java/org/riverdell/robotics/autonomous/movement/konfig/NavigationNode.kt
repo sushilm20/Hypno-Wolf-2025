@@ -7,10 +7,13 @@ import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction
 import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import java.util.concurrent.atomic.AtomicInteger
+
+val degreesFunction = """\b[^()]+\((.*)\)$""".toRegex()
 
 val referenceRegex = """&[^,\s{}]+""".toRegex()
 val globalJson = Json {
@@ -33,6 +36,9 @@ data class NavigationNode(
         "&pose1",
         "",
         "---",
+        "When defining headings, use the \"deg(20.0)\" function to convert the heading from degrees -> radians:",
+        "{\"pose\": {\"x\": 14.0, \"y\": 6.0, \"heading\": deg(20.0)}, \"radius\": 20.0}",
+        "---",
         "Pure Pursuit waypoints can be defined using:",
         "{\"pose\": {\"x\": 14.0, \"y\": 6.0, \"heading\": 14.0}, \"radius\": 20.0}",
         "{\"point\": {\"x\": 14.0, \"y\": 6.0}, \"radius\": 20.0}",
@@ -52,6 +58,7 @@ data class NavigationNode(
     )
     val waypoints: Set<String> = setOf(
         "{\"x\":6.0,\"y\":6.0,\"heading\":0.10471975511965978}",
+        "{\"x\":6.0,\"y\":6.0,\"heading\":deg(20.0)}",
         "{&point1,\"heading\":0.10471975511965978}",
         "&pose1"
     ),
@@ -99,13 +106,23 @@ data class NavigationNode(
     }
 
     fun prepareForApplication(globals: AutonomousDefaults) = waypoints
-        .map {
+        .map { unparsed ->
+            var it = unparsed
             val extracted = referenceRegex.find(it)
                 ?: return@map it
 
             val value = extracted.value
             val pose = globals.poses[value.removePrefix("&")]
             val point = globals.points[value.removePrefix("&")]
+
+            val matchResults = degreesFunction.findAll(it)
+            matchResults.forEach { matchResult ->
+                val group = matchResult.groupValues[1]
+                println(matchResult.value)
+                val toRadians = AngleUnit.normalizeRadians(group.toDouble())
+                it = degreesFunction.replace(it, "$toRadians")
+            }
+
             if (it.contains("heading"))
             {
                 if (pose != null)
