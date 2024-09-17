@@ -11,9 +11,9 @@ data class DrivetrainUpdates(
 {
     fun propagate(pipeline: AutonomousWrapper)
     {
-        pipeline.frontLeft.power = newFrontLeft
-        pipeline.frontRight.power = newFrontRight
-        pipeline.backLeft.power = newBackLeft
-        pipeline.backRight.power = newBackRight
+        pipeline.drivetrain.frontLeft.power = newFrontLeft
+        pipeline.drivetrain.frontRight.power = newFrontRight
+        pipeline.drivetrain.backLeft.power = newBackLeft
+        pipeline.drivetrain.backRight.power = newBackRight
     }
 }
