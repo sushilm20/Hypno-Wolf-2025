@@ -13,9 +13,9 @@ import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import java.util.concurrent.atomic.AtomicInteger
 
-val degreesFunction = """\b[^()]+\((.*)\)$""".toRegex()
-
+val degreesFunction = """deg\(([^)]+)\)""".toRegex()
 val referenceRegex = """&[^,\s{}]+""".toRegex()
+
 val globalJson = Json {
     ignoreUnknownKeys = true
 }
@@ -108,20 +108,20 @@ data class NavigationNode(
     fun prepareForApplication(globals: AutonomousDefaults) = waypoints
         .map { unparsed ->
             var it = unparsed
+            val matchResult = degreesFunction.find(it)
+            if (matchResult != null)
+            {
+                val group = matchResult.groupValues[1]
+                val toRadians = AngleUnit.normalizeRadians(group.toDouble())
+                it = degreesFunction.replace(it, "$toRadians")
+            }
+
             val extracted = referenceRegex.find(it)
                 ?: return@map it
 
             val value = extracted.value
             val pose = globals.poses[value.removePrefix("&")]
             val point = globals.points[value.removePrefix("&")]
-
-            val matchResults = degreesFunction.findAll(it)
-            matchResults.forEach { matchResult ->
-                val group = matchResult.groupValues[1]
-                println(matchResult.value)
-                val toRadians = AngleUnit.normalizeRadians(group.toDouble())
-                it = degreesFunction.replace(it, "$toRadians")
-            }
 
             if (it.contains("heading"))
             {
