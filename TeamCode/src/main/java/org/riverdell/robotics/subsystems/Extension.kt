@@ -9,6 +9,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import kotlinx.serialization.Serializable
 import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
+import org.riverdell.robotics.utilities.managed.pidf.PIDFConfig
 
 class Extension(opMode: LinearOpMode) : AbstractSubsystem()
 {
@@ -21,18 +22,7 @@ class Extension(opMode: LinearOpMode) : AbstractSubsystem()
             direction = DcMotorSimple.Direction.FORWARD
         }
 
-    private val slidePIDFConfig = konfig<ExtensionPIDF>()
-
-    @Serializable
-    data class ExtensionPIDF(
-        var kP: Double = 0.0,
-        var kI: Double = 0.0,
-        var kD: Double = 0.0,
-        var kV: Double = 0.0,
-        var kA: Double = 0.0,
-        var kStatic: Double = 0.0,
-    )
-
+    private val slidePIDFConfig = konfig<PIDFConfig> { withCustomFileID("extension_pidf") }
     private val slides = with(slidePIDFConfig.get()) {
         ManagedMotorGroup(
             this@Extension,
@@ -48,13 +38,7 @@ class Extension(opMode: LinearOpMode) : AbstractSubsystem()
 
     override fun doInitialize()
     {
-        slidePIDFConfig.onHotReload {
-            slides.kA = kA
-            slides.kV = kV
-            slides.kStatic = kStatic
-            slides.pid = PIDCoefficients(kP, kI, kD)
-            slides.rebuild()
-        }
+
     }
 
 }

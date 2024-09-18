@@ -4,7 +4,6 @@ import com.arcrobotics.ftclib.drivebase.MecanumDrive
 import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.arcrobotics.ftclib.hardware.motors.Motor
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
@@ -34,7 +33,7 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
         TwoWheelLocalizer(opMode)
     }
 
-    lateinit var backingDriveBase: MecanumDrive
+    private lateinit var backingDriveBase: MecanumDrive
 
     fun voltage() = voltageState.current()
     fun imu() = imuState.current()
@@ -66,11 +65,6 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
      */
     override fun doInitialize()
     {
-        frontLeft = opMode.hardware<DcMotor>("frontLeft")
-        frontRight = opMode.hardware<DcMotor>("frontRight")
-        backLeft = opMode.hardware<DcMotor>("backLeft")
-        backRight = opMode.hardware<DcMotor>("backRight")
-
         imu = opMode.hardware<IMU>("imu")
         imu.resetDeviceConfigurationForOpMode()
         imu.initialize(
@@ -85,18 +79,28 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
 
         if (opMode is HypnoticAuto)
         {
+            frontLeft = opMode.hardware<DcMotor>("frontLeft")
+            frontRight = opMode.hardware<DcMotor>("frontRight")
+            backLeft = opMode.hardware<DcMotor>("backLeft")
+            backRight = opMode.hardware<DcMotor>("backRight")
+
             frontLeft.direction = DcMotorSimple.Direction.REVERSE
             frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
             frontRight.direction = DcMotorSimple.Direction.FORWARD
             frontRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
             backLeft.direction = DcMotorSimple.Direction.REVERSE
             backLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
             backRight.direction = DcMotorSimple.Direction.FORWARD
             backRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-            runWithoutEncoders()
-        }
 
-        setupDriveBase()
+            runWithoutEncoders()
+        } else
+        {
+            setupDriveBase()
+        }
     }
 
     fun setupDriveBase()

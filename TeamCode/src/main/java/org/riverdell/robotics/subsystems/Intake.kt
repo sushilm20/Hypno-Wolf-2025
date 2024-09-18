@@ -12,54 +12,25 @@ import java.util.concurrent.CompletableFuture
 class Intake(opMode: LinearOpMode) : AbstractSubsystem()
 {
     @Serializable
-    data class WristConfig(
-        var acceleration: Double = 0.0,
-        var deceleration: Double = 0.0,
-        var velocity: Double = 0.0
-    )
+    data class IntakeConfig(val leftIsReversed: Boolean = false)
 
-    private val wristConfig = konfig<WristConfig>()
-    private val wrist = ManagedServo(
-        opMode.hardware("intake_wrist"),
-        this@Intake
-    ) {
-        val config = wristConfig.get()
-        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
-    }
+    private val intakeConfig = konfig<IntakeConfig>()
 
-    @Serializable
-    data class GripConfig(
-        var acceleration: Double = 0.0,
-        var deceleration: Double = 0.0,
-        var velocity: Double = 0.0,
-        val leftIsReversed1Dot0Position: Boolean = false
-    )
+    private val wristConstraints = konfig<MotionProfileConstraints> { withCustomFileID("intake_wrist_motionprofile") }
+    private val wrist = motionProfiledServo("intake_wrist", wristConstraints)
 
-    private val gripConfig = konfig<GripConfig>()
-    private val leftGrip = ManagedServo(
-        opMode.hardware("intake_grip_left"),
-        this@Intake
-    ) {
-        val config = gripConfig.get()
-        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
-    }
-
-    private val rightGrip = ManagedServo(
-        opMode.hardware("intake_grip_right"),
-        this@Intake
-    ) {
-        val config = gripConfig.get()
-        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
-    }
+    private val rotationConstraints = konfig<MotionProfileConstraints> { withCustomFileID("intake_grip_motionprofile") }
+    private val leftGrip = motionProfiledServo("intake_grip_left", rotationConstraints)
+    private val rightGrip = motionProfiledServo("intake_grip_right", rotationConstraints)
 
     fun wristRotateTo(position: Double) = wrist.setMotionProfileTarget(position)
     fun gripsRotateTo(position: Double) = CompletableFuture.allOf(
         leftGrip.setMotionProfileTarget(
-            if (gripConfig.get().leftIsReversed1Dot0Position)
+            if (intakeConfig.get().leftIsReversed)
                 (1.0 - position) else position
         ),
         rightGrip.setMotionProfileTarget(
-            if (!gripConfig.get().leftIsReversed1Dot0Position)
+            if (!intakeConfig.get().leftIsReversed)
                 (1.0 - position) else position
         )
     )

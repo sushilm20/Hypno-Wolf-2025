@@ -1,65 +1,34 @@
 package org.riverdell.robotics.subsystems
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import kotlinx.serialization.Serializable
-import org.riverdell.robotics.utilities.hardware
-import org.riverdell.robotics.utilities.managed.ManagedServo
+import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 import java.util.concurrent.CompletableFuture
 
-class V4B(opMode: LinearOpMode) : AbstractSubsystem()
+class V4B(opMode: HypnoticRobot) : AbstractSubsystem()
 {
     @Serializable
-    data class V4BRotationConfig(
-        var acceleration: Double = 0.0,
-        var deceleration: Double = 0.0,
-        var velocity: Double = 0.0,
-        val leftIsReversed1Dot0Position: Boolean = false
-    )
+    data class V4BConfig(val leftIsReversed: Boolean = false)
 
-    private val rotationConfig = konfig<V4BRotationConfig>()
-    private val leftRotation = ManagedServo(
-        opMode.hardware("v4b_rotation_left"),
-        this@V4B
-    ) {
-        val config = rotationConfig.get()
-        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
-    }
+    private val v4bConfig = konfig<V4BConfig>()
 
-    private val rightRotation = ManagedServo(
-        opMode.hardware("v4b_rotation_right"),
-        this@V4B
-    ) {
-        val config = rotationConfig.get()
-        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
-    }
+    private val rotationConstraints = konfig<MotionProfileConstraints> { withCustomFileID("v4b_rotation_motionprofile") }
+    private val leftRotation = motionProfiledServo("v4b_rotation_left", rotationConstraints)
+    private val rightRotation = motionProfiledServo("v4b_rotation_right", rotationConstraints)
 
-    @Serializable
-    data class V4BCoaxialRotationConstraints(
-        var acceleration: Double = 0.0,
-        var deceleration: Double = 0.0,
-        var velocity: Double = 0.0
-    )
-
-    private val rotationCoaxialConstraints = konfig<V4BCoaxialRotationConstraints>()
-    private val coaxialRotation = ManagedServo(
-        opMode.hardware("v4b_coaxial"),
-        this@V4B
-    ) {
-        val config = rotationCoaxialConstraints.get()
-        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
-    }
+    private val coaxialConstraints = konfig<MotionProfileConstraints>()
+    private val coaxialRotation = motionProfiledServo("v4b_coaxial", coaxialConstraints)
 
     fun coaxialRotateTo(position: Double) = coaxialRotation.setMotionProfileTarget(position)
     fun rotateTo(position: Double) = CompletableFuture.allOf(
         leftRotation.setMotionProfileTarget(
-            if (rotationConfig.get().leftIsReversed1Dot0Position)
+            if (v4bConfig.get().leftIsReversed)
                 (1.0 - position) else position
         ),
         rightRotation.setMotionProfileTarget(
-            if (!rotationConfig.get().leftIsReversed1Dot0Position)
+            if (!v4bConfig.get().leftIsReversed)
                 (1.0 - position) else position
         )
     )

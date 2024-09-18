@@ -17,6 +17,12 @@ import org.riverdell.robotics.subsystems.V4B
 
 abstract class HypnoticRobot : LinearOpMode(), System
 {
+    companion object
+    {
+        @JvmStatic
+        lateinit var instance: HypnoticRobot
+    }
+
     override val subsystems: MutableSet<Subsystem> = mutableSetOf()
 
     private val test by lazy {
@@ -53,6 +59,8 @@ abstract class HypnoticRobot : LinearOpMode(), System
 
     override fun runOpMode()
     {
+        instance = this
+
         register(
             test, drivetrain,
             *additionalSubSystems().toTypedArray()
