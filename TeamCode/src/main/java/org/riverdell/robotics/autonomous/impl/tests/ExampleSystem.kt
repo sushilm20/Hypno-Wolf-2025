@@ -18,7 +18,7 @@ class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
         val leftIsReversed1Dot0Position: Boolean = false
     )
 
-    private val rotationConfig = opMode.konfig<CSClawConfig>()
+    private val rotationConfig = konfig<CSClawConfig>()
     private val leftRotation = ManagedServo(
         opMode.hardware("extender"),
         this@ExampleSystem

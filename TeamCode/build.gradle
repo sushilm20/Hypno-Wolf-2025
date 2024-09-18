@@ -62,7 +62,7 @@ tasks.withType(Test).configureEach {
 
 dependencies {
     implementation 'org.ftclib.ftclib:core:2.1.1'
-    implementation "io.liftgate.robotics.mono:mono:5.6-SNAPSHOT"
+    implementation "io.liftgate.robotics.mono:mono:5.7-SNAPSHOT"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2" // Kaml will supply the implementation, we just need Core.
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2"

@@ -56,6 +56,6 @@ public class MecanumTranslations {
     }
 
     public static DrivetrainUpdates getPowers(Pose pose, double angle) {
-        return getPowers(pose.x, pose.y, pose.heading, angle);
+        return getPowers(pose.x, pose.y, pose.getHeading(), angle);
     }
 }

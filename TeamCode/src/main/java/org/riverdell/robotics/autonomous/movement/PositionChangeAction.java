@@ -224,7 +224,7 @@ public class PositionChangeAction {
             if (previousPose != null) {
                 Pose movementDelta = currentPose.subtract(previousPose); // chore: do buffer system
                 if (movementDelta.toVec2D().magnitude() > robotStuckProtection.getMinimumRequiredTranslationalDifference() ||
-                        Math.abs(movementDelta.heading) > robotStuckProtection.getMinimumRequiredRotationalDifference()) {
+                        Math.abs(movementDelta.getHeading()) > robotStuckProtection.getMinimumRequiredRotationalDifference()) {
                     stuckProtection.reset();
                 }
 
@@ -247,7 +247,7 @@ public class PositionChangeAction {
         Pose delta = targetPose.subtract(currentPose);
 
         if (delta.toVec2D().magnitude() > MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET ||
-                Math.abs(delta.heading) > MINIMUM_ROTATIONAL_DIFF_FROM_TARGET) {
+                Math.abs(delta.getHeading()) > MINIMUM_ROTATIONAL_DIFF_FROM_TARGET) {
             atTargetTimer.reset();
         }
 
@@ -259,16 +259,16 @@ public class PositionChangeAction {
     }
 
     public @NotNull Pose getPower(@NotNull Pose robotPose, @NotNull Pose targetPose) {
-        double headingError = targetPose.heading - robotPose.heading;
-        if (headingError > Math.PI) targetPose.heading -= 2 * Math.PI;
-        if (headingError < -Math.PI) targetPose.heading += 2 * Math.PI;
+        double headingError = targetPose.getHeading() - robotPose.getHeading();
+        if (headingError > Math.PI) targetPose.setHeading(targetPose.getHeading() - 2 * Math.PI);
+        if (headingError < -Math.PI) targetPose.setHeading(targetPose.getHeading() + 2 * Math.PI);
 
         double xPower = xController.calculate(robotPose.x, targetPose.x);
         double yPower = yController.calculate(robotPose.y, targetPose.y);
-        double hPower = hController.calculate(robotPose.heading, targetPose.heading);
+        double hPower = hController.calculate(robotPose.getHeading(), targetPose.getHeading());
 
-        double x_rotated = xPower * Math.cos(-robotPose.heading) - yPower * Math.sin(-robotPose.heading);
-        double y_rotated = xPower * Math.sin(-robotPose.heading) + yPower * Math.cos(-robotPose.heading);
+        double x_rotated = xPower * Math.cos(-robotPose.getHeading()) - yPower * Math.sin(-robotPose.getHeading());
+        double y_rotated = xPower * Math.sin(-robotPose.getHeading()) + yPower * Math.cos(-robotPose.getHeading());
 
         hPower = Range.clip(hPower, -maxRotationalSpeed, maxRotationalSpeed);
         x_rotated = Range.clip(x_rotated, -maxTranslationalSpeed / K_STATIC, maxTranslationalSpeed / K_STATIC);

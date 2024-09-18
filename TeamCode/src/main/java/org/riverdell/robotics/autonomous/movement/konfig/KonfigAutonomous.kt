@@ -15,11 +15,11 @@ import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
 abstract class KonfigAutonomous(
     private val konfigID: String,
 ) : AutonomousWrapper(root@{ wrapper ->
-    val autonomousDefaults = wrapper.konfig<AutonomousDefaults> {
+    val autonomousDefaults = konfig<AutonomousDefaults> {
         withCustomFileID("autonomous-defaults")
     }
 
-    val nodeCollection = wrapper.konfig<NavigationNodeCollection> {
+    val nodeCollection = konfig<NavigationNodeCollection> {
         withCustomFileID(konfigID)
     }
 

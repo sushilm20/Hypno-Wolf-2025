@@ -21,7 +21,7 @@ class Extension(opMode: LinearOpMode) : AbstractSubsystem()
             direction = DcMotorSimple.Direction.FORWARD
         }
 
-    private val slidePIDFConfig = opMode.konfig<ExtensionPIDF>()
+    private val slidePIDFConfig = konfig<ExtensionPIDF>()
 
     @Serializable
     data class ExtensionPIDF(

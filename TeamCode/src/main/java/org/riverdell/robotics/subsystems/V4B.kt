@@ -19,7 +19,7 @@ class V4B(opMode: LinearOpMode) : AbstractSubsystem()
         val leftIsReversed1Dot0Position: Boolean = false
     )
 
-    private val rotationConfig = opMode.konfig<V4BRotationConfig>()
+    private val rotationConfig = konfig<V4BRotationConfig>()
     private val leftRotation = ManagedServo(
         opMode.hardware("v4b_rotation_left"),
         this@V4B
@@ -43,7 +43,7 @@ class V4B(opMode: LinearOpMode) : AbstractSubsystem()
         var velocity: Double = 0.0
     )
 
-    private val rotationCoaxialConstraints = opMode.konfig<V4BCoaxialRotationConstraints>()
+    private val rotationCoaxialConstraints = konfig<V4BCoaxialRotationConstraints>()
     private val coaxialRotation = ManagedServo(
         opMode.hardware("v4b_coaxial"),
         this@V4B

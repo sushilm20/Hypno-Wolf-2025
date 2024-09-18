@@ -1,6 +1,9 @@
 package test
 
+import com.charleskorn.kaml.AmbiguousQuoteStyle
+import com.charleskorn.kaml.SingleLineStringStyle
 import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlConfiguration
 import kotlinx.serialization.encodeToString
 import org.junit.jupiter.api.Test
 import org.junit.runner.RunWith
@@ -14,7 +17,7 @@ class KonfigTest
     @Test
     fun whatYamlFormatAmIExpecting()
     {
-        println(Yaml().encodeToString(NavigationNodeCollection(
+        println(Yaml(configuration = YamlConfiguration(ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted, singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(NavigationNodeCollection(
             nodes = mapOf("main" to NavigationNode())
         )))
     }

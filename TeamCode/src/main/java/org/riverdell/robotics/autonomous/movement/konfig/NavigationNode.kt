@@ -62,7 +62,9 @@ data class NavigationNode(
         "{\"x\":6.0,\"y\":6.0,\"heading\":0.10471975511965978}",
         "{\"x\":6.0,\"y\":6.0,\"heading\":deg(20.0)}",
         "{&point1,\"heading\":0.10471975511965978}",
-        "&pose1"
+        "*pickup_sample",
+        "&pose1",
+        "{\"x\":8.0,\"y\":9.0,\"heading\":deg(40.0)}",
     ),
     @SerializedName("stuck-recovery")
     val stuckProtection: InternalStuckProtectionConfig = InternalStuckProtectionConfig(),

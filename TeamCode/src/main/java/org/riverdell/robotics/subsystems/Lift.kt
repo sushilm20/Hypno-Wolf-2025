@@ -21,7 +21,7 @@ class Lift(opMode: LinearOpMode) : AbstractSubsystem()
             direction = DcMotorSimple.Direction.FORWARD
         }
 
-    private val slidePIDFConfig = opMode.konfig<LiftPIDF>()
+    private val slidePIDFConfig = konfig<LiftPIDF>()
 
     @Serializable
     data class LiftPIDF(

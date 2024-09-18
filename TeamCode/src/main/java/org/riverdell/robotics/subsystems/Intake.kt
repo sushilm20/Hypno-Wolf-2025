@@ -18,7 +18,7 @@ class Intake(opMode: LinearOpMode) : AbstractSubsystem()
         var velocity: Double = 0.0
     )
 
-    private val wristConfig = opMode.konfig<WristConfig>()
+    private val wristConfig = konfig<WristConfig>()
     private val wrist = ManagedServo(
         opMode.hardware("intake_wrist"),
         this@Intake
@@ -35,7 +35,7 @@ class Intake(opMode: LinearOpMode) : AbstractSubsystem()
         val leftIsReversed1Dot0Position: Boolean = false
     )
 
-    private val gripConfig = opMode.konfig<GripConfig>()
+    private val gripConfig = konfig<GripConfig>()
     private val leftGrip = ManagedServo(
         opMode.hardware("intake_grip_left"),
         this@Intake
