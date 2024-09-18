@@ -1,6 +1,6 @@
 package org.riverdell.robotics.autonomous.movement
 
-import org.riverdell.robotics.autonomous.AutonomousWrapper
+import org.riverdell.robotics.autonomous.HypnoticAuto
 
 data class DrivetrainUpdates(
     val newFrontLeft: Double,
@@ -9,7 +9,7 @@ data class DrivetrainUpdates(
     val newBackRight: Double
 )
 {
-    fun propagate(pipeline: AutonomousWrapper)
+    fun propagate(pipeline: HypnoticAuto)
     {
         pipeline.drivetrain.frontLeft.power = newFrontLeft
         pipeline.drivetrain.frontRight.power = newFrontRight

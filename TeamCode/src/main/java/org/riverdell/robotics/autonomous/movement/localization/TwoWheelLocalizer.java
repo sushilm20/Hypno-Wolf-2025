@@ -8,7 +8,7 @@ import com.arcrobotics.ftclib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.riverdell.robotics.autonomous.movement.geometry.Pose;
-import org.riverdell.robotics.autonomous.AutonomousWrapper;
+import org.riverdell.robotics.autonomous.HypnoticAuto;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,12 +40,12 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
     public static double WHEEL_RADIUS = 0.94488189; // 48
     public static double GEAR_RATIO = 1;
 
-    private final AutonomousWrapper pipeline;
+    private final HypnoticAuto pipeline;
 
     private final Motor.Encoder lateral;
     private final Motor.Encoder perpendicular;
 
-    public TwoWheelLocalizer(AutonomousWrapper pipeline) {
+    public TwoWheelLocalizer(HypnoticAuto pipeline) {
         super(Arrays.asList(
                 new Pose2d(0, 0, 0), // left + right
                 new Pose2d(0, 0, Math.toRadians(90)) // front
@@ -74,7 +74,7 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
 
     @Override
     public double getHeading() {
-        return pipeline.getDrivetrain().getIMUYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        return pipeline.getDrivetrain().imu().getYaw(AngleUnit.RADIANS);
     }
 
     @NonNull

@@ -1,9 +1,8 @@
-package org.riverdell.robotics.teleop
+package org.riverdell.robotics
 
 import android.util.Log
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
-import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import io.liftgate.robotics.mono.Mono
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
@@ -16,7 +15,7 @@ import org.riverdell.robotics.subsystems.Intake
 import org.riverdell.robotics.subsystems.Lift
 import org.riverdell.robotics.subsystems.V4B
 
-abstract class AbstractLinearOpMode : LinearOpMode(), System
+abstract class HypnoticRobot : LinearOpMode(), System
 {
     override val subsystems: MutableSet<Subsystem> = mutableSetOf()
 

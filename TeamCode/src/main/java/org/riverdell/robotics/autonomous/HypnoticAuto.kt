@@ -7,17 +7,18 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
-import org.riverdell.robotics.teleop.AbstractLinearOpMode
+import org.riverdell.robotics.HypnoticRobot
+import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
-abstract class AutonomousWrapper(
-    internal val blockExecutionGroup: RootExecutionGroup.(AutonomousWrapper) -> Unit
-) : AbstractLinearOpMode()
+abstract class HypnoticAuto(
+    internal val blockExecutionGroup: RootExecutionGroup.(HypnoticAuto) -> Unit
+) : HypnoticRobot()
 {
     companion object
     {
         @JvmStatic
-        lateinit var instance: AutonomousWrapper
+        lateinit var instance: HypnoticAuto
     }
 
     val navigationConfig by lazy {
@@ -31,7 +32,7 @@ abstract class AutonomousWrapper(
         private set
 
     val localizer by lazy {
-        TwoWheelLocalizer(this@AutonomousWrapper)
+        TwoWheelLocalizer(this@HypnoticAuto)
     }
 
     override fun additionalSubSystems() = listOf(visionPipeline)
@@ -46,8 +47,7 @@ abstract class AutonomousWrapper(
             runCatching {
                 multipleTelemetry.addData(
                     "IMU",
-                    drivetrain.getIMUYawPitchRollAngles()
-                        .getYaw(AngleUnit.DEGREES)
+                    drivetrain.imu().getYaw(AngleUnit.DEGREES)
                 )
             }.onFailure {
                 multipleTelemetry.addData("IMU", 0.0)
@@ -59,21 +59,29 @@ abstract class AutonomousWrapper(
 
     override fun opModeStart()
     {
+        var completedLatch = false
+        val latch = CountDownLatch(1)
         thread {
             while (!isStopRequested)
             {
                 voltage = hardwareMap.voltageSensor.first().voltage
                 localizer.update()
                 runPeriodics()
+
+                if (!completedLatch)
+                {
+                    latch.countDown()
+                }
             }
         }
 
         val executionGroup = Mono.buildExecutionGroup {
             blockExecutionGroup(
-                this@AutonomousWrapper
+                this@HypnoticAuto
             )
         }
 
+        latch.await()
         executionGroup.executeBlocking()
     }
 }

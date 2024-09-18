@@ -2,7 +2,7 @@ package org.riverdell.robotics.autonomous.movement.konfig
 
 import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
-import org.riverdell.robotics.autonomous.AutonomousWrapper
+import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.autonomous.movement.geometry.CubicBezierCurve
 import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.navigatePurePursuit
@@ -14,7 +14,7 @@ import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
 
 abstract class KonfigAutonomous(
     private val konfigID: String,
-) : AutonomousWrapper(root@{ wrapper ->
+) : HypnoticAuto(root@{ wrapper ->
     val autonomousDefaults = konfig<AutonomousDefaults> {
         withCustomFileID("autonomous-defaults")
     }

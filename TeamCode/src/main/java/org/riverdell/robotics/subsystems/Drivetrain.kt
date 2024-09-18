@@ -8,12 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
-import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
-import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles
-import org.riverdell.robotics.autonomous.AutonomousWrapper
+import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.utilities.hardware
 
 class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
@@ -25,9 +22,11 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
     lateinit var backLeft: DcMotor
 
     private lateinit var imu: IMU
-    private var imuYPR: YawPitchRollAngles? = null
+    private val imuState by state(write = { _ -> }, read = { imu.robotYawPitchRollAngles })
 
     lateinit var backingDriveBase: MecanumDrive
+
+    fun imu() = imuState.current()
 
     fun driveRobotCentric(driverOp: GamepadEx, scaleFactor: Double)
     {
@@ -41,8 +40,7 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
 
     fun driveFieldCentric(driverOp: GamepadEx, scaleFactor: Double)
     {
-        val heading = getIMUYawPitchRollAngles().getYaw(AngleUnit.DEGREES)
-
+        val heading = imuState.current().getYaw(AngleUnit.DEGREES)
         backingDriveBase.driveFieldCentric(
             -driverOp.leftX * scaleFactor,
             -driverOp.leftY * scaleFactor,
@@ -62,7 +60,6 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
         backLeft = opMode.hardware<DcMotor>("backLeft")
         backRight = opMode.hardware<DcMotor>("backRight")
 
-
         imu = opMode.hardware<IMU>("imu")
         imu.resetDeviceConfigurationForOpMode()
         imu.initialize(
@@ -75,7 +72,7 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
         )
         imu.resetYaw()
 
-        if (opMode is AutonomousWrapper)
+        if (opMode is HypnoticAuto)
         {
             frontLeft.direction = DcMotorSimple.Direction.REVERSE
             frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
@@ -117,13 +114,10 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
         listOf(backLeft, frontLeft, frontRight, backRight).forEach(consumer::invoke)
     }
 
-    fun getIMUYawPitchRollAngles() = imuYPR ?: imu.robotYawPitchRollAngles
-    fun backingImu() = imu
-
     override fun isCompleted() = true
     override fun dispose()
     {
-        if (opMode is AutonomousWrapper)
+        if (opMode is HypnoticAuto)
         {
             stopAndResetMotors()
         }

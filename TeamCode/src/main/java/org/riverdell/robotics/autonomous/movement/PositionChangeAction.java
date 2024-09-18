@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.riverdell.robotics.autonomous.AutonomousWrapper;
+import org.riverdell.robotics.autonomous.HypnoticAuto;
 import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig;
 import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm;
@@ -21,7 +21,7 @@ import kotlin.jvm.functions.Function1;
 public class PositionChangeAction {
     private static final DrivetrainUpdates ZERO = new DrivetrainUpdates(0.0, 0.0, 0.0, 0.0);
 
-    private final AutonomousWrapper instance;
+    private final HypnoticAuto instance;
     private final RootExecutionGroup executionGroup;
 
     public double K_STATIC = 1.85;
@@ -58,7 +58,7 @@ public class PositionChangeAction {
     private double maxRotationalSpeed = 1.0;
 
     public PositionChangeAction(@Nullable Pose targetPose, @NotNull RootExecutionGroup executionGroup) {
-        this.instance = AutonomousWrapper.getInstance();
+        this.instance = HypnoticAuto.getInstance();
         this.targetPose = targetPose;
         this.executionGroup = executionGroup;
 

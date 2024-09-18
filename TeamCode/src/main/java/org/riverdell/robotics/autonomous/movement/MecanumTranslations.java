@@ -4,7 +4,7 @@ import com.arcrobotics.ftclib.drivebase.RobotDrive;
 import com.arcrobotics.ftclib.geometry.Vector2d;
 import com.qualcomm.robotcore.util.Range;
 
-import org.riverdell.robotics.autonomous.AutonomousWrapper;
+import org.riverdell.robotics.autonomous.HypnoticAuto;
 import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 
 public class MecanumTranslations {
@@ -30,7 +30,7 @@ public class MecanumTranslations {
         // 1.06, 1.04
 
         // feedforward & voltage comp
-        double correction = 12 / AutonomousWrapper.getInstance().getVoltage();
+        double correction = 12 / HypnoticAuto.getInstance().getVoltage();
         for (int i = 0; i < wheelSpeeds.length; i++) {
             wheelSpeeds[i] = Math.abs(wheelSpeeds[i]) < 0.01 ?
                     wheelSpeeds[i] * correction :
