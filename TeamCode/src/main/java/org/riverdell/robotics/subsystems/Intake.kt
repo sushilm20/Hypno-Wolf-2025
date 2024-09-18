@@ -6,7 +6,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import kotlinx.serialization.Serializable
 import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedServo
-import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 import java.util.concurrent.CompletableFuture
 
 class Intake(opMode: LinearOpMode) : AbstractSubsystem()
@@ -24,7 +24,7 @@ class Intake(opMode: LinearOpMode) : AbstractSubsystem()
         this@Intake
     ) {
         val config = wristConfig.get()
-        ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
+        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
     @Serializable
@@ -41,7 +41,7 @@ class Intake(opMode: LinearOpMode) : AbstractSubsystem()
         this@Intake
     ) {
         val config = gripConfig.get()
-        ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
+        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
     private val rightGrip = ManagedServo(
@@ -49,7 +49,7 @@ class Intake(opMode: LinearOpMode) : AbstractSubsystem()
         this@Intake
     ) {
         val config = gripConfig.get()
-        ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
+        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
     fun wristRotateTo(position: Double) = wrist.setMotionProfileTarget(position)

@@ -1,15 +1,3 @@
-package org.riverdell.robotics.utilities.motionprofile;
+package org.riverdell.robotics.utilities.motionprofile
 
-public class ProfileState {
-    public double x = 0;
-    public double v = 0;
-    public double a = 0;
-
-    public ProfileState(double x, double v, double a) {
-        this.x = x;
-        this.v = v;
-        this.a = a;
-    }
-
-    public ProfileState() {}
-}
+data class ProfileState @JvmOverloads constructor(val target: Double = 0.0, val velocity: Double = 0.0, val acceleration: Double = 0.0)

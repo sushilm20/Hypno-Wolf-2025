@@ -6,7 +6,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import kotlinx.serialization.Serializable
 import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedServo
-import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 
 class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
 {
@@ -24,7 +24,7 @@ class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
         this@ExampleSystem
     ) {
         val config = rotationConfig.get()
-        ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
+        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
     override fun doInitialize()

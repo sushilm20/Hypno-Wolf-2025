@@ -1,23 +1,24 @@
-package org.riverdell.robotics.utilities.motionprofile;
+package org.riverdell.robotics.utilities.motionprofile
 
-public class ProfileConstraints {
-    public double accel;
-    public double decel;
-    public double velo;
+import kotlinx.serialization.Serializable
+import kotlin.math.abs
 
-    public ProfileConstraints(double velo, double accel) {
-        this(accel, accel, velo);
+@Serializable
+data class MotionProfileConstraints(var velocity: Double, var acceleration: Double, var deceleration: Double)
+{
+    constructor(velocity: Double, acceleration: Double) : this(acceleration, acceleration, velocity)
+
+    init
+    {
+        this.velocity = abs(velocity)
+        this.acceleration = abs(acceleration)
+        this.deceleration = abs(deceleration)
     }
 
-    public ProfileConstraints(double velo, double accel, double decel) {
-        this.velo = Math.abs(velo);
-        this.accel = Math.abs(accel);
-        this.decel = Math.abs(decel);
-    }
-
-    public void convert(double factor) {
-        this.velo *= factor;
-        this.accel *= factor;
-        this.decel *= factor;
+    fun convert(factor: Double)
+    {
+        velocity *= factor
+        acceleration *= factor
+        deceleration *= factor
     }
 }

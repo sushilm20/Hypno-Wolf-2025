@@ -6,7 +6,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import kotlinx.serialization.Serializable
 import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedServo
-import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 import java.util.concurrent.CompletableFuture
 
 class V4B(opMode: LinearOpMode) : AbstractSubsystem()
@@ -25,7 +25,7 @@ class V4B(opMode: LinearOpMode) : AbstractSubsystem()
         this@V4B
     ) {
         val config = rotationConfig.get()
-        ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
+        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
     private val rightRotation = ManagedServo(
@@ -33,7 +33,7 @@ class V4B(opMode: LinearOpMode) : AbstractSubsystem()
         this@V4B
     ) {
         val config = rotationConfig.get()
-        ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
+        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
     @Serializable
@@ -49,7 +49,7 @@ class V4B(opMode: LinearOpMode) : AbstractSubsystem()
         this@V4B
     ) {
         val config = rotationCoaxialConstraints.get()
-        ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
+        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
     fun coaxialRotateTo(position: Double) = coaxialRotation.setMotionProfileTarget(position)

@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
-import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 
 /**
  * A [Servo] wrapper that keeps track of motion profile states.
@@ -14,7 +14,7 @@ import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 class ManagedServo(
     private val servo: Servo,
     stateHolder: StateHolder,
-    private val constraints: () -> ProfileConstraints
+    private val constraints: () -> MotionProfileConstraints
 )
 {
     private var motionProfile: AsymmetricMotionProfile? = null
@@ -30,17 +30,17 @@ class ManagedServo(
         timer.reset()
     }, {
         val servoCurrentPosition = servo.position
-        val position = motionProfile?.calculate(timer.time())
+        val motionProfileState = motionProfile?.calculate(timer.time())
             ?: return@state servoCurrentPosition
 
-        if (servoCurrentPosition == position.x)
+        if (servoCurrentPosition == motionProfileState.target)
         {
             motionProfile = null
             return@state servoCurrentPosition
         }
 
-        servo.position = position.x
-        position.x
+        servo.position = motionProfileState.target
+        motionProfileState.target
     })
 
     fun unwrapServo() = servo
