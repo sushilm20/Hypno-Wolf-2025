@@ -180,7 +180,7 @@ public class PositionChangeAction {
             }
 
             Pose previousPose = this.previousPose;
-            Pose robotPose = instance.getLocalizer().getPose();
+            Pose robotPose = instance.getDrivetrain().getLocalizer().getPose();
             this.previousPose = robotPose;
 
             Pose targetPose = this.pathAlgorithm == null ? this.targetPose :

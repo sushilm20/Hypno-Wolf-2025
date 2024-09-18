@@ -10,10 +10,12 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.HypnoticAuto
+import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 import org.riverdell.robotics.utilities.hardware
 
-class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
+class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
 {
     lateinit var frontRight: DcMotor
     lateinit var frontLeft: DcMotor
@@ -22,10 +24,19 @@ class Drivetrain(private val opMode: LinearOpMode) : AbstractSubsystem()
     lateinit var backLeft: DcMotor
 
     private lateinit var imu: IMU
+
     private val imuState by state(write = { _ -> }, read = { imu.robotYawPitchRollAngles })
+    private val voltageState by state(write = { _ -> }, read = {
+        opMode.hardwareMap.voltageSensor.first().voltage
+    })
+
+    val localizer by lazy {
+        TwoWheelLocalizer(opMode)
+    }
 
     lateinit var backingDriveBase: MecanumDrive
 
+    fun voltage() = voltageState.current()
     fun imu() = imuState.current()
 
     fun driveRobotCentric(driverOp: GamepadEx, scaleFactor: Double)

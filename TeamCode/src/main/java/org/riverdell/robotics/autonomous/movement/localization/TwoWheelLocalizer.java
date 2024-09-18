@@ -7,8 +7,8 @@ import com.acmerobotics.roadrunner.localization.TwoTrackingWheelLocalizer;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.riverdell.robotics.HypnoticRobot;
 import org.riverdell.robotics.autonomous.movement.geometry.Pose;
-import org.riverdell.robotics.autonomous.HypnoticAuto;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,21 +40,21 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
     public static double WHEEL_RADIUS = 0.94488189; // 48
     public static double GEAR_RATIO = 1;
 
-    private final HypnoticAuto pipeline;
+    private final HypnoticRobot hypnoticRobot;
 
     private final Motor.Encoder lateral;
     private final Motor.Encoder perpendicular;
 
-    public TwoWheelLocalizer(HypnoticAuto pipeline) {
+    public TwoWheelLocalizer(HypnoticRobot hypnoticRobot) {
         super(Arrays.asList(
                 new Pose2d(0, 0, 0), // left + right
                 new Pose2d(0, 0, Math.toRadians(90)) // front
         ));
 
-        this.pipeline = pipeline;
+        this.hypnoticRobot = hypnoticRobot;
 
-        this.lateral = new Motor(pipeline.hardwareMap, "backRight").encoder;
-        this.perpendicular = new Motor(pipeline.hardwareMap, "frontLeft").encoder;
+        this.lateral = new Motor(hypnoticRobot.hardwareMap, "backRight").encoder;
+        this.perpendicular = new Motor(hypnoticRobot.hardwareMap, "frontLeft").encoder;
     }
 
     public static double encoderTicksToInches(double ticks) {
@@ -74,7 +74,7 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
 
     @Override
     public double getHeading() {
-        return pipeline.getDrivetrain().imu().getYaw(AngleUnit.RADIANS);
+        return hypnoticRobot.getDrivetrain().imu().getYaw(AngleUnit.RADIANS);
     }
 
     @NonNull

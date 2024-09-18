@@ -28,12 +28,6 @@ abstract class HypnoticAuto(
     }
 
     val visionPipeline by lazy { VisionPipeline(this) } // TODO: new season
-    var voltage: Double = 0.0
-        private set
-
-    val localizer by lazy {
-        TwoWheelLocalizer(this@HypnoticAuto)
-    }
 
     override fun additionalSubSystems() = listOf(visionPipeline)
     override fun initialize()
@@ -44,14 +38,17 @@ abstract class HypnoticAuto(
         {
             multipleTelemetry.addLine("--- Initialization ---")
 
-            runCatching {
-                multipleTelemetry.addData(
-                    "IMU",
-                    drivetrain.imu().getYaw(AngleUnit.DEGREES)
-                )
-            }.onFailure {
-                multipleTelemetry.addData("IMU", 0.0)
-            }
+            drivetrain.localizer.update()
+            runPeriodics()
+
+            multipleTelemetry.addData(
+                "Voltage",
+                drivetrain.voltage()
+            )
+            multipleTelemetry.addData(
+                "IMU",
+                drivetrain.imu().getYaw(AngleUnit.DEGREES)
+            )
 
             multipleTelemetry.update()
         }
@@ -59,19 +56,11 @@ abstract class HypnoticAuto(
 
     override fun opModeStart()
     {
-        var completedLatch = false
-        val latch = CountDownLatch(1)
         thread {
             while (!isStopRequested)
             {
-                voltage = hardwareMap.voltageSensor.first().voltage
-                localizer.update()
+                drivetrain.localizer.update()
                 runPeriodics()
-
-                if (!completedLatch)
-                {
-                    latch.countDown()
-                }
             }
         }
 
@@ -81,7 +70,6 @@ abstract class HypnoticAuto(
             )
         }
 
-        latch.await()
         executionGroup.executeBlocking()
     }
 }
