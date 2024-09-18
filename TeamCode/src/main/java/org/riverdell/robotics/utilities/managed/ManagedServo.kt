@@ -21,7 +21,6 @@ class ManagedServo(
     private val timer = ElapsedTime()
 
     private val state by stateHolder.state<Double>({
-        println("Applying motion profile")
         motionProfile =
             AsymmetricMotionProfile(
                 servo.position,

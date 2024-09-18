@@ -79,7 +79,6 @@ class ManagedMotorGroup(
          */
         if (slaves.isEmpty())
         {
-            println("No slaves")
             state.additionalPeriodic { current, _ ->
                 val velocity = master.velocity
                 master.power = pidfController

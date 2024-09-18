@@ -1,13 +1,15 @@
 package org.riverdell.robotics.autonomous.impl.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import org.riverdell.robotics.autonomous.HypnoticAuto
+import org.riverdell.robotics.autonomous.movement.konfig.KonfigAutonomous
 
-@Autonomous(name = "Test | Konfig Hot Reload", group = "Test")
-class TestKonfig : HypnoticAuto({ opMode ->
-    opMode.navigationConfig.onHotReload {
-        println("Test hot reload")
+@Autonomous(name = "Test | Konfig", group = "Test")
+class TestKonfig : KonfigAutonomous("testing")
+{
+    override fun definitions()
+    {
+        action("pickup_sample") {
+            println("Pickup sample shit")
+        }
     }
-
-    Thread.sleep(10000L)
-})
+}

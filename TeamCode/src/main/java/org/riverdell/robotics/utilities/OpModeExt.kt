@@ -14,8 +14,6 @@ import kotlin.IllegalStateException
  */
 inline fun <reified T : HardwareDevice> LinearOpMode.hardware(id: String) =
     runCatching {
-        println("Attempting to load hardware device $id of type: ${T::class.simpleName}")
-
         if (!opModeInInit() && !opModeIsActive())
         {
             throw IllegalStateException(
