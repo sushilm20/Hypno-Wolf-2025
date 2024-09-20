@@ -30,10 +30,12 @@ abstract class HypnoticRobot : LinearOpMode(), System
     }
 
     val drivetrain by lazy { Drivetrain(this) }
+/*
     val v4b by lazy { V4B(this) }
     val intake by lazy { Intake(this) }
     val lift by lazy { Lift(this) }
     val extension by lazy { Extension(this) }
+*/
 
     val multipleTelemetry by lazy {
         MultipleTelemetry(

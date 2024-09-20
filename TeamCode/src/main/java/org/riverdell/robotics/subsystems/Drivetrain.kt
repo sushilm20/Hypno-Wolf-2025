@@ -66,7 +66,6 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
     override fun doInitialize()
     {
         imu = opMode.hardware<IMU>("imu")
-        imu.resetDeviceConfigurationForOpMode()
         imu.initialize(
             IMU.Parameters(
                 RevHubOrientationOnRobot(

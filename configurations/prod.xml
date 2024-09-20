@@ -18,5 +18,4 @@
             <REV_VL53L0X_RANGE_SENSOR name="frontsensor" port="0" bus="3" />
         </LynxModule>
     </LynxUsbDevice>
-    <Webcam name="webcam1" serialNumber="967E6480" />
 </Robot>

@@ -5,14 +5,16 @@ import com.acmerobotics.roadrunner.control.PIDFController
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import io.liftgate.robotics.mono.states.StateHolder
+import io.liftgate.robotics.mono.states.StateResult
+import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
 class ManagedMotorGroup(
     stateHolder: StateHolder,
     var pid: PIDCoefficients,
-    var kV: Double = 0.0,
-    var kA: Double = 0.0,
-    var kStatic: Double = 0.0,
+    var kV: Double = 0.1,
+    var kA: Double = 0.1,
+    var kStatic: Double = 0.1,
     /**
      * Inputs: Measured position, measured velocity
      */
@@ -29,18 +31,22 @@ class ManagedMotorGroup(
     private val pidfBuilder = {
         PIDFController(pid, kV, kA, kStatic, kF)
     }
+
     private var pidfController = pidfBuilder()
+    private var idle = false
 
     private val state by stateHolder.state<Int>(
         write = {
             stable = System.currentTimeMillis()
+            master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+            slaves.forEach { slave ->
+                slave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+            }
+            idle = false
             pidfController.targetPosition = it.toDouble()
-            println("Writing target position to ${it.toDouble()}")
         },
         read = {
-            master.currentPosition.apply {
-                println("reading current position: at $this")
-            }
+            master.currentPosition
         },
         complete = { current, target ->
             (current == target || if (stuckProtection == null)
@@ -59,9 +65,7 @@ class ManagedMotorGroup(
                 {
                     System.currentTimeMillis() - stable > stuckProtection!!.timeStuckUnderMinimumMillis
                 }
-            }).apply {
-                println("State is complete? $this")
-            }
+            })
         }
     )
 
@@ -71,7 +75,6 @@ class ManagedMotorGroup(
         slaves.forEach {
             it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         }
-        println("Updated motors for the master to use W/O encoder")
 
         /**
          * Continuously update the power of the motor to keep it at the
@@ -80,23 +83,34 @@ class ManagedMotorGroup(
         if (slaves.isEmpty())
         {
             state.additionalPeriodic { current, _ ->
+                if (idle)
+                {
+                    return@additionalPeriodic
+                }
+
                 val velocity = master.velocity
                 master.power = pidfController
                     .update(
                         measuredPosition = current.toDouble(),
                         measuredVelocity = velocity
                     )
+                    .coerceIn(-1.0, 1.0)
             }
         } else
         {
-            println("Slave motor count: ${slaves.size}")
             state.additionalPeriodic { current, _ ->
+                if (idle)
+                {
+                    return@additionalPeriodic
+                }
+
                 val velocity = master.velocity // TODO: avg velocity? no clue
                 val pidf = pidfController
                     .update(
                         measuredPosition = current.toDouble(),
                         measuredVelocity = velocity
                     )
+                    .coerceIn(-1.0, 1.0)
 
                 master.power = pidf
                 slaves.forEach { slave ->
@@ -150,6 +164,23 @@ class ManagedMotorGroup(
     }
 
     fun isTravelling() = state.inProgress()
-    fun goTo(target: Int) = state.override(target)
+
+    fun goTo(target: Int): CompletableFuture<StateResult>
+    {
+        idle = false
+        return state.override(target, timeout = 2000L)
+    }
+
+    fun idle()
+    {
+        state.reset()
+
+        idle = true
+        master.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        slaves.forEach {
+            it.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        }
+    }
+
     fun reset() = state.reset()
 }
