@@ -4,17 +4,20 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients
 import com.acmerobotics.roadrunner.control.PIDFController
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
+import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import io.liftgate.robotics.mono.states.StateResult
+import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
+import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
 class ManagedMotorGroup(
     stateHolder: StateHolder,
-    var pid: PIDCoefficients,
-    var kV: Double = 0.1,
-    var kA: Double = 0.1,
-    var kStatic: Double = 0.1,
+    var pid: PIDCoefficients, // P, I, D gains
+    var kV: Double = 0.1, // velocity gain
+    var kA: Double = 0.1, // acceleration gain
+    var kStatic: Double = 0.1, // additive feedforward
     /**
      * Inputs: Measured position, measured velocity
      */
@@ -33,17 +36,40 @@ class ManagedMotorGroup(
     }
 
     private var pidfController = pidfBuilder()
+
+    /**
+     * No PID updates.
+     */
     private var idle = false
+
+    private var motionProfile: AsymmetricMotionProfile? = null
+    private val motionProfileTimer = ElapsedTime()
+    private var motionProfileConstraints: MotionProfileConstraints? = null
+
+    fun withMotionProfiling(constraints: MotionProfileConstraints) = apply {
+        motionProfileConstraints = constraints
+    }
 
     private val state by stateHolder.state<Int>(
         write = {
+            val currentPosition = master.currentPosition
             stable = System.currentTimeMillis()
             master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
             slaves.forEach { slave ->
                 slave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
             }
-            idle = false
+
+            if (motionProfileConstraints != null)
+            {
+                motionProfile = AsymmetricMotionProfile(
+                    currentPosition.toDouble(), it.toDouble(),
+                    motionProfileConstraints
+                )
+                motionProfileTimer.reset()
+            }
+
             pidfController.targetPosition = it.toDouble()
+            idle = false
         },
         read = {
             master.currentPosition
@@ -80,41 +106,50 @@ class ManagedMotorGroup(
          * Continuously update the power of the motor to keep it at the
          * desired target value set in the [PIDFController].
          */
+        fun generatePower(current: Int): Double?
+        {
+            if (idle)
+            {
+                return null
+            }
+
+            val velocity = master.velocity
+            if (motionProfile != null)
+            {
+                val motionProfileTarget = motionProfile!!.calculate(motionProfileTimer.time())
+                if (motionProfileTarget.velocity != 0.0)
+                {
+                    pidfController.targetPosition = motionProfileTarget.target
+                    pidfController.targetVelocity = motionProfileTarget.velocity
+                    pidfController.targetAcceleration = motionProfileTarget.acceleration
+                }
+            }
+
+            return pidfController
+                .update(
+                    measuredPosition = current.toDouble(),
+                    measuredVelocity = velocity
+                )
+                .coerceIn(-1.0, 1.0)
+        }
+
         if (slaves.isEmpty())
         {
             state.additionalPeriodic { current, _ ->
-                if (idle)
-                {
-                    return@additionalPeriodic
-                }
+                val power = generatePower(current)
+                    ?: return@additionalPeriodic
 
-                val velocity = master.velocity
-                master.power = pidfController
-                    .update(
-                        measuredPosition = current.toDouble(),
-                        measuredVelocity = velocity
-                    )
-                    .coerceIn(-1.0, 1.0)
+                master.power = power
             }
         } else
         {
             state.additionalPeriodic { current, _ ->
-                if (idle)
-                {
-                    return@additionalPeriodic
-                }
+                val power = generatePower(current)
+                    ?: return@additionalPeriodic
 
-                val velocity = master.velocity // TODO: avg velocity? no clue
-                val pidf = pidfController
-                    .update(
-                        measuredPosition = current.toDouble(),
-                        measuredVelocity = velocity
-                    )
-                    .coerceIn(-1.0, 1.0)
-
-                master.power = pidf
+                master.power = power
                 slaves.forEach { slave ->
-                    slave.power = pidf
+                    slave.power = power
                 }
             }
         }
@@ -165,22 +200,44 @@ class ManagedMotorGroup(
 
     fun isTravelling() = state.inProgress()
 
+    private var timeout = 2000L
+    fun withTimeout(timeout: Long) = apply { this.timeout = timeout }
+
+    /**
+     * Overrides current state and goes to a target position.
+     */
     fun goTo(target: Int): CompletableFuture<StateResult>
     {
-        idle = false
-        return state.override(target, timeout = 2000L)
+        exitIdle()
+        return state.override(target, timeout = timeout)
     }
 
+    /**
+     * Re-activates PID.
+     */
+    fun exitIdle()
+    {
+        idle = false
+    }
+
+    /**
+     * Releases motor powers and stops all PID activity.
+     */
     fun idle()
     {
-        state.reset()
+        if (idle)
+        {
+            return
+        }
 
+        state.reset()
+        pidfController.reset()
+        motionProfile = null
         idle = true
+
         master.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slaves.forEach {
             it.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         }
     }
-
-    fun reset() = state.reset()
 }

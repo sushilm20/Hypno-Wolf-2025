@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import org.riverdell.robotics.utilities.managed.pidf.PIDFConfig
+import org.riverdell.robotics.utilities.managed.pidf.PIDFMotionProfiledConfig
 
 class Extension(opMode: LinearOpMode) : AbstractSubsystem()
 {
@@ -22,7 +23,7 @@ class Extension(opMode: LinearOpMode) : AbstractSubsystem()
             direction = DcMotorSimple.Direction.FORWARD
         }
 
-    private val slidePIDFConfig = konfig<PIDFConfig> { withCustomFileID("extension_pidf") }
+    private val slidePIDFConfig = konfig<PIDFMotionProfiledConfig> { withCustomFileID("extension") }
     private val slides = with(slidePIDFConfig.get()) {
         ManagedMotorGroup(
             this@Extension,
@@ -30,7 +31,7 @@ class Extension(opMode: LinearOpMode) : AbstractSubsystem()
             kV, kA, kStatic,
             master = leftSlide,
             slaves = listOf(rightSlide)
-        )
+        ).withMotionProfiling(motionProfileConstraints)
     }
 
     fun extendToAndStayAt(position: Int) = slides.goTo(position)
