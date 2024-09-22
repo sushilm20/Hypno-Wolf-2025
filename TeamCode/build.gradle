@@ -38,13 +38,6 @@ android {
     }
 }
 
-repositories {
-    mavenCentral()
-    maven { url = 'https://maven.brott.dev/' }
-    maven { url = 'https://www.matthewo.tech/maven/' }
-    maven { url = "https://artifactory.scala.gg/artifactory/opensource" }
-}
-
 var mockitoVersion = "5.13.0"
 var mockitoKotlinVersion = "5.4.0"
 var jUnitVersion = "4.13.2"
@@ -62,7 +55,6 @@ tasks.withType(Test).configureEach {
 
 dependencies {
     implementation "io.liftgate.robotics.mono:mono:5.8-SNAPSHOT"
-    implementation 'org.team11260:fast-load:0.1.2'
 
     testImplementation "junit:junit:$jUnitVersion"// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0'
