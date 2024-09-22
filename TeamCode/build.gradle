@@ -54,7 +54,6 @@ tasks.withType(Test).configureEach {
 }
 
 dependencies {
-    implementation "io.liftgate.robotics.mono:mono:5.8-SNAPSHOT"
 
     testImplementation "junit:junit:$jUnitVersion"// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0'

@@ -26,14 +26,15 @@ android {
 apply from: '../build.dependencies.gradle'
 
 dependencies {
-    implementation 'org.ftclib.ftclib:core:2.1.1'
-    implementation 'org.team11260:fast-load:0.1.2'
+    api "io.liftgate.robotics.mono:mono:5.8-SNAPSHOT"
+    api 'org.ftclib.ftclib:core:2.1.1'
+    api 'org.team11260:fast-load:0.1.2'
 
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2" // Kaml will supply the implementation, we just need Core.
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2"
-    implementation "com.charleskorn.kaml:kaml:0.61.0" // Kaml for kotlinx.serialization YAML support, for Konfig.
+    api "org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2" // Kaml will supply the implementation, we just need Core.
+    api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2"
+    api "com.charleskorn.kaml:kaml:0.61.0" // Kaml for kotlinx.serialization YAML support, for Konfig.
 
-    implementation 'com.acmerobotics.roadrunner:core:0.5.5'
-    implementation "com.acmerobotics.dashboard:dashboard:0.4.14"
+    api 'com.acmerobotics.roadrunner:core:0.5.5'
+    api "com.acmerobotics.dashboard:dashboard:0.4.14"
 }
 
