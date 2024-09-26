@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+        mavenLocal()
         gradlePluginPortal()
         maven {
             url "https://artifactory.scala.gg/artifactory/opensource"

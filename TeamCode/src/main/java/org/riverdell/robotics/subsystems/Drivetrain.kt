@@ -41,8 +41,8 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
     fun driveRobotCentric(driverOp: GamepadEx, scaleFactor: Double)
     {
         backingDriveBase.driveRobotCentric(
-            driverOp.leftX * scaleFactor,
-            driverOp.leftY * scaleFactor,
+            -driverOp.leftY * scaleFactor,
+            -driverOp.leftX * scaleFactor,
             driverOp.rightX * scaleFactor,
             true
         )

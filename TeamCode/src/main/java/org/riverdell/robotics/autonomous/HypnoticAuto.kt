@@ -3,6 +3,7 @@ package org.riverdell.robotics.autonomous
 import io.liftgate.robotics.mono.Mono
 import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
+import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
@@ -27,9 +28,9 @@ abstract class HypnoticAuto(
         }
     }
 
-    val visionPipeline by lazy { VisionPipeline(this) } // TODO: new season
+//    val visionPipeline by lazy { VisionPipeline(this) } // TODO: new season
 
-    override fun additionalSubSystems() = listOf(visionPipeline)
+    override fun additionalSubSystems() = listOf<AbstractSubsystem>(/*visionPipeline*/)
     override fun initialize()
     {
         instance = this
@@ -38,9 +39,10 @@ abstract class HypnoticAuto(
         {
             multipleTelemetry.addLine("--- Initialization ---")
 
-            drivetrain.localizer.update()
             runPeriodics()
+            drivetrain.localizer.update()
 
+            multipleTelemetry.clearAll()
             multipleTelemetry.addData(
                 "Voltage",
                 drivetrain.voltage()
@@ -59,8 +61,8 @@ abstract class HypnoticAuto(
         thread {
             while (!isStopRequested)
             {
-                drivetrain.localizer.update()
                 runPeriodics()
+                drivetrain.localizer.update()
             }
         }
 

@@ -15,10 +15,12 @@ data class MotionProfileConstraints(var velocity: Double, var acceleration: Doub
         this.deceleration = abs(deceleration)
     }
 
-    fun convert(factor: Double)
+    fun multiply(factor: Double): MotionProfileConstraints
     {
-        velocity *= factor
-        acceleration *= factor
-        deceleration *= factor
+        return MotionProfileConstraints(
+            velocity * factor,
+            acceleration * factor,
+            deceleration * factor,
+        )
     }
 }

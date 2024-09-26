@@ -15,7 +15,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'io.liftgate:fast-load-plugin:0.1.7'
+        classpath 'io.liftgate:fast-load-plugin:0.1.8'
     }
 }
 
