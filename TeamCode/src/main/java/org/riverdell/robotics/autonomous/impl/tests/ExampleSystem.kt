@@ -48,12 +48,14 @@ class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
         MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
+    override fun start()
+    {
+        leftRotation.setMotionProfileTarget(0.5)
+
+    }
 
     override fun doInitialize()
     {
-/*        leftRotation.setMotionProfileTarget(0.87)
-            .thenCompose {
-                motorGroup.goTo(-300)
-            }*/
+        leftRotation.setMotionProfileTarget(0.87)
     }
 }

@@ -63,6 +63,12 @@ class VisionPipeline(
     fun stop() = portal.close()
 
     override fun composeStageContext() = TODO()
+
+    override fun start()
+    {
+
+    }
+
     override fun doInitialize()
     {
         start(StreamDestination.DriverStation)

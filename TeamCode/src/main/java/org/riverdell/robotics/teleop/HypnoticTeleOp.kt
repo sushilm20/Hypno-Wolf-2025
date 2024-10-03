@@ -21,7 +21,12 @@ class HypnoticTeleOp : HypnoticRobot()
     override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands)
     override fun initialize()
     {
-
+        while (!isStarted)
+        {
+            multipleTelemetry.addLine("Configured all subsystems. Waiting for start...")
+            multipleTelemetry.update()
+            runPeriodics()
+        }
     }
 
     override fun opModeStart()
@@ -29,7 +34,6 @@ class HypnoticTeleOp : HypnoticRobot()
         val robotDriver = GamepadEx(gamepad1)
         buildCommands()
 
-        val thang = hardware<DcMotorEx>("elevator")
         while (opModeIsActive())
         {
             val multiplier = 0.5 + gamepad1.right_trigger * 0.5
@@ -39,24 +43,6 @@ class HypnoticTeleOp : HypnoticRobot()
             gp2Commands.run()
 
             runPeriodics()
-
-            multipleTelemetry.clearAll()
-            multipleTelemetry.addLine(
-                "Left Front: ${drivetrain.frontLeft.getCurrent(CurrentUnit.AMPS)}",
-            )
-
-            multipleTelemetry.addLine(
-                "Right Front: ${drivetrain.frontRight.getCurrent(CurrentUnit.AMPS)}",
-            )
-
-            multipleTelemetry.addLine(
-                "Right Back: ${drivetrain.backRight.getCurrent(CurrentUnit.AMPS)}",
-            )
-
-            multipleTelemetry.addLine(
-                "Left Back: ${drivetrain.backLeft.getCurrent(CurrentUnit.AMPS)}",
-            )
-            multipleTelemetry.update()
         }
     }
 

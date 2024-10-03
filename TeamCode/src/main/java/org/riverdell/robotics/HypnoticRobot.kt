@@ -68,8 +68,6 @@ abstract class HypnoticRobot : LinearOpMode(), System
             *additionalSubSystems().toTypedArray()
         )
 
-        telemetry.isAutoClear = false
-
         // keep all log entries
         Mono.logSink = {
             multipleTelemetry.addLine("[mono] $it")
@@ -80,16 +78,13 @@ abstract class HypnoticRobot : LinearOpMode(), System
         initializeAll()
         initialize()
 
-        multipleTelemetry.addLine("Configured all subsystems. Waiting for start...")
-        multipleTelemetry.update()
-
         waitForStart()
-
         if (isStopRequested)
         {
             return
         }
 
+        startAll()
         opModeStart()
         disposeOfAll()
     }

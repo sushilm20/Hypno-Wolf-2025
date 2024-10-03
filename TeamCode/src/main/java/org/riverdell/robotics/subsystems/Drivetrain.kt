@@ -61,6 +61,11 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
         )
     }
 
+    override fun start()
+    {
+
+    }
+
     /**
      * Initializes both the IMU and all drivebase motors.
      */
@@ -77,13 +82,13 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
         )
         imu.resetYaw()
 
-        frontLeft = opMode.hardware<DcMotorEx>("frontLeft")
-        frontRight = opMode.hardware<DcMotorEx>("frontRight")
-        backLeft = opMode.hardware<DcMotorEx>("backLeft")
-        backRight = opMode.hardware<DcMotorEx>("backRight")
-
         if (opMode is HypnoticAuto)
         {
+            frontLeft = opMode.hardware<DcMotorEx>("frontLeft")
+            frontRight = opMode.hardware<DcMotorEx>("frontRight")
+            backLeft = opMode.hardware<DcMotorEx>("backLeft")
+            backRight = opMode.hardware<DcMotorEx>("backRight")
+
             frontLeft.direction = DcMotorSimple.Direction.REVERSE
             frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 

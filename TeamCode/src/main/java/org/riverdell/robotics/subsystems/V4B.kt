@@ -33,6 +33,11 @@ class V4B(opMode: HypnoticRobot) : AbstractSubsystem()
         )
     )
 
+    override fun start()
+    {
+
+    }
+
     override fun doInitialize()
     {
 

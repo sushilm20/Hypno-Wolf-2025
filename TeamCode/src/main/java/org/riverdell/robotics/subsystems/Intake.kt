@@ -35,6 +35,11 @@ class Intake(opMode: LinearOpMode) : AbstractSubsystem()
         )
     )
 
+    override fun start()
+    {
+
+    }
+
     override fun doInitialize()
     {
 
