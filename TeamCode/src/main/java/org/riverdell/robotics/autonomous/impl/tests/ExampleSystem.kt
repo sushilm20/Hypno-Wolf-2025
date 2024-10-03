@@ -12,7 +12,6 @@ import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import org.riverdell.robotics.utilities.managed.ManagedServo
 import org.riverdell.robotics.utilities.managed.pidf.PIDFMotionProfiledConfig
 import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
-import org.riverdell.robotics.utilities.stopAndResetEncoder
 
 class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
 {

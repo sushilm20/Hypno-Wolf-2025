@@ -42,7 +42,6 @@ abstract class HypnoticAuto(
             runPeriodics()
             drivetrain.localizer.update()
 
-            multipleTelemetry.clearAll()
             multipleTelemetry.addData(
                 "Voltage",
                 drivetrain.voltage()
