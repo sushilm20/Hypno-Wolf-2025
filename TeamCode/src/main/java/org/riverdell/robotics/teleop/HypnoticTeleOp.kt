@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonType
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.utilities.hardware
 
@@ -41,7 +42,19 @@ class HypnoticTeleOp : HypnoticRobot()
 
             multipleTelemetry.clearAll()
             multipleTelemetry.addLine(
-                "Current position ${thang.currentPosition}"
+                "Left Front: ${drivetrain.frontLeft.getCurrent(CurrentUnit.AMPS)}",
+            )
+
+            multipleTelemetry.addLine(
+                "Right Front: ${drivetrain.frontRight.getCurrent(CurrentUnit.AMPS)}",
+            )
+
+            multipleTelemetry.addLine(
+                "Right Back: ${drivetrain.backRight.getCurrent(CurrentUnit.AMPS)}",
+            )
+
+            multipleTelemetry.addLine(
+                "Left Back: ${drivetrain.backLeft.getCurrent(CurrentUnit.AMPS)}",
             )
             multipleTelemetry.update()
         }

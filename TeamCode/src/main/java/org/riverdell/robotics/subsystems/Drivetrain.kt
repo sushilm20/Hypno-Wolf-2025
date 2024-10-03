@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.arcrobotics.ftclib.hardware.motors.Motor
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
@@ -16,11 +17,11 @@ import org.riverdell.robotics.utilities.hardware
 
 class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
 {
-    lateinit var frontRight: DcMotor
-    lateinit var frontLeft: DcMotor
+    lateinit var frontRight: DcMotorEx
+    lateinit var frontLeft: DcMotorEx
 
-    lateinit var backRight: DcMotor
-    lateinit var backLeft: DcMotor
+    lateinit var backRight: DcMotorEx
+    lateinit var backLeft: DcMotorEx
 
     private lateinit var imu: IMU
 
@@ -76,13 +77,13 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
         )
         imu.resetYaw()
 
+        frontLeft = opMode.hardware<DcMotorEx>("frontLeft")
+        frontRight = opMode.hardware<DcMotorEx>("frontRight")
+        backLeft = opMode.hardware<DcMotorEx>("backLeft")
+        backRight = opMode.hardware<DcMotorEx>("backRight")
+
         if (opMode is HypnoticAuto)
         {
-            frontLeft = opMode.hardware<DcMotor>("frontLeft")
-            frontRight = opMode.hardware<DcMotor>("frontRight")
-            backLeft = opMode.hardware<DcMotor>("backLeft")
-            backRight = opMode.hardware<DcMotor>("backRight")
-
             frontLeft.direction = DcMotorSimple.Direction.REVERSE
             frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
