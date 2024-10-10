@@ -37,11 +37,10 @@ abstract class HypnoticAuto(
 
         while (opModeInInit())
         {
-            multipleTelemetry.addLine("--- Initialization ---")
-
             runPeriodics()
             drivetrain.localizer.update()
 
+            multipleTelemetry.addLine("--- Initialization ---")
             multipleTelemetry.addData(
                 "Voltage",
                 drivetrain.voltage()
@@ -49,6 +48,10 @@ abstract class HypnoticAuto(
             multipleTelemetry.addData(
                 "IMU",
                 drivetrain.imu().getYaw(AngleUnit.DEGREES)
+            )
+            multipleTelemetry.addData(
+                "Pose",
+                drivetrain.localizer.pose
             )
 
             multipleTelemetry.update()
@@ -62,6 +65,22 @@ abstract class HypnoticAuto(
             {
                 runPeriodics()
                 drivetrain.localizer.update()
+
+                multipleTelemetry.addLine("--- Autonomous ---")
+                multipleTelemetry.addData(
+                    "Voltage",
+                    drivetrain.voltage()
+                )
+                multipleTelemetry.addData(
+                    "IMU",
+                    drivetrain.imu().getYaw(AngleUnit.DEGREES)
+                )
+                multipleTelemetry.addData(
+                    "Pose",
+                    drivetrain.localizer.pose
+                )
+
+                multipleTelemetry.update()
             }
         }
 

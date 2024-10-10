@@ -54,7 +54,6 @@ tasks.withType(Test).configureEach {
 }
 
 dependencies {
-
     testImplementation "junit:junit:$jUnitVersion"// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0'
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
