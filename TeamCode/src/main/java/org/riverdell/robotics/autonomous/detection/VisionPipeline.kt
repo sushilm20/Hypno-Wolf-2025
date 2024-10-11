@@ -1,6 +1,7 @@
 package org.riverdell.robotics.autonomous.detection
 
 import android.util.Size
+import com.acmerobotics.dashboard.FtcDashboard
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
@@ -18,65 +19,37 @@ class VisionPipeline(
 ) : AbstractSubsystem()
 {
     private lateinit var portal: VisionPortal
-    lateinit var aprilTag: AprilTagProcessor
-
-    enum class StreamDestination
-    {
-        Dashboard, DriverStation, Both, None;
-
-        fun encapsulates(destination: StreamDestination) =
-            this != None && (this == Both || this == destination)
-    }
-
-    /**
-     * Starts the vision portal with the option of
-     * pushing the camera stream to FTCDashboard.
-     */
-    fun start(destination: StreamDestination)
-    {
-        aprilTag = AprilTagProcessor.Builder()
-            .setTagLibrary(
-                AprilTagGameDatabase.getCenterStageTagLibrary()
-            )
-            .build()
-
-        portal = VisionPortal.Builder()
-            .setCamera(
-                opMode.hardware<WebcamName>("webcam1")
-            )
-            .setCameraResolution(Size(640, 480))
-            .enableLiveView(destination.encapsulates(StreamDestination.DriverStation))
-            .setAutoStopLiveView(true)
-            .addProcessors(aprilTag)
-            .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-            .build()
-
-        if (destination.encapsulates(StreamDestination.Dashboard))
-        {
-            /*FtcDashboard.getInstance().startCameraStream(
-                propPipeline,
-                30.0
-            )*/
-        }
-    }
-
-    fun stop() = portal.close()
+    private lateinit var sampleDetection: SampleDetection
 
     override fun composeStageContext() = TODO()
 
     override fun start()
     {
+        sampleDetection = SampleDetection()
+        portal = VisionPortal.Builder()
+            .setCamera(
+                opMode.hardware<WebcamName>("webcam")
+            )
+            .setCameraResolution(Size(1920, 1080))
+            .enableLiveView(true)
+            .setAutoStopLiveView(true)
+            .addProcessors(sampleDetection)
+            .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+            .build()
 
+        FtcDashboard.getInstance().startCameraStream(
+            sampleDetection,
+            60.0
+        )
     }
 
     override fun doInitialize()
     {
-        start(StreamDestination.DriverStation)
     }
 
     override fun dispose()
     {
-        stop()
+        portal.close()
     }
 
     override fun isCompleted() = true

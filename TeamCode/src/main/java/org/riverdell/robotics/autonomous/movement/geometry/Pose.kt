@@ -1,7 +1,6 @@
 package org.riverdell.robotics.autonomous.movement.geometry
 
 import com.arcrobotics.ftclib.geometry.Vector2d
-import com.arcrobotics.ftclib.kotlin.extensions.geometry.angle
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc
@@ -46,6 +45,11 @@ class Pose : Point
     fun add(other: Vector2D): Pose
     {
         return Pose(x + other.x, y + other.y, heading + other.heading)
+    }
+
+    fun addOnlyTranslational(other: com.acmerobotics.roadrunner.geometry.Vector2d): Pose
+    {
+        return Pose(x + other.x, y + other.y, heading)
     }
 
     fun subtract(other: Pose): Pose
