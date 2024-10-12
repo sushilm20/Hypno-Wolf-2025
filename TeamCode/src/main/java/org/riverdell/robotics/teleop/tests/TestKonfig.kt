@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import io.liftgate.robotics.mono.konfig.konfig
 import kotlinx.serialization.Serializable
-import org.riverdell.robotics.autonomous.detection.VisionPipeline
+import org.riverdell.robotics.autonomous.movement.konfig.NavigationNodeCollection
 
 @TeleOp(
     name = "Konfig Test",
@@ -23,11 +23,11 @@ class TestKonfig : LinearOpMode()
             return
         }
 
-        val test = konfig<KonfigTestingClass>()
+        val test = konfig<NavigationNodeCollection>()
 
         while (opModeIsActive())
         {
-            telemetry.addLine("Konfig value: ${test.get().test}")
+            telemetry.addLine("Konfig value: ${test.get().nodes.size}")
             telemetry.update()
             Thread.sleep(50L)
         }
