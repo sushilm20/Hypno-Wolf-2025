@@ -1,12 +1,12 @@
 package org.riverdell.robotics.autonomous.movement.konfig
 
-import com.charleskorn.kaml.YamlComment
 import com.google.gson.annotations.SerializedName
 import io.liftgate.robotics.mono.pipeline.BacktrackException
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import net.mamoe.yamlkt.Comment
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction
 import org.riverdell.robotics.autonomous.movement.degrees
@@ -24,40 +24,6 @@ val globalJson = Json {
 data class NavigationNode(
     @SerializedName("mode")
     val navigationMode: NavigationMode = NavigationMode.GoToPosition,
-    @YamlComment(
-        "You can define waypoints as either Pure Pursuit waypoints with a radius, or just the waypoint itself for GoToPosition or GVF.",
-        "Normal Pose waypoints can be defined either explicitly:",
-        "{\"x\":6.0,\"y\":6.0,\"heading\":0.10471975511965978}",
-        "",
-        "or referencing a pose/point in the \"globals\" Konfig file:",
-        "hors()",
-        "",
-        "or a pose in the \"globals\" Konfig file:",
-        "&pose1",
-        "",
-        "---",
-        "When defining headings, use the \"deg(20.0)\" function to convert the heading from degrees -> radians:",
-        "{\"pose\": {\"x\": 14.0, \"y\": 6.0, \"heading\": deg(20.0)}, \"radius\": 20.0}",
-        "---",
-        "Pure Pursuit waypoints can be defined using:",
-        "{\"pose\": {\"x\": 14.0, \"y\": 6.0, \"heading\": 14.0}, \"radius\": 20.0}",
-        "{\"point\": {\"x\": 14.0, \"y\": 6.0}, \"radius\": 20.0}",
-        "",
-        "You can use the \"&\" syntax similarly in Pure Pursuit waypoints as we did before.",
-        "{&pose1, \"radius\": 20.0}",
-        "{&point1, \"radius\": 20.0}",
-        "",
-        "---",
-        "Actions can be defined either as a Pure Pursuit ActionWaypoint or just referencing an action definition.",
-        "They can be defined as the following:",
-        "*action_id",
-        "",
-        "For pure pursuit, you may NOT have an action waypoint start your path, and you must have a POSE to end your path.",
-        "---",
-        "FOR GVF, you must provide a single CubicBezierCurve as your waypoint.",
-        "---",
-        "Start your path below!"
-    )
     val waypoints: Set<String> = setOf(
         "{\"x\":6.0,\"y\":6.0,\"heading\":0.10471975511965978}",
         "{\"x\":6.0,\"y\":6.0,\"heading\":deg(20.0)}",
