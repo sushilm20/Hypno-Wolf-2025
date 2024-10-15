@@ -27,6 +27,7 @@ import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -41,12 +42,12 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     public static int BLUE_HIGH_G = 255;
     public static int BLUE_HIGH_R = 255;
 
-    public static double TURN_FACTOR = 0.005; // Adjust to fine-tune servo movements
+    public static double TURN_FACTOR = 0.0025; // Adjust to fine-tune servo movements
     public static double MAX_SERVO_POSITION = 1.0;
     public static double MIN_SERVO_POSITION = 0.0;
 
-    public static double FRAME_CENTER_X = 1920.0 / 2;
-    public static double FRAME_CENTER_Y = 1080.0 / 2;
+    public static double FRAME_CENTER_X = 640.0 / 2;
+    public static double FRAME_CENTER_Y = 480.0 / 2;
 
     public static final double X_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
     public static final double Y_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
@@ -56,6 +57,12 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     // AtomicReference to store the last frame as a Bitmap
     private AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
     private double guidanceRotationAngle = 0.0;
+
+    private final Supplier<Double> currentWristPosition;
+
+    public SampleDetection(Supplier<Double> currentWristPosition) {
+        this.currentWristPosition = currentWristPosition;
+    }
 
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
@@ -101,22 +108,18 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
         Rect boundingBox = null;
         Point sampleCenter = null;
-        double maxArea = -1.0;
+        double minDistance = 300.0;
 
         // Loop through contours to find the largest contour (which should be the sample)
         for (MatOfPoint contour : contours) {
-            double area = Imgproc.contourArea(contour);
-            if (area > maxArea) {
-                maxArea = area;
-
-                // Calculate the bounding box of the sample
-                boundingBox = Imgproc.boundingRect(contour);
-
-                // Calculate the center point of the sample
-                sampleCenter = new Point((boundingBox.x + boundingBox.width / 2.0), (boundingBox.y + boundingBox.height / 2.0));
-
-                // Calculate the rotation angle of the sample using the minimum area bounding rectangle
+            Rect localBoundingBox = Imgproc.boundingRect(contour);
+            Point localSampleCenter = new Point((localBoundingBox.x + localBoundingBox.width / 2.0), (localBoundingBox.y + localBoundingBox.height / 2.0));
+            double distance = Math.hypot(localSampleCenter.x - FRAME_CENTER_X, localSampleCenter.y - FRAME_CENTER_Y);
+            if (distance < minDistance) {
                 guidanceRotationAngle = calculateRotationAngle(contour);
+                boundingBox = localBoundingBox;
+                sampleCenter = localSampleCenter;
+                minDistance = distance;
             }
         }
 
@@ -149,17 +152,22 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         return new Vector2d(xMovement, yMovement); // Return guidance vector
     }
 
+    private double targetWristPosition = 0.0;
+    public double getTargetWristPosition() {
+        return targetWristPosition;
+    }
+
     private void annotateBoundingBox(Mat input, Point sampleCenter) {
         // Draw a circle at the center of the sample
         Imgproc.circle(input, sampleCenter, 10, new Scalar(251, 0, 255), 10);
 
         // Annotate the angle and servo position on the frame
-        double servoPosition = calculateServoPosition(guidanceRotationAngle);
+        targetWristPosition = calculateServoPosition(currentWristPosition.get(), guidanceRotationAngle);
 
         Imgproc.putText(input, "Rotate: " + String.format("%.2f", guidanceRotationAngle) + " degrees", new Point(sampleCenter.x - 50, sampleCenter.y - 20),
                 Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(122, 193, 255), 3);
 
-        Imgproc.putText(input, "Servo: " + String.format("%.2f", servoPosition), new Point(sampleCenter.x - 50, sampleCenter.y + 40),
+        Imgproc.putText(input, "Servo: " + String.format("%.2f", targetWristPosition), new Point(sampleCenter.x - 50, sampleCenter.y + 40),
                 Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(122, 193, 255), 3);
 
         Vector2d guidance = guidanceVector = calculateGuidanceVector(sampleCenter);
@@ -190,13 +198,12 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         return angle;
     }
 
-    private double calculateServoPosition(double rotationAngle) {
+    private double calculateServoPosition(double current, double rotationAngle) {
         // Calculate the servo adjustment based on the rotation angle
         double servoAdjustment = rotationAngle * TURN_FACTOR;
-        double currentServoPosition = 0.5; // Assuming the servo starts at a middle position (0.5)
 
         // Apply the adjustment to the current servo position
-        double newServoPosition = currentServoPosition + servoAdjustment;
+        double newServoPosition = current + servoAdjustment;
 
         // Ensure the servo position stays within valid bounds [0, 1]
         if (newServoPosition > MAX_SERVO_POSITION) {

@@ -25,9 +25,9 @@ abstract class HypnoticRobot : LinearOpMode(), System
 
     override val subsystems: MutableSet<Subsystem> = mutableSetOf()
 
-    protected val test by lazy {
+    /*protected val test by lazy {
         ExampleSystem(this)
-    }
+    }*/
 
     val drivetrain by lazy { Drivetrain(this) }
 /*
@@ -64,7 +64,7 @@ abstract class HypnoticRobot : LinearOpMode(), System
         instance = this
 
         register(
-            test, drivetrain,
+            drivetrain,
             *additionalSubSystems().toTypedArray()
         )
 

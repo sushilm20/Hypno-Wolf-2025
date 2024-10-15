@@ -4,7 +4,7 @@
         <LynxModule name="Expansion Hub 1" port="1">
             <RevRobotics40HDHexMotor name="hang" port="0" />
             <RevRobotics20HDHexMotor name="elevator" port="1" />
-            <Servo name="extender" port="0" />
+            <Servo name="wrist" port="0" />
             <Servo name="clawRight" port="1" />
             <Servo name="clawLeft" port="2" />
             <Servo name="launcher" port="5" />
