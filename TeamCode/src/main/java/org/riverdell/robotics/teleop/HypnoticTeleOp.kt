@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonType
+import io.liftgate.robotics.mono.gamepad.bundle
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.utilities.hardware
@@ -56,6 +57,35 @@ class HypnoticTeleOp : HypnoticRobot()
                 test.motorGroup.goTo(-100)
             }*/
 
+        val defaultBundleDriver1 = gamepad1.bundle {
+            where(ButtonType.ButtonA)
+                .triggers {
+                    println("hello")
+                }
+                .whenPressedOnce()
+        }
+
+        val defaultBundleDriver2 = gamepad1.bundle {
+            where(ButtonType.ButtonB)
+                .triggers {
+                    println("NOW EXTENDO OUT")
+                }
+                .whenPressedOnce()
+
+            where(ButtonType.ButtonY)
+                .triggers {
+                    println("RETURNING BACK")
+                    defaultBundleDriver1.applyTo(gp1Commands)
+                }
+                .whenPressedOnce()
+        }
+
+        gp1Commands
+            .where(ButtonType.ButtonX)
+            .triggers {
+                defaultBundleDriver2.applyTo(gp1Commands)
+            }
+            .whenPressedOnce()
 
         gp1Commands.doButtonUpdatesManually()
         gp2Commands.doButtonUpdatesManually()
