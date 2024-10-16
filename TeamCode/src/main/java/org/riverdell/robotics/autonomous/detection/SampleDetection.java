@@ -34,34 +34,41 @@ import javax.annotation.Nullable;
 @Config
 public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
-    public static int BLUE_LOW_B = 90;
-    public static int BLUE_LOW_G = 100;
-    public static int BLUE_LOW_R = 100;
-
-    public static int BLUE_HIGH_B = 130;
-    public static int BLUE_HIGH_G = 255;
-    public static int BLUE_HIGH_R = 255;
-
     public static double TURN_FACTOR = 0.0025; // Adjust to fine-tune servo movements
+    public static double TURN_FACTOR_D_GAIN = 0.001;
+
     public static double MAX_SERVO_POSITION = 1.0;
     public static double MIN_SERVO_POSITION = 0.0;
 
     public static double FRAME_CENTER_X = 640.0 / 2;
     public static double FRAME_CENTER_Y = 480.0 / 2;
 
-    public static final double X_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
-    public static final double Y_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
+    public static double X_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
+    public static double Y_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
+
+    /**
+     * WIDTH:HEIGHT
+     */
+    public static double DESIRED_SAMPLE_ASPECT_RATIO = 2.6969697;
+    public static double SAMPLE_ASPECT_RATIO_TOLERANCE = 0.4;
+
+    // AtomicReference to store the last frame as a Bitmap
+    private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
 
     private @Nullable Vector2d guidanceVector = null;
 
-    // AtomicReference to store the last frame as a Bitmap
-    private AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
+    private double previousRotationAngle = 0.0;
     private double guidanceRotationAngle = 0.0;
 
-    private final Supplier<Double> currentWristPosition;
+    private SampleType detectionType = SampleType.Blue;
+    private Supplier<Double> currentWristPosition = () -> 0.0;
 
-    public SampleDetection(Supplier<Double> currentWristPosition) {
+    public void setCurrentWristPosition(Supplier<Double> currentWristPosition) {
         this.currentWristPosition = currentWristPosition;
+    }
+
+    public void setDetectionType(SampleType sampleType) {
+        this.detectionType = sampleType;
     }
 
     @Override
@@ -75,16 +82,17 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         Mat hsvMat = new Mat();
         Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
 
-        // Define color bounds for detecting the blue sample
-        Scalar lowerBlueBound = new Scalar(BLUE_LOW_B, BLUE_LOW_G, BLUE_LOW_R);
-        Scalar upperBlueBound = new Scalar(BLUE_HIGH_B, BLUE_HIGH_G, BLUE_HIGH_R);
+        // Create a mask for the specified color range
+        Mat colorMask = new Mat();
+        Core.inRange(
+                hsvMat,
+                detectionType.getColorRangeMinimum(),
+                detectionType.getColorRangeMaximum(),
+                colorMask
+        );
 
-        // Create a mask for the blue color range
-        Mat blueMask = new Mat();
-        Core.inRange(hsvMat, lowerBlueBound, upperBlueBound, blueMask);
-
-        // Detect the sample object in the blue mask
-        Point sampleCenter = detectSample(input, blueMask);
+        // Detect the sample object in the specified mask
+        Point sampleCenter = detectSample(input, colorMask);
 
         // Annotate the detected sample with bounding box and angle
         if (sampleCenter != null) {
@@ -114,13 +122,17 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         for (MatOfPoint contour : contours) {
             Rect localBoundingBox = Imgproc.boundingRect(contour);
             Point localSampleCenter = new Point((localBoundingBox.x + localBoundingBox.width / 2.0), (localBoundingBox.y + localBoundingBox.height / 2.0));
+            double aspectRatio = (double) localBoundingBox.width / (double) localBoundingBox.height;
             double distance = Math.hypot(localSampleCenter.x - FRAME_CENTER_X, localSampleCenter.y - FRAME_CENTER_Y);
-            if (distance < minDistance) {
+            if (distance < minDistance && Math.abs(aspectRatio - DESIRED_SAMPLE_ASPECT_RATIO) <= SAMPLE_ASPECT_RATIO_TOLERANCE) {
                 guidanceRotationAngle = calculateRotationAngle(contour);
                 boundingBox = localBoundingBox;
                 sampleCenter = localSampleCenter;
                 minDistance = distance;
             }
+
+            // add a rectangle showing we detected this sample
+            Imgproc.rectangle(input, localBoundingBox, new Scalar(117, 38, 191), 2);
         }
 
         // Draw a rectangle around the detected sample
@@ -199,8 +211,14 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     }
 
     private double calculateServoPosition(double current, double rotationAngle) {
-        // Calculate the servo adjustment based on the rotation angle
-        double servoAdjustment = rotationAngle * TURN_FACTOR;
+        // Calculate the derivative (change) in rotation angle
+        double derivative = rotationAngle - previousRotationAngle;
+
+        // Store the current angle for the next calculation
+        previousRotationAngle = rotationAngle;
+
+        // Calculate the servo adjustment based on the P and D terms
+        double servoAdjustment = (rotationAngle * TURN_FACTOR) + (derivative * TURN_FACTOR_D_GAIN);
 
         // Apply the adjustment to the current servo position
         double newServoPosition = current + servoAdjustment;
