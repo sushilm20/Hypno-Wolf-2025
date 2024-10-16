@@ -30,10 +30,7 @@ class VisionPipeline(
 
     override fun doInitialize()
     {
-        val servo = opMode.hardware<Servo>("wrist")
-        sampleDetection = SampleDetection {
-            servo.position
-        }
+        sampleDetection = SampleDetection()
         portal = VisionPortal.Builder()
             .setCamera(
                 opMode.hardware<WebcamName>("webcam")

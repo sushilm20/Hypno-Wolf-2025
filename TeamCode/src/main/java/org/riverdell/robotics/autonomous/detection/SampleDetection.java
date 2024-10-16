@@ -63,7 +63,12 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     private SampleType detectionType = SampleType.Blue;
     private Supplier<Double> currentWristPosition = () -> 0.0;
 
-    public void setCurrentWristPosition(Supplier<Double> currentWristPosition) {
+    private double targetWristPosition = 0.0;
+    public double getTargetWristPosition() {
+        return targetWristPosition;
+    }
+
+    public void supplyCurrentWristPosition(Supplier<Double> currentWristPosition) {
         this.currentWristPosition = currentWristPosition;
     }
 
@@ -164,11 +169,6 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         return new Vector2d(xMovement, yMovement); // Return guidance vector
     }
 
-    private double targetWristPosition = 0.0;
-    public double getTargetWristPosition() {
-        return targetWristPosition;
-    }
-
     private void annotateBoundingBox(Mat input, Point sampleCenter) {
         // Draw a circle at the center of the sample
         Imgproc.circle(input, sampleCenter, 10, new Scalar(251, 0, 255), 10);
@@ -231,10 +231,6 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         }
 
         return newServoPosition;
-    }
-
-    public double getGuidanceRotationAngle() {
-        return guidanceRotationAngle;
     }
 
     @Override
