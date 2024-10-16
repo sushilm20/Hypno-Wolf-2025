@@ -34,11 +34,8 @@ import javax.annotation.Nullable;
 @Config
 public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
-    public static double TURN_FACTOR = 0.0025; // Adjust to fine-tune servo movements
-    public static double TURN_FACTOR_D_GAIN = 0.001;
-
-    public static double MAX_SERVO_POSITION = 1.0;
-    public static double MIN_SERVO_POSITION = 0.0;
+    public static double TURN_FACTOR = 0.001;
+    public static double TURN_FACTOR_D_GAIN = -0.0001;
 
     public static double FRAME_CENTER_X = 640.0 / 2;
     public static double FRAME_CENTER_Y = 480.0 / 2;
@@ -46,11 +43,8 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     public static double X_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
     public static double Y_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
 
-    /**
-     * WIDTH:HEIGHT
-     */
-    public static double DESIRED_SAMPLE_ASPECT_RATIO = 2.6969697;
-    public static double SAMPLE_ASPECT_RATIO_TOLERANCE = 0.4;
+    public static double MIN_SAMPLE_AREA = 5000.0;
+    public static double SAMPLE_AREA_ROLLING_AVERAGE_MAX_DEVIATION = 4500.0;
 
     // AtomicReference to store the last frame as a Bitmap
     private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
@@ -59,6 +53,14 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
     private double previousRotationAngle = 0.0;
     private double guidanceRotationAngle = 0.0;
+    private double sampleArea = 0.0;
+
+    private final RollingAverage areaAverage = new RollingAverage(10);
+    private boolean areaAverageDirty = false;
+
+    public void markAreaAverageDirty() {
+        areaAverageDirty = true;
+    }
 
     private SampleType detectionType = SampleType.Blue;
     private Supplier<Double> currentWristPosition = () -> 0.0;
@@ -102,6 +104,8 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         // Annotate the detected sample with bounding box and angle
         if (sampleCenter != null) {
             annotateBoundingBox(input, sampleCenter);
+        } else {
+            targetWristPosition = 0.5;
         }
 
         // Convert the processed frame (Mat) to a Bitmap for FTC dashboard display
@@ -123,21 +127,36 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         Point sampleCenter = null;
         double minDistance = 300.0;
 
+        if (areaAverageDirty) {
+            areaAverage.reset();
+        }
+
         // Loop through contours to find the largest contour (which should be the sample)
         for (MatOfPoint contour : contours) {
             Rect localBoundingBox = Imgproc.boundingRect(contour);
             Point localSampleCenter = new Point((localBoundingBox.x + localBoundingBox.width / 2.0), (localBoundingBox.y + localBoundingBox.height / 2.0));
-            double aspectRatio = (double) localBoundingBox.width / (double) localBoundingBox.height;
             double distance = Math.hypot(localSampleCenter.x - FRAME_CENTER_X, localSampleCenter.y - FRAME_CENTER_Y);
-            if (distance < minDistance && Math.abs(aspectRatio - DESIRED_SAMPLE_ASPECT_RATIO) <= SAMPLE_ASPECT_RATIO_TOLERANCE) {
+
+            double area = localBoundingBox.area();
+            if (area < MIN_SAMPLE_AREA) {
+                continue;
+            }
+
+            boolean outlier = areaAverage.isOutlier(area, SAMPLE_AREA_ROLLING_AVERAGE_MAX_DEVIATION);
+            if (!areaAverage.isAvailable() || !outlier) {
+                areaAverage.add(area);
+            }
+
+            if (distance < minDistance && areaAverage.isAvailable() && !outlier) {
                 guidanceRotationAngle = calculateRotationAngle(contour);
                 boundingBox = localBoundingBox;
                 sampleCenter = localSampleCenter;
                 minDistance = distance;
+                sampleArea = localBoundingBox.area();
             }
 
             // add a rectangle showing we detected this sample
-            Imgproc.rectangle(input, localBoundingBox, new Scalar(117, 38, 191), 2);
+            Imgproc.rectangle(input, localBoundingBox, new Scalar(117, 38, 2), 1);
         }
 
         // Draw a rectangle around the detected sample
@@ -177,13 +196,13 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         targetWristPosition = calculateServoPosition(currentWristPosition.get(), guidanceRotationAngle);
 
         Imgproc.putText(input, "Rotate: " + String.format("%.2f", guidanceRotationAngle) + " degrees", new Point(sampleCenter.x - 50, sampleCenter.y - 20),
-                Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(122, 193, 255), 3);
+                Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(0, 0, 0), 3);
 
         Imgproc.putText(input, "Servo: " + String.format("%.2f", targetWristPosition), new Point(sampleCenter.x - 50, sampleCenter.y + 40),
-                Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(122, 193, 255), 3);
+                Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(0, 0, 0), 3);
 
         Vector2d guidance = guidanceVector = calculateGuidanceVector(sampleCenter);
-        Imgproc.putText(input, "Guidance: " + guidance, new Point(sampleCenter.x - 50, sampleCenter.y + 150),
+        Imgproc.putText(input, "Area: " + sampleArea, new Point(sampleCenter.x - 50, sampleCenter.y + 150),
                 Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(0, 0, 0), 3);
     }
 
@@ -224,10 +243,10 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         double newServoPosition = current + servoAdjustment;
 
         // Ensure the servo position stays within valid bounds [0, 1]
-        if (newServoPosition > MAX_SERVO_POSITION) {
-            newServoPosition = MAX_SERVO_POSITION;
-        } else if (newServoPosition < MIN_SERVO_POSITION) {
-            newServoPosition = MIN_SERVO_POSITION;
+        if (newServoPosition > 1.0) {
+            newServoPosition = 1.0;
+        } else if (newServoPosition < 0.0) {
+            newServoPosition = 0.0;
         }
 
         return newServoPosition;
