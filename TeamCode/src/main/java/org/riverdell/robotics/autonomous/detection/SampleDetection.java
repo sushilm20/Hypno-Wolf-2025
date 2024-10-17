@@ -46,6 +46,11 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     public static double MIN_SAMPLE_AREA = 5000.0;
     public static double SAMPLE_AREA_ROLLING_AVERAGE_MAX_DEVIATION = 4500.0;
 
+    public static double SAMPLE_TRACKING_DISTANCE = 300.0;
+
+    public static double SAMPLE_AUTOSNAP_RADIUS = 25.0;
+    public static double SAMPLE_AUTOSNAP_LIFETIME = 500L;
+
     // AtomicReference to store the last frame as a Bitmap
     private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
 
@@ -58,6 +63,9 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     private final RollingAverage areaAverage = new RollingAverage(10);
     private boolean areaAverageDirty = false;
 
+    private Point autoSnapCenterLock = null;
+    private long autoSnapHeartbeat = 0L;
+
     public void markAreaAverageDirty() {
         areaAverageDirty = true;
     }
@@ -66,6 +74,7 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     private Supplier<Double> currentWristPosition = () -> 0.0;
 
     private double targetWristPosition = 0.0;
+
     public double getTargetWristPosition() {
         return targetWristPosition;
     }
@@ -100,12 +109,11 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
         // Detect the sample object in the specified mask
         Point sampleCenter = detectSample(input, colorMask);
+        Imgproc.circle(input, new Point(FRAME_CENTER_X, FRAME_CENTER_Y), (int) SAMPLE_TRACKING_DISTANCE, new Scalar(128, 0, 0));
 
         // Annotate the detected sample with bounding box and angle
         if (sampleCenter != null) {
             annotateBoundingBox(input, sampleCenter);
-        } else {
-            targetWristPosition = 0.5;
         }
 
         // Convert the processed frame (Mat) to a Bitmap for FTC dashboard display
@@ -125,10 +133,11 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
         Rect boundingBox = null;
         Point sampleCenter = null;
-        double minDistance = 300.0;
+        double minDistance = SAMPLE_TRACKING_DISTANCE;
 
         if (areaAverageDirty) {
             areaAverage.reset();
+            areaAverageDirty = false;
         }
 
         // Loop through contours to find the largest contour (which should be the sample)
@@ -136,9 +145,9 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
             Rect localBoundingBox = Imgproc.boundingRect(contour);
             Point localSampleCenter = new Point((localBoundingBox.x + localBoundingBox.width / 2.0), (localBoundingBox.y + localBoundingBox.height / 2.0));
             double distance = Math.hypot(localSampleCenter.x - FRAME_CENTER_X, localSampleCenter.y - FRAME_CENTER_Y);
-
             double area = localBoundingBox.area();
-            if (area < MIN_SAMPLE_AREA) {
+
+            if (area < MIN_SAMPLE_AREA || distance > minDistance) {
                 continue;
             }
 
@@ -147,12 +156,27 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
                 areaAverage.add(area);
             }
 
-            if (distance < minDistance && areaAverage.isAvailable() && !outlier) {
-                guidanceRotationAngle = calculateRotationAngle(contour);
+            if (areaAverage.isAvailable() && !outlier) {
                 boundingBox = localBoundingBox;
                 sampleCenter = localSampleCenter;
                 minDistance = distance;
                 sampleArea = localBoundingBox.area();
+
+                if (autoSnapCenterLock != null) {
+                    if (Math.hypot(localSampleCenter.x - autoSnapCenterLock.x, localSampleCenter.y - autoSnapCenterLock.y) < SAMPLE_AUTOSNAP_RADIUS) {
+                        Imgproc.circle(input, localSampleCenter, (int) SAMPLE_AUTOSNAP_RADIUS, new Scalar(0, 128, 0));
+
+                        autoSnapHeartbeat = System.currentTimeMillis();
+                        autoSnapCenterLock = localSampleCenter;
+                        break;
+                    }
+
+                    if (System.currentTimeMillis() - autoSnapHeartbeat < SAMPLE_AUTOSNAP_LIFETIME) {
+                        return autoSnapCenterLock;
+                    }
+                }
+
+                guidanceRotationAngle = calculateRotationAngle(contour);
             }
 
             // add a rectangle showing we detected this sample
@@ -161,14 +185,18 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
         // Draw a rectangle around the detected sample
         if (boundingBox != null) {
+            if (autoSnapCenterLock == null) {
+                autoSnapCenterLock = sampleCenter;
+                autoSnapHeartbeat = System.currentTimeMillis();
+            }
+
             Imgproc.rectangle(input, boundingBox, new Scalar(117, 38, 191), 5);
         }
 
         return sampleCenter;
     }
 
-    public @NotNull Pose getTargetPose(@NotNull Pose currentPose)
-    {
+    public @NotNull Pose getTargetPose(@NotNull Pose currentPose) {
         if (guidanceVector == null) {
             return currentPose;
         }
@@ -189,8 +217,6 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     }
 
     private void annotateBoundingBox(Mat input, Point sampleCenter) {
-        // Draw a circle at the center of the sample
-        Imgproc.circle(input, sampleCenter, 10, new Scalar(251, 0, 255), 10);
 
         // Annotate the angle and servo position on the frame
         targetWristPosition = calculateServoPosition(currentWristPosition.get(), guidanceRotationAngle);
