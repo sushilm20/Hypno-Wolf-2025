@@ -37,15 +37,21 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     public static double TURN_FACTOR = 0.001;
     public static double TURN_FACTOR_D_GAIN = -0.0001;
 
+    // dont tune
     public static double FRAME_CENTER_X = 640.0 / 2;
     public static double FRAME_CENTER_Y = 480.0 / 2;
 
+    // dont tune
     public static double X_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
     public static double Y_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
 
+    // dont tune
     public static double MIN_SAMPLE_AREA = 5000.0;
-    public static double SAMPLE_AREA_ROLLING_AVERAGE_MAX_DEVIATION = 4500.0;
 
+    public static double SAMPLE_AREA_AVERAGE_DURING_HOVER = 10000.0;
+    public static double SAMPLE_AREA_AVERAGE_DURING_HOVER_MAX_DEVIATION = 4500.0;
+
+    // dont tune
     public static double SAMPLE_TRACKING_DISTANCE = 300.0;
 
     public static double SAMPLE_AUTOSNAP_RADIUS = 25.0;
@@ -60,15 +66,16 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     private double guidanceRotationAngle = 0.0;
     private double sampleArea = 0.0;
 
-    private final RollingAverage areaAverage = new RollingAverage(10);
-    private boolean areaAverageDirty = false;
-
     private Point autoSnapCenterLock = null;
     private long autoSnapHeartbeat = 0L;
 
-    public void markAreaAverageDirty() {
-        areaAverageDirty = true;
-    }
+    public static double MIN_B = 0.0;
+    public static double MIN_G = 0.0;
+    public static double MIN_R = 0.0;
+
+    public static double MAX_B = 0.0;
+    public static double MAX_G = 0.0;
+    public static double MAX_R = 0.0;
 
     private SampleType detectionType = SampleType.Blue;
     private Supplier<Double> currentWristPosition = () -> 0.0;
@@ -93,6 +100,8 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         lastFrame.set(Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565));
     }
 
+    public static int SET_TO_1_IF_COLOR_TUNING = 0;
+
     @Override
     public Object processFrame(Mat input, long captureTimeNanos) {
         Mat hsvMat = new Mat();
@@ -100,12 +109,21 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
         // Create a mask for the specified color range
         Mat colorMask = new Mat();
-        Core.inRange(
-                hsvMat,
-                detectionType.getColorRangeMinimum(),
-                detectionType.getColorRangeMaximum(),
-                colorMask
-        );
+        if (SET_TO_1_IF_COLOR_TUNING == 0) {
+            Core.inRange(
+                    hsvMat,
+                    new Scalar(MIN_B, MIN_G, MIN_R),
+                    new Scalar(MAX_B, MAX_G, MAX_R),
+                    colorMask
+            );
+        } else {
+            Core.inRange(
+                    hsvMat,
+                    detectionType.getColorRangeMinimum(),
+                    detectionType.getColorRangeMaximum(),
+                    colorMask
+            );
+        }
 
         // Detect the sample object in the specified mask
         Point sampleCenter = detectSample(input, colorMask);
@@ -118,7 +136,7 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
         // Convert the processed frame (Mat) to a Bitmap for FTC dashboard display
         Bitmap bitmap = Bitmap.createBitmap(input.width(), input.height(), Bitmap.Config.RGB_565);
-        Utils.matToBitmap(input, bitmap);
+        Utils.matToBitmap(SET_TO_1_IF_COLOR_TUNING == 1 ? input : colorMask, bitmap);
 
         // Update the last frame
         lastFrame.set(bitmap);
@@ -135,11 +153,6 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         Point sampleCenter = null;
         double minDistance = SAMPLE_TRACKING_DISTANCE;
 
-        if (areaAverageDirty) {
-            areaAverage.reset();
-            areaAverageDirty = false;
-        }
-
         // Loop through contours to find the largest contour (which should be the sample)
         for (MatOfPoint contour : contours) {
             Rect localBoundingBox = Imgproc.boundingRect(contour);
@@ -151,12 +164,7 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
                 continue;
             }
 
-            boolean outlier = areaAverage.isOutlier(area, SAMPLE_AREA_ROLLING_AVERAGE_MAX_DEVIATION);
-            if (!areaAverage.isAvailable() || !outlier) {
-                areaAverage.add(area);
-            }
-
-            if (areaAverage.isAvailable() && !outlier) {
+            if (Math.abs(area - SAMPLE_AREA_AVERAGE_DURING_HOVER) < SAMPLE_AREA_AVERAGE_DURING_HOVER_MAX_DEVIATION) {
                 boundingBox = localBoundingBox;
                 sampleCenter = localSampleCenter;
                 minDistance = distance;
@@ -269,7 +277,7 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         double newServoPosition = current + servoAdjustment;
 
         // Ensure the servo position stays within valid bounds [0, 1]
-        if (newServoPosition > 1.0) {
+        if (newServoPosition > 0.7) {
             newServoPosition = 1.0;
         } else if (newServoPosition < 0.0) {
             newServoPosition = 0.0;
