@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlin.math.abs
 
 @Serializable
-data class MotionProfileConstraints(var velocity: Double, var acceleration: Double, var deceleration: Double)
+data class MotionProfileConstraints(var velocity: Double = 0.0, var acceleration: Double = 0.0, var deceleration: Double = 0.0)
 {
     constructor(velocity: Double, acceleration: Double) : this(acceleration, acceleration, velocity)
 

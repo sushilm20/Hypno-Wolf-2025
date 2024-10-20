@@ -8,7 +8,7 @@ import org.riverdell.robotics.utilities.managed.ManagedServo
 import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 
 fun StateHolder.motionProfiledServo(name: String, config: Konfig<MotionProfileConstraints>) = ManagedServo(
-    HypnoticRobot.instance.hardware("v4b_rotation_right"),
+    HypnoticRobot.instance.hardware(name),
     this,
     config::get
 )
