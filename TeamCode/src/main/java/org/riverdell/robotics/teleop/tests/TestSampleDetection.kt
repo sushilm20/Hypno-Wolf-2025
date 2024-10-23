@@ -2,10 +2,12 @@ package org.riverdell.robotics.teleop.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.DcMotorEx
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
+import org.riverdell.robotics.utilities.hardware
 
 @TeleOp(
-    name = "Sample Detection Test",
+    name = "Sample Vision Test",
     group = "Tests"
 )
 class TestSampleDetection : LinearOpMode()

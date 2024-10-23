@@ -2,6 +2,7 @@ package org.riverdell.robotics.teleop
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.Servo
 import io.liftgate.robotics.mono.Mono.commands
@@ -24,14 +25,13 @@ class HypnoticTeleOp : HypnoticRobot()
     private val gp2Commands by lazy { commands(gamepad2) }
 
     val visionPipeline by lazy { VisionPipeline(this) }
-    val wrist by lazy { hardware<Servo>("wrist") }
 
-    override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands, visionPipeline)
+    override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands, /*visionPipeline*/)
     override fun initialize()
     {
-        wrist.position = 0.5
+        /*wrist.position = 0.5
         visionPipeline.sampleDetection.supplyCurrentWristPosition { wrist.position }
-        visionPipeline.sampleDetection.setDetectionType(SampleType.Blue)
+        visionPipeline.sampleDetection.setDetectionType(SampleType.Blue)*/
 
         while (!isStarted)
         {
@@ -53,14 +53,55 @@ class HypnoticTeleOp : HypnoticRobot()
             gp1Commands.run()
             gp2Commands.run()
 
-            wrist.position = visionPipeline.sampleDetection.targetWristPosition
+//            wrist.position = visionPipeline.sampleDetection.targetWristPosition
             runPeriodics()
         }
     }
 
     private fun buildCommands()
     {
+motorTest()
         gp1Commands.doButtonUpdatesManually()
         gp2Commands.doButtonUpdatesManually()
     }
+
+    fun motorTest()
+    {
+        val backLeft = hardware<DcMotorEx>("backLeft")
+        gp1Commands.where(ButtonType.ButtonA)
+            .triggers {
+                backLeft.power = 1.0
+            }
+            .andIsHeldUntilReleasedWhere {
+                backLeft.power = 0.0
+            }
+
+        val backRight = hardware<DcMotorEx>("backRight")
+        gp1Commands.where(ButtonType.ButtonB)
+            .triggers {
+                backRight.power = 1.0
+            }
+            .andIsHeldUntilReleasedWhere {
+                backRight.power = 0.0
+            }
+
+        val frontRight = hardware<DcMotorEx>("frontRight")
+        gp1Commands.where(ButtonType.ButtonX)
+            .triggers {
+                frontRight.power = 1.0
+            }
+            .andIsHeldUntilReleasedWhere {
+                frontRight.power = 0.0
+            }
+
+        val frontLeft = hardware<DcMotorEx>("frontLeft")
+        gp1Commands.where(ButtonType.ButtonY)
+            .triggers {
+                frontLeft.power = 1.0
+            }
+            .andIsHeldUntilReleasedWhere {
+                frontLeft.power = 0.0
+            }
+    }
+
 }

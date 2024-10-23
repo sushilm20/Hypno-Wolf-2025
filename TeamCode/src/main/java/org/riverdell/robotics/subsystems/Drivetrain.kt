@@ -42,24 +42,13 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
     fun driveRobotCentric(driverOp: GamepadEx, scaleFactor: Double)
     {
         backingDriveBase.driveRobotCentric(
-            -driverOp.leftY * scaleFactor,
             -driverOp.leftX * scaleFactor,
-            driverOp.rightX * scaleFactor,
+            -driverOp.leftY * scaleFactor,
+            -driverOp.rightX * scaleFactor,
             true
         )
     }
 
-    fun driveFieldCentric(driverOp: GamepadEx, scaleFactor: Double)
-    {
-        val heading = imuState.current().getYaw(AngleUnit.DEGREES)
-        backingDriveBase.driveFieldCentric(
-            -driverOp.leftX * scaleFactor,
-            -driverOp.leftY * scaleFactor,
-            driverOp.rightX * scaleFactor,
-            heading,
-            true
-        )
-    }
 
     override fun start()
     {
@@ -89,10 +78,10 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
             backLeft = opMode.hardware<DcMotorEx>("backLeft")
             backRight = opMode.hardware<DcMotorEx>("backRight")
 
-            frontLeft.direction = DcMotorSimple.Direction.REVERSE
+            frontLeft.direction = DcMotorSimple.Direction.FORWARD
             frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-            frontRight.direction = DcMotorSimple.Direction.FORWARD
+            frontRight.direction = DcMotorSimple.Direction.REVERSE
             frontRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
             backLeft.direction = DcMotorSimple.Direction.REVERSE

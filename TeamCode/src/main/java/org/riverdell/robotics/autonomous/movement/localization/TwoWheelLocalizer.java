@@ -53,8 +53,8 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
 
         this.hypnoticRobot = hypnoticRobot;
 
-        this.lateral = new Motor(hypnoticRobot.hardwareMap, "backRight").encoder;
-        this.perpendicular = new Motor(hypnoticRobot.hardwareMap, "frontLeft").encoder;
+        this.lateral = new Motor(hypnoticRobot.hardwareMap, "frontLeft").encoder;
+        this.perpendicular = new Motor(hypnoticRobot.hardwareMap, "backLeft").encoder;
     }
 
     public static double encoderTicksToInches(double ticks) {
@@ -65,7 +65,7 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
     @Override
     public List<Double> getWheelPositions() {
         double lateralPos = lateral.getPosition();
-        double  perpPos = perpendicular.getPosition();
+        double perpPos = perpendicular.getPosition();
         return Arrays.asList(
                 encoderTicksToInches(lateralPos),
                 encoderTicksToInches(perpPos)
