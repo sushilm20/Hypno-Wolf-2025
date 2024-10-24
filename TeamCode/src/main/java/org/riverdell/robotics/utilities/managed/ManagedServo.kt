@@ -33,13 +33,13 @@ class ManagedServo(
         val motionProfileState = motionProfile?.calculate(timer.time())
             ?: return@state servoCurrentPosition
 
-        if (servoCurrentPosition == motionProfileState.target)
+        servo.position = motionProfileState.target
+        if (servo.position == motionProfile!!.finalPosition)
         {
             motionProfile = null
             return@state servoCurrentPosition
         }
 
-        servo.position = motionProfileState.target
         motionProfileState.target
     })
 
