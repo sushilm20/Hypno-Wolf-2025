@@ -27,7 +27,7 @@ class TestKonfig : LinearOpMode()
 
         while (opModeIsActive())
         {
-            telemetry.addLine("Konfig value: ${test.get().nodes.size}")
+            telemetry.addLine("Konfig value: ${test.get().nodes.keys}")
             telemetry.update()
             Thread.sleep(50L)
         }
