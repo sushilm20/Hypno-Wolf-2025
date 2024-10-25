@@ -31,7 +31,7 @@ class Lift(opMode: LinearOpMode) : AbstractSubsystem()
             kV, kA, kStatic,
             master = leftSlide,
             slaves = listOf(rightSlide)
-        ).withMotionProfiling(motionProfileConstraints)
+        )
     }
 
     fun extendToAndStayAt(position: Int) = slides.goTo(position)

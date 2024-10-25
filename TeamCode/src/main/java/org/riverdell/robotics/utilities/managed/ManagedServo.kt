@@ -4,7 +4,8 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
-import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
+import kotlin.math.abs
 
 /**
  * A [Servo] wrapper that keeps track of motion profile states.
@@ -14,11 +15,11 @@ import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 class ManagedServo(
     private val servo: Servo,
     stateHolder: StateHolder,
-    private val constraints: () -> MotionProfileConstraints
+    private val constraints: () -> ProfileConstraints
 )
 {
     private var motionProfile: AsymmetricMotionProfile? = null
-    private val timer = ElapsedTime()
+    private var timer = ElapsedTime()
 
     private val state by stateHolder.state<Double>({
         motionProfile =
@@ -27,20 +28,26 @@ class ManagedServo(
                 it,
                 constraints()
             )
-        timer.reset()
+        timer = ElapsedTime()
     }, {
-        val servoCurrentPosition = servo.position
-        val motionProfileState = motionProfile?.calculate(timer.time())
-            ?: return@state servoCurrentPosition
-
-        if (servoCurrentPosition == motionProfileState.target)
+        if (motionProfile == null)
         {
-            motionProfile = null
-            return@state servoCurrentPosition
+            timer = ElapsedTime()
+            return@state 0.0
         }
 
-        servo.position = motionProfileState.target
-        motionProfileState.target
+        val motionProfileState = motionProfile?.calculate(timer.time())
+            ?: return@state 0.0
+
+        servo.position = motionProfileState.x
+        servo.position
+    }, { current, _ ->
+        if (abs(current - motionProfile!!.finalPosition) < 0.01)
+        {
+            motionProfile = null
+        }
+
+        motionProfile == null
     })
 
     fun unwrapServo() = servo

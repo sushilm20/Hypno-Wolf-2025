@@ -69,7 +69,7 @@ class HypnoticTeleOp : HypnoticRobot()
             }
 
         gp1Commands
-            .where(ButtonType.ButtonB)
+            .where(ButtonType.ButtonX)
             .triggers {
                 intake.perpendicularWrist()
             }

@@ -5,9 +5,9 @@ import io.liftgate.robotics.mono.states.StateHolder
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedServo
-import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 
-fun StateHolder.motionProfiledServo(name: String, config: Konfig<MotionProfileConstraints>) = ManagedServo(
+fun StateHolder.motionProfiledServo(name: String, config: Konfig<ProfileConstraints>) = ManagedServo(
     HypnoticRobot.instance.hardware(name),
     this,
     config::get

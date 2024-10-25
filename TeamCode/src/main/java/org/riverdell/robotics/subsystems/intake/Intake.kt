@@ -6,7 +6,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import kotlinx.serialization.Serializable
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.subsystems.motionProfiledServo
-import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
 
 class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
@@ -16,10 +16,10 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
 
     private val intakeConfig = konfig<IntakeConfig>()
 
-    private val wristConstraints = konfig<MotionProfileConstraints> { withCustomFileID("intake_wrist_motionprofile") }
+    private val wristConstraints = konfig<ProfileConstraints> { withCustomFileID("intake_wrist_motionprofile") }
     private val wrist = motionProfiledServo("intakeWrist", wristConstraints)
 
-    private val rotationConstraints = konfig<MotionProfileConstraints> { withCustomFileID("intake_grip_motionprofile") }
+    private val rotationConstraints = konfig<ProfileConstraints> { withCustomFileID("intake_grip_motionprofile") }
     private val leftGrip = motionProfiledServo("intakeClawLeft", rotationConstraints)
     private val rightGrip = motionProfiledServo("intakeClawRight", rotationConstraints)
 
@@ -51,7 +51,7 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
             return@let CompletableFuture.completedFuture(null)
 
         wristState = state
-        return@let updateIntakeState()
+        return@let updateWristState()
     }
 
     private fun updateIntakeState(): CompletableFuture<Void>

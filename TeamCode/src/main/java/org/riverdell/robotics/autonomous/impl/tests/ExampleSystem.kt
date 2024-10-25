@@ -11,7 +11,7 @@ import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import org.riverdell.robotics.utilities.managed.ManagedServo
 import org.riverdell.robotics.utilities.managed.pidf.PIDFMotionProfiledConfig
-import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 
 class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
 {
@@ -44,7 +44,7 @@ class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
         this@ExampleSystem
     ) {
         val config = rotationConfig.get()
-        MotionProfileConstraints(config.velocity, config.acceleration, config.deceleration)
+        ProfileConstraints(config.velocity, config.acceleration, config.deceleration)
     }
 
     override fun start()

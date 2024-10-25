@@ -7,8 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import io.liftgate.robotics.mono.states.StateResult
-import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
-import org.riverdell.robotics.utilities.motionprofile.MotionProfileConstraints
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
@@ -42,14 +40,6 @@ class ManagedMotorGroup(
      */
     private var idle = false
 
-    private var motionProfile: AsymmetricMotionProfile? = null
-    private val motionProfileTimer = ElapsedTime()
-    private var motionProfileConstraints: MotionProfileConstraints? = null
-
-    fun withMotionProfiling(constraints: MotionProfileConstraints) = apply {
-        motionProfileConstraints = constraints
-    }
-
     private val state by stateHolder.state<Int>(
         write = {
             val currentPosition = master.currentPosition
@@ -58,15 +48,6 @@ class ManagedMotorGroup(
             master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
             slaves.forEach { slave ->
                 slave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-            }
-
-            if (motionProfileConstraints != null)
-            {
-                motionProfile = AsymmetricMotionProfile(
-                    currentPosition.toDouble(), it.toDouble(),
-                    motionProfileConstraints
-                )
-                motionProfileTimer.reset()
             }
 
             pidfController.targetPosition = it.toDouble()
@@ -121,16 +102,6 @@ class ManagedMotorGroup(
             }
 
             val velocity = master.velocity
-            if (motionProfile != null)
-            {
-                val motionProfileTarget = motionProfile!!.calculate(motionProfileTimer.time())
-                if (motionProfileTarget.velocity != 0.0)
-                {
-                    pidfController.targetPosition = motionProfileTarget.target
-                    pidfController.targetVelocity = motionProfileTarget.velocity
-                    pidfController.targetAcceleration = motionProfileTarget.acceleration
-                }
-            }
 
             return pidfController
                 .update(
@@ -239,7 +210,6 @@ class ManagedMotorGroup(
 
         state.reset()
         pidfController.reset()
-        motionProfile = null
         idle = true
 
         master.power = 0.0
