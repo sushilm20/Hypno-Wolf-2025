@@ -53,14 +53,30 @@ class HypnoticTeleOp : HypnoticRobot()
             gp1Commands.run()
             gp2Commands.run()
 
-//            wrist.position = visionPipeline.sampleDetection.targetWristPosition
             runPeriodics()
         }
     }
 
     private fun buildCommands()
     {
-motorTest()
+        gp1Commands
+            .where(ButtonType.ButtonA)
+            .triggers {
+                intake.openIntake()
+            }
+            .andIsHeldUntilReleasedWhere {
+                intake.closeIntake()
+            }
+
+        gp1Commands
+            .where(ButtonType.ButtonB)
+            .triggers {
+                intake.perpendicularWrist()
+            }
+            .andIsHeldUntilReleasedWhere {
+                intake.lateralWrist()
+            }
+
         gp1Commands.doButtonUpdatesManually()
         gp2Commands.doButtonUpdatesManually()
     }
