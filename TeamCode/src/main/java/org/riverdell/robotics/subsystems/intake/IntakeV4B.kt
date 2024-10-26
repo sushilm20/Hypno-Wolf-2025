@@ -14,11 +14,11 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     private val rotationConstraints = konfig<ProfileConstraints> { withCustomFileID("v4b_rotation_motionprofile") }
     private val leftRotation = motionProfiledServo("intakeV4BLeft", rotationConstraints)
     private val rightRotation = motionProfiledServo("intakeV4BRight", rotationConstraints)
-    private var v4bState = V4BState.Lock
+    var v4bState = V4BState.Lock
 
     private val coaxialConstraints = konfig<ProfileConstraints> { withCustomFileID("v4b_coaxial_motionprofile") }
     private val coaxialRotation = motionProfiledServo("intakeV4BCoaxial", coaxialConstraints)
-    private var coaxialState = CoaxialState.Intermediate
+    var coaxialState = CoaxialState.Transfer
 
     fun coaxialIntermediate() = setCoaxial(CoaxialState.Intermediate)
     fun coaxialIntake() = setCoaxial(CoaxialState.Intake)
@@ -35,9 +35,9 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     }
 
     fun v4bLock() = setV4B(V4BState.Lock)
-    fun v4bIntake() = setV4B(V4BState.Intake)
+    fun v4bSampleSelect() = setV4B(V4BState.Select)
     fun v4bIntermediate() = setV4B(V4BState.Intermediate)
-    fun v4bTransfer() = setV4B(V4BState.Transfer)
+    fun v4bSamplePickup() = setV4B(V4BState.Pickup)
 
     fun setV4B(state: V4BState) = let {
         if (state == v4bState)
@@ -49,7 +49,7 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
         return@let updateFourBarState()
     }
 
-    private fun updateCoaxialState(): CompletableFuture<StateResult>
+    private fun updateCoaxialState(): CompletableFuture<Void>
     {
         return coaxialRotateTo(coaxialState.position)
     }
@@ -59,10 +59,10 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
         return v4bRotateTo(v4bState.position)
     }
 
-    private fun coaxialRotateTo(position: Double) = coaxialRotation.setMotionProfileTarget(position)
+    private fun coaxialRotateTo(position: Double) = coaxialRotation.forcefullySetTarget(position)
     private fun v4bRotateTo(position: Double) = CompletableFuture.allOf(
-        leftRotation.setMotionProfileTarget(1.0 - position),
-        rightRotation.setMotionProfileTarget(position)
+        leftRotation.forcefullySetTarget(1.0 - position),
+        rightRotation.forcefullySetTarget(position)
     )
 
     override fun start()

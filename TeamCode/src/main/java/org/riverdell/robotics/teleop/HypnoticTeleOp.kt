@@ -13,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.SampleType
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
+import org.riverdell.robotics.subsystems.intake.V4BState
 import org.riverdell.robotics.utilities.hardware
 
 @TeleOp(
@@ -60,22 +61,35 @@ class HypnoticTeleOp : HypnoticRobot()
     private fun buildCommands()
     {
         gp1Commands
-            .where(ButtonType.ButtonA)
-            .triggers {
-                intake.openIntake()
-            }
-            .andIsHeldUntilReleasedWhere {
-                intake.closeIntake()
-            }
-
-        gp1Commands
-            .where(ButtonType.ButtonX)
+            .where(ButtonType.PlayStationCircle)
             .triggers {
                 intake.perpendicularWrist()
             }
-            .andIsHeldUntilReleasedWhere {
-                intake.lateralWrist()
+            .whenPressedOnce()
+
+        gp1Commands
+            .where(ButtonType.ButtonY)
+            .triggers {
+                if (intakeV4B.v4bState == V4BState.Lock)
+                {
+                    intakeV4B.coaxialIntake()
+                    intakeV4B.v4bSampleSelect()
+                        .thenCompose {
+                            intake.openIntake()
+                        }
+                } else
+                {
+                    intake.closeIntake()
+                        .thenCompose {
+                            intake.lateralWrist()
+                        }
+                        .thenAccept {
+                            intakeV4B.coaxialTransfer()
+                            intakeV4B.v4bLock()
+                        }
+                }
             }
+            .whenPressedOnce()
 
         gp1Commands.doButtonUpdatesManually()
         gp2Commands.doButtonUpdatesManually()

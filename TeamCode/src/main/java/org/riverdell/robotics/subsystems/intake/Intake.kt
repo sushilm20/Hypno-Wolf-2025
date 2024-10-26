@@ -23,8 +23,8 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
     private val leftGrip = motionProfiledServo("intakeClawLeft", rotationConstraints)
     private val rightGrip = motionProfiledServo("intakeClawRight", rotationConstraints)
 
-    private var intakeState = IntakeState.Closed
-    private var wristState = WristState.Lateral
+    var intakeState = IntakeState.Closed
+    var wristState = WristState.Lateral
 
     private var dynamicPosition = 0.5
 

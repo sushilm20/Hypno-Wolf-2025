@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
+import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
 /**
@@ -59,9 +60,10 @@ class ManagedServo(
      * Overrides any existing motion profile and sets
      * the target position of the backing servo.
      */
-    fun forcefullySetTarget(targetPosition: Double)
+    fun forcefullySetTarget(targetPosition: Double): CompletableFuture<Void>
     {
         state.reset()
         servo.position = targetPosition
+        return CompletableFuture.completedFuture(null)
     }
 }
