@@ -11,11 +11,6 @@ import java.util.concurrent.CompletableFuture
 
 class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 {
-    @Serializable
-    data class V4BConfig(val leftIsReversed: Boolean = false)
-
-    private val v4bConfig = konfig<V4BConfig>()
-
     private val rotationConstraints = konfig<ProfileConstraints> { withCustomFileID("v4b_rotation_motionprofile") }
     private val leftRotation = motionProfiledServo("intakeV4BLeft", rotationConstraints)
     private val rightRotation = motionProfiledServo("intakeV4BRight", rotationConstraints)
@@ -66,20 +61,14 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 
     private fun coaxialRotateTo(position: Double) = coaxialRotation.setMotionProfileTarget(position)
     private fun v4bRotateTo(position: Double) = CompletableFuture.allOf(
-        leftRotation.setMotionProfileTarget(
-            if (v4bConfig.get().leftIsReversed)
-                (1.0 - position) else position
-        ),
-        rightRotation.setMotionProfileTarget(
-            if (!v4bConfig.get().leftIsReversed)
-                (1.0 - position) else position
-        )
+        leftRotation.setMotionProfileTarget(1.0 - position),
+        rightRotation.setMotionProfileTarget(position)
     )
 
     override fun start()
     {
         updateCoaxialState()
-//        updateFourBarState()
+        updateFourBarState()
     }
 
     override fun doInitialize()

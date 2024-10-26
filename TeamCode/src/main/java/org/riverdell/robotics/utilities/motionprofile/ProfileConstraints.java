@@ -5,6 +5,10 @@ public class ProfileConstraints {
     public double decel;
     public double velo;
 
+    public ProfileConstraints() {
+        this(10.0, 10.0, 10.0);
+    }
+
     public ProfileConstraints(double velo, double accel) {
         this(accel, accel, velo);
     }
