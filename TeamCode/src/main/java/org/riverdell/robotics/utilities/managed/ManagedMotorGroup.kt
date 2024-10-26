@@ -77,14 +77,16 @@ class ManagedMotorGroup(
         }
     )
 
-    // TODO: maybe we don't need to reset encoder lol
-    init
+    fun resetEncoders()
     {
-        /*master.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        master.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slaves.forEach { slave ->
             slave.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        }*/
+        }
+    }
 
+    init
+    {
         master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         slaves.forEach {
             it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
