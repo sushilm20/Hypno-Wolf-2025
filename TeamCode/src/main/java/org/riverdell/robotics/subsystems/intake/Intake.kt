@@ -83,12 +83,12 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
 
     override fun start()
     {
-
+        updateIntakeState()
+        updateWristState()
     }
 
     override fun doInitialize()
     {
-        updateIntakeState()
-        updateWristState()
+
     }
 }

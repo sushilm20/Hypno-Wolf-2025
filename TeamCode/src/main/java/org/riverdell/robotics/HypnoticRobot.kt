@@ -10,6 +10,7 @@ import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
 import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.intake.Intake
+import org.riverdell.robotics.subsystems.intake.IntakeV4B
 
 abstract class HypnoticRobot : LinearOpMode(), System
 {
@@ -23,6 +24,7 @@ abstract class HypnoticRobot : LinearOpMode(), System
 
     val drivetrain by lazy { Drivetrain(this) }
     val intake by lazy { Intake(this) }
+    val intakeV4B by lazy { IntakeV4B(this) }
 /*
     val v4b by lazy { V4B(this) }
     val lift by lazy { Lift(this) }
@@ -56,7 +58,7 @@ abstract class HypnoticRobot : LinearOpMode(), System
         instance = this
 
         register(
-            drivetrain, intake,
+            drivetrain, intake, intakeV4B,
             *additionalSubSystems().toTypedArray()
         )
 
