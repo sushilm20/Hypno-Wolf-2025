@@ -9,13 +9,12 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 import org.riverdell.robotics.utilities.hardware
 
-class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
+class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     lateinit var frontRight: DcMotorEx
     lateinit var frontLeft: DcMotorEx
@@ -27,11 +26,11 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
 
     private val imuState by state(write = { _ -> }, read = { imu.robotYawPitchRollAngles })
     private val voltageState by state(write = { _ -> }, read = {
-        opMode.hardwareMap.voltageSensor.first().voltage
+        robot.opMode.hardwareMap.voltageSensor.first().voltage
     })
 
     val localizer by lazy {
-        TwoWheelLocalizer(opMode)
+        TwoWheelLocalizer(robot)
     }
 
     private lateinit var backingDriveBase: MecanumDrive
@@ -60,7 +59,7 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
      */
     override fun doInitialize()
     {
-        imu = opMode.hardware<IMU>("imu")
+        imu = robot.hardware<IMU>("imu")
         imu.initialize(
             IMU.Parameters(
                 RevHubOrientationOnRobot(
@@ -71,12 +70,12 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
         )
         imu.resetYaw()
 
-        if (opMode is HypnoticAuto)
+        if (robot.opMode is HypnoticAuto)
         {
-            frontLeft = opMode.hardware<DcMotorEx>("frontLeft")
-            frontRight = opMode.hardware<DcMotorEx>("frontRight")
-            backLeft = opMode.hardware<DcMotorEx>("backLeft")
-            backRight = opMode.hardware<DcMotorEx>("backRight")
+            frontLeft = robot.opMode.hardware<DcMotorEx>("frontLeft")
+            frontRight = robot.opMode.hardware<DcMotorEx>("frontRight")
+            backLeft = robot.opMode.hardware<DcMotorEx>("backLeft")
+            backRight = robot.opMode.hardware<DcMotorEx>("backRight")
 
             frontLeft.direction = DcMotorSimple.Direction.FORWARD
             frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
@@ -99,10 +98,10 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
 
     fun setupDriveBase()
     {
-        val backLeft = Motor(opMode.hardwareMap, "backLeft")
-        val backRight = Motor(opMode.hardwareMap, "backRight")
-        val frontLeft = Motor(opMode.hardwareMap, "frontLeft")
-        val frontRight = Motor(opMode.hardwareMap, "frontRight")
+        val backLeft = Motor(robot.opMode.hardwareMap, "backLeft")
+        val backRight = Motor(robot.opMode.hardwareMap, "backRight")
+        val frontLeft = Motor(robot.opMode.hardwareMap, "frontLeft")
+        val frontRight = Motor(robot.opMode.hardwareMap, "frontRight")
 
         backingDriveBase = MecanumDrive(
             frontLeft, frontRight, backLeft, backRight
@@ -126,7 +125,7 @@ class Drivetrain(private val opMode: HypnoticRobot) : AbstractSubsystem()
     override fun isCompleted() = true
     override fun dispose()
     {
-        if (opMode is HypnoticAuto)
+        if (robot.opMode is HypnoticAuto)
         {
             stopAndResetMotors()
         }

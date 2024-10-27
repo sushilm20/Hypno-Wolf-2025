@@ -11,9 +11,9 @@ data class DrivetrainUpdates(
 {
     fun propagate(pipeline: HypnoticAuto)
     {
-        pipeline.drivetrain.frontLeft.power = newFrontLeft
-        pipeline.drivetrain.frontRight.power = newFrontRight
-        pipeline.drivetrain.backLeft.power = newBackLeft
-        pipeline.drivetrain.backRight.power = newBackRight
+        pipeline.robot.drivetrain.frontLeft.power = newFrontLeft
+        pipeline.robot.drivetrain.frontRight.power = newFrontRight
+        pipeline.robot.drivetrain.backLeft.power = newBackLeft
+        pipeline.robot.drivetrain.backRight.power = newBackRight
     }
 }

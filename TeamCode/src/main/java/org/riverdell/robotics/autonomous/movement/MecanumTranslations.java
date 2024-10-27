@@ -30,7 +30,7 @@ public class MecanumTranslations {
         // 1.06, 1.04
 
         // feedforward & voltage comp
-        double correction = 12 / HypnoticAuto.getInstance().getDrivetrain().voltage();
+        double correction = 12 / HypnoticAuto.getInstance().getRobot().getDrivetrain().voltage();
         for (int i = 0; i < wheelSpeeds.length; i++) {
             wheelSpeeds[i] = Math.abs(wheelSpeeds[i]) < 0.01 ?
                     wheelSpeeds[i] * correction :

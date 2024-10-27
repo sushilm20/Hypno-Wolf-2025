@@ -5,16 +5,18 @@ import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 import org.riverdell.robotics.HypnoticRobot
+import org.riverdell.robotics.autonomous.HypnoticAuto.Companion
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
 abstract class HypnoticAuto(
     internal val blockExecutionGroup: RootExecutionGroup.(HypnoticAuto) -> Unit
-) : HypnoticRobot()
+) : HypnoticOpMode()
 {
     companion object
     {
@@ -22,74 +24,79 @@ abstract class HypnoticAuto(
         lateinit var instance: HypnoticAuto
     }
 
-    val navigationConfig by lazy {
-        konfig<NavigationConfig> {
-            withCustomFileID("navigation")
-        }
-    }
+   inner class HypnoticAutoRobot : HypnoticRobot(this@HypnoticAuto)
+   {
+       val navigationConfig by lazy {
+           konfig<NavigationConfig> {
+               withCustomFileID("navigation")
+           }
+       }
 
-    val visionPipeline by lazy { VisionPipeline(this) } // TODO: new season
+       val visionPipeline by lazy { VisionPipeline(this@HypnoticAuto) } // TODO: new season
 
-    override fun additionalSubSystems() = listOf<AbstractSubsystem>(visionPipeline)
-    override fun initialize()
-    {
-        instance = this
+       override fun additionalSubSystems() = listOf<AbstractSubsystem>(visionPipeline)
+       override fun initialize()
+       {
+           HypnoticAuto.instance = this@HypnoticAuto
 
-        while (opModeInInit())
-        {
-            runPeriodics()
-            drivetrain.localizer.update()
+           while (opModeInInit())
+           {
+               runPeriodics()
+               drivetrain.localizer.update()
 
-            multipleTelemetry.addLine("--- Initialization ---")
-            multipleTelemetry.addData(
-                "Voltage",
-                drivetrain.voltage()
-            )
-            multipleTelemetry.addData(
-                "IMU",
-                drivetrain.imu().getYaw(AngleUnit.DEGREES)
-            )
-            multipleTelemetry.addData(
-                "Pose",
-                drivetrain.localizer.pose
-            )
+               multipleTelemetry.addLine("--- Initialization ---")
+               multipleTelemetry.addData(
+                   "Voltage",
+                   drivetrain.voltage()
+               )
+               multipleTelemetry.addData(
+                   "IMU",
+                   drivetrain.imu().getYaw(AngleUnit.DEGREES)
+               )
+               multipleTelemetry.addData(
+                   "Pose",
+                   drivetrain.localizer.pose
+               )
 
-            multipleTelemetry.update()
-        }
-    }
+               multipleTelemetry.update()
+           }
+       }
 
-    override fun opModeStart()
-    {
-        thread {
-            while (!isStopRequested)
-            {
-                runPeriodics()
-                drivetrain.localizer.update()
+       override fun opModeStart()
+       {
+           thread {
+               while (!isStopRequested)
+               {
+                   runPeriodics()
+                   drivetrain.localizer.update()
 
-                multipleTelemetry.addLine("--- Autonomous ---")
-                multipleTelemetry.addData(
-                    "Voltage",
-                    drivetrain.voltage()
-                )
-                multipleTelemetry.addData(
-                    "IMU",
-                    drivetrain.imu().getYaw(AngleUnit.DEGREES)
-                )
-                multipleTelemetry.addData(
-                    "Pose",
-                    drivetrain.localizer.pose
-                )
+                   multipleTelemetry.addLine("--- Autonomous ---")
+                   multipleTelemetry.addData(
+                       "Voltage",
+                       drivetrain.voltage()
+                   )
+                   multipleTelemetry.addData(
+                       "IMU",
+                       drivetrain.imu().getYaw(AngleUnit.DEGREES)
+                   )
+                   multipleTelemetry.addData(
+                       "Pose",
+                       drivetrain.localizer.pose
+                   )
 
-                multipleTelemetry.update()
-            }
-        }
+                   multipleTelemetry.update()
+               }
+           }
 
-        val executionGroup = Mono.buildExecutionGroup {
-            blockExecutionGroup(
-                this@HypnoticAuto
-            )
-        }
+           val executionGroup = Mono.buildExecutionGroup {
+               blockExecutionGroup(
+                   this@HypnoticAuto
+               )
+           }
 
-        executionGroup.executeBlocking()
-    }
+           executionGroup.executeBlocking()
+       }
+   }
+
+    override fun buildRobot() = HypnoticAutoRobot()
 }

@@ -6,7 +6,7 @@ public class ProfileConstraints {
     public double velo;
 
     public ProfileConstraints() {
-        this(10.0, 10.0, 10.0);
+        this(2.0, 1, 1);
     }
 
     public ProfileConstraints(double velo, double accel) {
@@ -23,5 +23,9 @@ public class ProfileConstraints {
         this.velo *= factor;
         this.accel *= factor;
         this.decel *= factor;
+    }
+
+    public ProfileConstraints scale(double factor) {
+        return new ProfileConstraints(velo * factor, accel * factor, decel * factor);
     }
 }

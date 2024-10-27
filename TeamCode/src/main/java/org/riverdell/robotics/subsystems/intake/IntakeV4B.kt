@@ -1,24 +1,19 @@
 package org.riverdell.robotics.subsystems.intake
 
-import io.liftgate.robotics.mono.konfig.konfig
-import io.liftgate.robotics.mono.states.StateResult
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
-import kotlinx.serialization.Serializable
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.subsystems.motionProfiledServo
-import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
+import org.riverdell.robotics.utilities.motionprofile.Constraint
 import java.util.concurrent.CompletableFuture
 
 class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val rotationConstraints = konfig<ProfileConstraints> { withCustomFileID("v4b_rotation_motionprofile") }
-    private val leftRotation = motionProfiledServo("intakeV4BLeft", rotationConstraints)
-    private val rightRotation = motionProfiledServo("intakeV4BRight", rotationConstraints)
-    var v4bState = V4BState.Lock
+    private val leftRotation = motionProfiledServo("intakeV4BLeft", Constraint.HALF.scale(5.5))
+    private val rightRotation = motionProfiledServo("intakeV4BRight", Constraint.HALF.scale(5.5))
+    private val coaxialRotation = motionProfiledServo("intakeV4BCoaxial", Constraint.HALF.scale(4.5))
 
-    private val coaxialConstraints = konfig<ProfileConstraints> { withCustomFileID("v4b_coaxial_motionprofile") }
-    private val coaxialRotation = motionProfiledServo("intakeV4BCoaxial", coaxialConstraints)
-    var coaxialState = CoaxialState.Transfer
+    var v4bState = V4BState.Lock
+    var coaxialState = CoaxialState.Rest
 
     fun coaxialIntermediate() = setCoaxial(CoaxialState.Intermediate)
     fun coaxialIntake() = setCoaxial(CoaxialState.Intake)
@@ -49,7 +44,7 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
         return@let updateFourBarState()
     }
 
-    private fun updateCoaxialState(): CompletableFuture<Void>
+    private fun updateCoaxialState(): CompletableFuture<*>
     {
         return coaxialRotateTo(coaxialState.position)
     }
@@ -59,10 +54,10 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
         return v4bRotateTo(v4bState.position)
     }
 
-    private fun coaxialRotateTo(position: Double) = coaxialRotation.forcefullySetTarget(position)
+    private fun coaxialRotateTo(position: Double) = coaxialRotation.setMotionProfileTarget(position)
     private fun v4bRotateTo(position: Double) = CompletableFuture.allOf(
-        leftRotation.forcefullySetTarget(1.0 - position),
-        rightRotation.forcefullySetTarget(position)
+        leftRotation.setMotionProfileTarget(1.0 - position),
+        rightRotation.setMotionProfileTarget(position)
     )
 
     override fun start()

@@ -70,7 +70,7 @@ public class PositionChangeAction {
     }
 
     private void populateDefaults() {
-        final NavigationConfig config = instance.getNavigationConfig().get();
+        final NavigationConfig config = ((HypnoticAuto.HypnoticAutoRobot) instance.getRobot()).getNavigationConfig().get();
         K_STATIC = config.getKStatic();
 
         MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = config.getMinimumRotationalDifferenceFromTarget();
@@ -180,7 +180,7 @@ public class PositionChangeAction {
             }
 
             Pose previousPose = this.previousPose;
-            Pose robotPose = instance.getDrivetrain().getLocalizer().getPose();
+            Pose robotPose = instance.getRobot().getDrivetrain().getLocalizer().getPose();
             this.previousPose = robotPose;
 
             Pose targetPose = this.pathAlgorithm == null ? this.targetPose :

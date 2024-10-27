@@ -12,7 +12,7 @@ import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.intake.Intake
 import org.riverdell.robotics.subsystems.intake.IntakeV4B
 
-abstract class HypnoticRobot : LinearOpMode(), System
+abstract class HypnoticRobot(val opMode: LinearOpMode) : System
 {
     companion object
     {
@@ -33,7 +33,7 @@ abstract class HypnoticRobot : LinearOpMode(), System
 
     val multipleTelemetry by lazy {
         MultipleTelemetry(
-            this.telemetry,
+            opMode.telemetry,
             FtcDashboard.getInstance().telemetry
         )
     }
@@ -53,7 +53,7 @@ abstract class HypnoticRobot : LinearOpMode(), System
         return emptyList()
     }
 
-    override fun runOpMode()
+    fun runOpMode()
     {
         instance = this
 
@@ -72,8 +72,8 @@ abstract class HypnoticRobot : LinearOpMode(), System
         initializeAll()
         initialize()
 
-        waitForStart()
-        if (isStopRequested)
+        opMode.waitForStart()
+        if (opMode.isStopRequested)
         {
             return
         }

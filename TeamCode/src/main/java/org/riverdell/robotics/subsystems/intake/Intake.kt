@@ -6,22 +6,15 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import kotlinx.serialization.Serializable
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.subsystems.motionProfiledServo
+import org.riverdell.robotics.utilities.motionprofile.Constraint
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
 
 class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
 {
-    @Serializable
-    data class IntakeConfig(val leftIsReversed: Boolean = true)
-
-    private val intakeConfig = konfig<IntakeConfig>()
-
-    private val wristConstraints = konfig<ProfileConstraints> { withCustomFileID("intake_wrist_motionprofile") }
-    private val wrist = motionProfiledServo("intakeWrist", wristConstraints)
-
-    private val rotationConstraints = konfig<ProfileConstraints> { withCustomFileID("intake_grip_motionprofile") }
-    private val leftGrip = motionProfiledServo("intakeClawLeft", rotationConstraints)
-    private val rightGrip = motionProfiledServo("intakeClawRight", rotationConstraints)
+    private val wrist = motionProfiledServo("intakeWrist", Constraint.HALF.scale(6.5))
+    private val leftGrip = motionProfiledServo("intakeClawLeft", Constraint.HALF)
+    private val rightGrip = motionProfiledServo("intakeClawRight", Constraint.HALF)
 
     var intakeState = IntakeState.Closed
     var wristState = WristState.Lateral
@@ -59,7 +52,7 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
         return intakeRotateTo(intakeState.position)
     }
 
-    private fun updateWristState(): CompletableFuture<StateResult>
+    private fun updateWristState(): CompletableFuture<*>
     {
         if (wristState == WristState.Dynamic)
         {
@@ -71,14 +64,8 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
 
     private fun wristRotateTo(position: Double) = wrist.setMotionProfileTarget(position)
     private fun intakeRotateTo(position: Double) = CompletableFuture.allOf(
-        leftGrip.setMotionProfileTarget(
-            if (intakeConfig.get().leftIsReversed)
-                (1.0 - position) else position
-        ),
-        rightGrip.setMotionProfileTarget(
-            if (!intakeConfig.get().leftIsReversed)
-                (1.0 - position) else position
-        )
+        leftGrip.forcefullySetTarget(position),
+        rightGrip.forcefullySetTarget(position)
     )
 
     override fun start()

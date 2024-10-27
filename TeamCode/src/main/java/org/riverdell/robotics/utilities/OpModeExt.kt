@@ -5,8 +5,12 @@ import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.IMU
 import io.liftgate.robotics.mono.Mono
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.riverdell.robotics.HypnoticRobot
 import java.util.concurrent.TimeUnit
 import kotlin.IllegalStateException
+
+
+inline fun <reified T : HardwareDevice> HypnoticRobot.hardware(id: String) = opMode.hardware<T>(id)
 
 /**
  * An extension function of [LinearOpMode] to get a [HardwareDevice] [T] from the hardware
