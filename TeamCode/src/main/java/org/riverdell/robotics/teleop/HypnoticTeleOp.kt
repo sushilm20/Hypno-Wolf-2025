@@ -2,14 +2,9 @@ package org.riverdell.robotics.teleop
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.Servo
 import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonType
-import io.liftgate.robotics.mono.gamepad.bundle
-import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
@@ -96,6 +91,7 @@ class HypnoticTeleOp : HypnoticOpMode()
 
             gp1Commands
                 .where(ButtonType.ButtonY)
+                .dependsOn(*intakeV4B.states.toTypedArray())
                 .triggers {
                     if (intakeV4B.v4bState == V4BState.Lock)
                     {
