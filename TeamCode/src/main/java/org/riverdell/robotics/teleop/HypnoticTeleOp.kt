@@ -16,6 +16,7 @@ import org.riverdell.robotics.autonomous.detection.SampleType
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.subsystems.intake.V4BState
 import org.riverdell.robotics.utilities.hardware
+import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
 
 @TeleOp(
@@ -31,7 +32,7 @@ class HypnoticTeleOp : HypnoticOpMode()
 
         val visionPipeline by lazy { VisionPipeline(this@HypnoticTeleOp) }
 
-        override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands, /*visionPipeline*/)
+        override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands /*visionPipeline*/)
         override fun initialize()
         {
             /*wrist.position = 0.5
@@ -110,13 +111,13 @@ class HypnoticTeleOp : HypnoticOpMode()
                         intakeV4B.v4bSamplePickup()
                             .thenCompose {
                                 intake.closeIntake()
-                                    .thenCompose {
-                                        intake.lateralWrist()
-                                    }
-                                    .thenAccept {
-                                        intakeV4B.coaxialTransfer()
-                                        intakeV4B.v4bLock()
-                                    }
+                            }
+                            .thenCompose {
+                                CompletableFuture.allOf(
+                                    intakeV4B.coaxialTransfer(),
+                                    intake.lateralWrist(),
+                                    intakeV4B.v4bLock()
+                                )
                             }
                     }
                 }
