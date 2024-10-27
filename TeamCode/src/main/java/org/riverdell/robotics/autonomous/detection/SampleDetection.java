@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 
 import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.external.function.Continuation;
@@ -34,33 +33,74 @@ import javax.annotation.Nullable;
 @Config
 public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
+    /**
+     * Turn Factor: These fields are responsible for tuning the PD controller
+     * that rotates the end-effector toward the desired sample.
+     *
+     * TURN_FACTOR: The P parameter.
+     * TURN_FACTOR_D_GAIN: The D parameter.
+     */
     public static double TURN_FACTOR = 0.001;
     public static double TURN_FACTOR_D_GAIN = -0.0001;
 
-    // dont tune
+    /**
+     * Frame Center: Marks the center of the captured frame. The values
+     * are typically your webcam width and height divided by 2.
+     *
+     * Currently tuned for a Logitech C270 Webcam.
+     */
     public static double FRAME_CENTER_X = 640.0 / 2;
     public static double FRAME_CENTER_Y = 480.0 / 2;
 
-    // dont tune
-    public static double X_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
-    public static double Y_TRANSITIONAL_GUIDANCE_SCALE = 0.05;
+    /**
+     * Translational Guidance: Used to return a target Pose/Vector2D that
+     * can be passed into a localizer system in order to lock the robot onto a specific sample.
+     *
+     * Not needed if you don't have a localizer.
+     */
+    public static double X_TRANSLATIONAL_GUIDANCE_SCALE = 0.05;
+    public static double Y_TRANSLATIONAL_GUIDANCE_SCALE = 0.05;
 
-    // dont tune
-    public static double MIN_SAMPLE_AREA = 5000.0;
-
+    /**
+     * Sample Area Average: Used to filter out any wrongly-identified samples by
+     * ensuring each detection's bounding box area fits in the interval:
+     *
+     * [HOVER - DEVIATION, HOVER + DEVIATION]
+     *
+     * Tune this to your liking. Ensure you are tuning when the webcam
+     * is in the position that it will pickup in.
+     */
     public static double SAMPLE_AREA_AVERAGE_DURING_HOVER = 10000.0;
     public static double SAMPLE_AREA_AVERAGE_DURING_HOVER_MAX_DEVIATION = 4500.0;
 
-    // dont tune
+    /**
+     * Minimum Sample Area: Prevents any random outlier detections from
+     * showing up and being considered in the autosnap feature.
+     */
+    public static double MIN_SAMPLE_AREA = 5000.0;
+
+    /**
+     * Sample Tracking Distance: A circle from the pixel radius from the
+     * Frame Center in which samples centers must be in.
+     */
     public static double SAMPLE_TRACKING_DISTANCE = 300.0;
 
+    /**
+     * AutoSnap: Keeps
+     */
     public static double SAMPLE_AUTOSNAP_RADIUS = 25.0;
     public static double SAMPLE_AUTOSNAP_LIFETIME = 500L;
+
+    /**
+     * AutoTune: Automatically tunes the color ranges at a competition to
+     * ensure selection accuracy.
+     */
+    public static int COLOR_AUTOTUNE_MODE = 0;
 
     // AtomicReference to store the last frame as a Bitmap
     private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
 
-    private @Nullable Vector2d guidanceVector = null;
+    private @Nullable Pose guidanceVector = null;
 
     private double previousRotationAngle = 0.0;
     private double guidanceRotationAngle = 0.0;
@@ -69,15 +109,7 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     private Point autoSnapCenterLock = null;
     private long autoSnapHeartbeat = 0L;
 
-    public static double MIN_B = 0.0;
-    public static double MIN_G = 0.0;
-    public static double MIN_R = 0.0;
-
-    public static double MAX_B = 0.0;
-    public static double MAX_G = 0.0;
-    public static double MAX_R = 0.0;
-
-    private SampleType detectionType = SampleType.Blue;
+    private SampleType detectionType = SampleType.BLUE;
     private Supplier<Double> currentWristPosition = () -> 0.0;
 
     private double targetWristPosition = 0.0;
@@ -100,8 +132,40 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         lastFrame.set(Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565));
     }
 
-    public static int SET_TO_1_IF_COLOR_TUNING = 0;
+    // New constants for color ranges (initially set to default values)
+    private Scalar detectedColorRangeMin = new Scalar(0, 0, 0);
+    private Scalar detectedColorRangeMax = new Scalar(255, 255, 255);
 
+    // Method to automatically determine the color range based on the detected sample
+    private void calculateColorRange(Mat input, Rect boundingBox) {
+        // Crop the image to the bounding box area
+        Mat croppedSample = new Mat(input, boundingBox);
+
+        // Convert the cropped sample to the HSV color space
+        Mat hsvSample = new Mat();
+        Imgproc.cvtColor(croppedSample, hsvSample, Imgproc.COLOR_RGB2HSV);
+
+        // Calculate the average color in the cropped area
+        Scalar averageColor = Core.mean(hsvSample);
+
+        // Set the detected color range based on the average color
+        detectedColorRangeMin = new Scalar(
+                Math.max(averageColor.val[0] - 10, 0),
+                Math.max(averageColor.val[1] - 50, 0),
+                Math.max(averageColor.val[2] - 50, 0)
+        );
+        detectedColorRangeMax = new Scalar(
+                Math.min(averageColor.val[0] + 10, 180),
+                Math.min(averageColor.val[1] + 50, 255),
+                Math.min(averageColor.val[2] + 50, 255)
+        );
+
+        // Release the cropped sample and HSV Mat
+        croppedSample.release();
+        hsvSample.release();
+    }
+
+    // Modify the existing processFrame method to incorporate the new color detection logic
     @Override
     public Object processFrame(Mat input, long captureTimeNanos) {
         Mat hsvMat = new Mat();
@@ -109,11 +173,11 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
 
         // Create a mask for the specified color range
         Mat colorMask = new Mat();
-        if (SET_TO_1_IF_COLOR_TUNING == 0) {
+        if (COLOR_AUTOTUNE_MODE == 0) {
             Core.inRange(
                     hsvMat,
-                    new Scalar(MIN_B, MIN_G, MIN_R),
-                    new Scalar(MAX_B, MAX_G, MAX_R),
+                    detectedColorRangeMin,
+                    detectedColorRangeMax,
                     colorMask
             );
         } else {
@@ -129,20 +193,23 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         Point sampleCenter = detectSample(input, colorMask);
         Imgproc.circle(input, new Point(FRAME_CENTER_X, FRAME_CENTER_Y), (int) SAMPLE_TRACKING_DISTANCE, new Scalar(128, 0, 0));
 
-        // Annotate the detected sample with bounding box and angle
+        // If a sample is detected, calculate the color range
         if (sampleCenter != null) {
+            Rect boundingBox = Imgproc.boundingRect(new MatOfPoint(sampleCenter)); // Get bounding box for the detected sample
+            calculateColorRange(input, boundingBox); // Calculate the color range
             annotateBoundingBox(input, sampleCenter);
         }
 
         // Convert the processed frame (Mat) to a Bitmap for FTC dashboard display
         Bitmap bitmap = Bitmap.createBitmap(input.width(), input.height(), Bitmap.Config.RGB_565);
-        Utils.matToBitmap(SET_TO_1_IF_COLOR_TUNING == 1 ? input : colorMask, bitmap);
+        Utils.matToBitmap(COLOR_AUTOTUNE_MODE == 1 ? input : colorMask, bitmap);
 
         // Update the last frame
         lastFrame.set(bitmap);
 
         return input;
     }
+
 
     private Point detectSample(Mat input, Mat blueMask) {
         List<MatOfPoint> contours = new ArrayList<>();
@@ -209,19 +276,19 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
             return currentPose;
         }
 
-        return currentPose.addOnlyTranslational(guidanceVector);
+        return currentPose.add(guidanceVector);
     }
 
-    public Vector2d calculateGuidanceVector(Point sampleCenter) {
+    public Pose calculateGuidanceVector(Point sampleCenter) {
         // Calculate the difference in pixels
         double xDiff = sampleCenter.x - FRAME_CENTER_X; // Positive means right, negative means left
         double yDiff = sampleCenter.y - FRAME_CENTER_Y; // Positive means down, negative means up
 
         // Convert pixel differences to applicable units
-        double xMovement = xDiff * X_TRANSITIONAL_GUIDANCE_SCALE;
-        double yMovement = yDiff * Y_TRANSITIONAL_GUIDANCE_SCALE;
+        double xMovement = xDiff * X_TRANSLATIONAL_GUIDANCE_SCALE;
+        double yMovement = yDiff * Y_TRANSLATIONAL_GUIDANCE_SCALE;
 
-        return new Vector2d(xMovement, yMovement); // Return guidance vector
+        return new Pose(xMovement, yMovement); // Return guidance vector
     }
 
     private void annotateBoundingBox(Mat input, Point sampleCenter) {
@@ -235,7 +302,7 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
         Imgproc.putText(input, "Servo: " + String.format("%.2f", targetWristPosition), new Point(sampleCenter.x - 50, sampleCenter.y + 40),
                 Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(0, 0, 0), 3);
 
-        Vector2d guidance = guidanceVector = calculateGuidanceVector(sampleCenter);
+        Pose guidance = guidanceVector = calculateGuidanceVector(sampleCenter);
         Imgproc.putText(input, "Area: " + sampleArea, new Point(sampleCenter.x - 50, sampleCenter.y + 150),
                 Imgproc.FONT_HERSHEY_SIMPLEX, 2, new Scalar(0, 0, 0), 3);
     }

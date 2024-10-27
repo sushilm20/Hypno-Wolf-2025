@@ -12,7 +12,6 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.HypnoticRobot
-import org.riverdell.robotics.autonomous.detection.SampleType
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.subsystems.intake.V4BState
 import org.riverdell.robotics.utilities.hardware
