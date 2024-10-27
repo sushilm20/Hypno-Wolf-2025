@@ -32,9 +32,9 @@ abstract class HypnoticAuto(
            }
        }
 
-       val visionPipeline by lazy { VisionPipeline(this@HypnoticAuto) } // TODO: new season
+//       val visionPipeline by lazy { VisionPipeline(this@HypnoticAuto) } // TODO: new season
 
-       override fun additionalSubSystems() = listOf<AbstractSubsystem>(visionPipeline)
+       override fun additionalSubSystems() = listOf<AbstractSubsystem>(/*visionPipeline*/)
        override fun initialize()
        {
            HypnoticAuto.instance = this@HypnoticAuto

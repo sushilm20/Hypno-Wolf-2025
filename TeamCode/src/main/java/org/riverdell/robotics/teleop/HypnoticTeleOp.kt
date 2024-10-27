@@ -107,7 +107,6 @@ class HypnoticTeleOp : HypnoticOpMode()
                             }
                     } else
                     {
-
                         intakeV4B.v4bSamplePickup()
                             .thenCompose {
                                 intake.closeIntake()
