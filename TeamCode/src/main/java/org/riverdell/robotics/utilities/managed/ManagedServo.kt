@@ -1,6 +1,5 @@
 package org.riverdell.robotics.utilities.managed
 
-import com.arcrobotics.ftclib.hardware.ServoEx
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.qualcomm.robotcore.util.ElapsedTime
@@ -8,7 +7,6 @@ import io.liftgate.robotics.mono.states.StateHolder
 import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
-import kotlin.math.abs
 
 /**
  * A [Servo] wrapper that keeps track of motion profile states.
@@ -31,6 +29,9 @@ class ManagedServo(
             it,
             constraints()
         )
+        servo.position = motionProfile!!
+            .calculate(timer.time())
+            .x
     }, {
         if (motionProfile == null)
         {
