@@ -10,7 +10,6 @@ import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.subsystems.intake.V4BState
-import org.riverdell.robotics.utilities.hardware
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
 
@@ -60,19 +59,19 @@ class HypnoticTeleOp : HypnoticOpMode()
                 opMode.telemetry.addLine("4BR State: ${intakeV4B.v4bState}")
                 opMode.telemetry.addLine("Coaxial State: ${intakeV4B.coaxialState}")
 
-                opMode.telemetry.addLine("Extendo Left (MASTER) Position: ${extension.leftSlide.currentPosition}")
-                opMode.telemetry.addLine("Extendo Right (MASTER) Position: ${extension.rightSlide.currentPosition}")
+                opMode.telemetry.addLine("Extendo Left Position: ${hardware.extensionMotorLeft.currentPosition}")
+                opMode.telemetry.addLine("Extendo Right (MASTER) Position: ${hardware.extensionMotorRight.currentPosition}")
 
                 opMode.telemetry.addLine(
                     "Extendo Right Current: ${
-                        extension.rightSlide.getCurrent(
+                        hardware.extensionMotorRight.getCurrent(
                             CurrentUnit.AMPS
                         )
                     }"
                 )
                 opMode.telemetry.addLine(
                     "Extendo Left (MASTER) Current: ${
-                        extension.rightSlide.getCurrent(
+                        hardware.extensionMotorLeft.getCurrent(
                             CurrentUnit.AMPS
                         )
                     }"
@@ -147,40 +146,36 @@ class HypnoticTeleOp : HypnoticOpMode()
 
         fun motorTest()
         {
-            val backLeft = hardware<DcMotorEx>("backLeft")
             gp1Commands.where(ButtonType.ButtonA)
                 .triggers {
-                    backLeft.power = 1.0
+                    hardware.backLeft.power = 1.0
                 }
                 .andIsHeldUntilReleasedWhere {
-                    backLeft.power = 0.0
+                    hardware.backLeft.power = 0.0
                 }
 
-            val backRight = hardware<DcMotorEx>("backRight")
             gp1Commands.where(ButtonType.ButtonB)
                 .triggers {
-                    backRight.power = 1.0
+                    hardware.backRight.power = 1.0
                 }
                 .andIsHeldUntilReleasedWhere {
-                    backRight.power = 0.0
+                    hardware.backRight.power = 0.0
                 }
 
-            val frontRight = hardware<DcMotorEx>("frontRight")
             gp1Commands.where(ButtonType.ButtonX)
                 .triggers {
-                    frontRight.power = 1.0
+                    hardware.frontRight.power = 1.0
                 }
                 .andIsHeldUntilReleasedWhere {
-                    frontRight.power = 0.0
+                    hardware.frontRight.power = 0.0
                 }
 
-            val frontLeft = hardware<DcMotorEx>("frontLeft")
             gp1Commands.where(ButtonType.ButtonY)
                 .triggers {
-                    frontLeft.power = 1.0
+                    hardware.frontLeft.power = 1.0
                 }
                 .andIsHeldUntilReleasedWhere {
-                    frontLeft.power = 0.0
+                    hardware.frontLeft.power = 0.0
                 }
         }
     }

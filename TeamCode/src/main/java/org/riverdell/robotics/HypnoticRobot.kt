@@ -5,7 +5,6 @@ import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.hardware.lynx.LynxServoController
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.hardware.ServoController
 import io.liftgate.robotics.mono.Mono
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
@@ -14,9 +13,8 @@ import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.Extension
 import org.riverdell.robotics.subsystems.intake.Intake
 import org.riverdell.robotics.subsystems.intake.IntakeV4B
-import org.riverdell.robotics.utilities.hardware
 
-abstract class HypnoticRobot(val opMode: LinearOpMode) : System
+abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
 {
     companion object
     {
@@ -25,6 +23,7 @@ abstract class HypnoticRobot(val opMode: LinearOpMode) : System
     }
 
     override val subsystems: MutableSet<Subsystem> = mutableSetOf()
+    lateinit var hardware: HypnoticRobotHardware
 
     val drivetrain by lazy { Drivetrain(this) }
     val intake by lazy { Intake(this) }
@@ -62,10 +61,13 @@ abstract class HypnoticRobot(val opMode: LinearOpMode) : System
     {
         instance = this
 
-        val hardware = opMode.hardwareMap
+        hardware = HypnoticRobotHardware(opMode)
+        hardware.initializeHardware()
+
+        /*val hardware = opMode.hardwareMap
             .getAll(LynxServoController::class.java)
             .firstOrNull()
-        hardware?.initializeHardware()
+        hardware?.initializeHardware()*/
 
         register(
             drivetrain, intake, intakeV4B, extension,

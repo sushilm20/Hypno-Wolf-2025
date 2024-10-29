@@ -8,9 +8,9 @@ import java.util.concurrent.CompletableFuture
 
 class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val leftRotation = motionProfiledServo("intakeV4BLeft", Constraint.HALF.scale(5.5))
-    private val rightRotation = motionProfiledServo("intakeV4BRight", Constraint.HALF.scale(5.5))
-    private val coaxialRotation = motionProfiledServo("intakeV4BCoaxial", Constraint.HALF.scale(4.5))
+    private val leftRotation = motionProfiledServo(robot.hardware.intakeV4BLeft, Constraint.HALF.scale(10.5))
+    private val rightRotation = motionProfiledServo(robot.hardware.intakeV4BRight, Constraint.HALF.scale(10.5))
+    private val coaxialRotation = motionProfiledServo(robot.hardware.intakeV4BCoaxial, Constraint.HALF.scale(4.5))
 
     var v4bState = V4BState.Lock
     var coaxialState = CoaxialState.Rest
@@ -63,6 +63,11 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 
     override fun start()
     {
+
+    }
+
+    override fun doInitialize()
+    {
         updateCoaxialState()
             .exceptionally {
                 it.printStackTrace()
@@ -73,10 +78,5 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
                 it.printStackTrace()
                 return@exceptionally null
             }
-    }
-
-    override fun doInitialize()
-    {
-
     }
 }

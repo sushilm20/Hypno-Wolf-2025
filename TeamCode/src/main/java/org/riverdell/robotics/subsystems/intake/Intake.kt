@@ -12,9 +12,9 @@ import java.util.concurrent.CompletableFuture
 
 class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
 {
-    private val wrist = motionProfiledServo("intakeWrist", Constraint.HALF.scale(6.5))
-    private val leftGrip = motionProfiledServo("intakeClawLeft", Constraint.HALF.scale(10.5))
-    private val rightGrip = motionProfiledServo("intakeClawRight", Constraint.HALF.scale(10.5))
+    private val wrist = motionProfiledServo(opMode.hardware.intakeWrist, Constraint.HALF.scale(6.5))
+    private val leftGrip = motionProfiledServo(opMode.hardware.intakeClawLeft, Constraint.HALF.scale(10.5))
+    private val rightGrip = motionProfiledServo(opMode.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
 
     var intakeState = IntakeState.Closed
     var wristState = WristState.Lateral
@@ -70,12 +70,12 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
 
     override fun start()
     {
-        updateIntakeState()
-        updateWristState()
+
     }
 
     override fun doInitialize()
     {
-
+        updateIntakeState()
+        updateWristState()
     }
 }

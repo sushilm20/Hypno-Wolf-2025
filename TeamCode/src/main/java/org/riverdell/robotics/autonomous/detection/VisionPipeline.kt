@@ -3,14 +3,9 @@ package org.riverdell.robotics.autonomous.detection
 import android.util.Size
 import com.acmerobotics.dashboard.FtcDashboard
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.hardware.Servo
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.vision.VisionPortal
-import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
-import org.riverdell.robotics.HypnoticRobot
-import org.riverdell.robotics.utilities.hardware
 
 /**
  * Manages and configures all [VisionPortal] processors
@@ -33,7 +28,7 @@ class VisionPipeline(
         sampleDetection = SampleDetection()
         portal = VisionPortal.Builder()
             .setCamera(
-                opMode.hardware<WebcamName>("webcam")
+                opMode.hardwareMap["webcam"] as WebcamName
             )
             .setCameraResolution(Size(640, 480))
             .enableLiveView(true)

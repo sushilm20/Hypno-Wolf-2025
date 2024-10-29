@@ -3,10 +3,6 @@ package org.riverdell.robotics.teleop.tests
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Servo
-import io.liftgate.robotics.mono.konfig.konfig
-import kotlinx.serialization.Serializable
-import org.riverdell.robotics.autonomous.movement.konfig.NavigationNodeCollection
-import org.riverdell.robotics.utilities.hardware
 
 @TeleOp(
     name = "Prepare Four Bar Test",
@@ -22,13 +18,13 @@ class PrepareFourBar : LinearOpMode()
             return
         }
 
-        val hardware = hardware<Servo>("intakeV4BLeft")
+        val hardware = hardwareMap["intakeV4BLeft"] as Servo
         hardware.position = 1.0
 
-        val right = hardware<Servo>("intakeV4BRight")
+        val right = hardwareMap["intakeV4BRight"] as Servo
         right.position = 0.0
 
-        val coa = hardware<Servo>("intakeV4BCoaxial")
+        val coa = hardwareMap["intakeV4BCoaxial"] as Servo
         coa.position = 0.0
 
         while (opModeIsActive())

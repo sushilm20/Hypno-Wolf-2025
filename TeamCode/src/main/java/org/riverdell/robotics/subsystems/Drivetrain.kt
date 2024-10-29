@@ -3,28 +3,17 @@ package org.riverdell.robotics.subsystems
 import com.arcrobotics.ftclib.drivebase.MecanumDrive
 import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.arcrobotics.ftclib.hardware.motors.Motor
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
-import org.riverdell.robotics.utilities.hardware
 
 class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    lateinit var frontRight: DcMotorEx
-    lateinit var frontLeft: DcMotorEx
-
-    lateinit var backRight: DcMotorEx
-    lateinit var backLeft: DcMotorEx
-
-    private lateinit var imu: IMU
-
-    private val imuState by state(write = { _ -> }, read = { imu.robotYawPitchRollAngles })
+    private val imuState by state(write = { _ -> }, read = { robot.hardware.imu.robotYawPitchRollAngles })
     private val voltageState by state(write = { _ -> }, read = {
         robot.opMode.hardwareMap.voltageSensor.first().voltage
     })
@@ -59,35 +48,19 @@ class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
      */
     override fun doInitialize()
     {
-        imu = robot.hardware<IMU>("imu")
-        imu.initialize(
-            IMU.Parameters(
-                RevHubOrientationOnRobot(
-                    RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                    RevHubOrientationOnRobot.UsbFacingDirection.RIGHT
-                )
-            )
-        )
-        imu.resetYaw()
-
         if (robot.opMode is HypnoticAuto)
         {
-            frontLeft = robot.opMode.hardware<DcMotorEx>("frontLeft")
-            frontRight = robot.opMode.hardware<DcMotorEx>("frontRight")
-            backLeft = robot.opMode.hardware<DcMotorEx>("backLeft")
-            backRight = robot.opMode.hardware<DcMotorEx>("backRight")
+            robot.hardware.frontLeft.direction = DcMotorSimple.Direction.FORWARD
+            robot.hardware.frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-            frontLeft.direction = DcMotorSimple.Direction.FORWARD
-            frontLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            robot.hardware.frontRight.direction = DcMotorSimple.Direction.REVERSE
+            robot.hardware.frontRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-            frontRight.direction = DcMotorSimple.Direction.REVERSE
-            frontRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            robot.hardware.backLeft.direction = DcMotorSimple.Direction.FORWARD
+            robot.hardware.backLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-            backLeft.direction = DcMotorSimple.Direction.FORWARD
-            backLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-
-            backRight.direction = DcMotorSimple.Direction.REVERSE
-            backRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            robot.hardware.backRight.direction = DcMotorSimple.Direction.REVERSE
+            robot.hardware.backRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
             runWithoutEncoders()
         } else
@@ -119,7 +92,7 @@ class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
 
     private fun configureMotorsToDo(consumer: (DcMotor) -> Unit)
     {
-        listOf(backLeft, frontLeft, frontRight, backRight).forEach(consumer::invoke)
+        listOf(robot.hardware.backLeft, robot.hardware.frontLeft, robot.hardware.frontRight, robot.hardware.backRight).forEach(consumer::invoke)
     }
 
     override fun isCompleted() = true

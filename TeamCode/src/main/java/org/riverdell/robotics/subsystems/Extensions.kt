@@ -1,13 +1,11 @@
 package org.riverdell.robotics.subsystems
 
-import io.liftgate.robotics.mono.konfig.Konfig
+import com.qualcomm.robotcore.hardware.ServoImplEx
 import io.liftgate.robotics.mono.states.StateHolder
-import org.riverdell.robotics.HypnoticRobot
-import org.riverdell.robotics.utilities.hardware
 import org.riverdell.robotics.utilities.managed.ManagedServo
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 
-fun StateHolder.motionProfiledServo(name: String, constraints: ProfileConstraints) = ManagedServo(
-    HypnoticRobot.instance.hardware(name),
+fun StateHolder.motionProfiledServo(servo: ServoImplEx, constraints: ProfileConstraints) = ManagedServo(
+    servo,
     this
 ) { constraints }
