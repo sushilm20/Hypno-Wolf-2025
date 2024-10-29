@@ -32,6 +32,7 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     fun v4bLock() = setV4B(V4BState.Lock)
     fun v4bSampleSelect() = setV4B(V4BState.Select)
     fun v4bIntermediate() = setV4B(V4BState.Intermediate)
+    fun v4bUnlock() = setV4B(V4BState.UnlockedIdleHover)
     fun v4bSamplePickup() = setV4B(V4BState.Pickup)
 
     fun setV4B(state: V4BState) = let {
@@ -63,7 +64,15 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     override fun start()
     {
         updateCoaxialState()
+            .exceptionally {
+                it.printStackTrace()
+                return@exceptionally null
+            }
         updateFourBarState()
+            .exceptionally {
+                it.printStackTrace()
+                return@exceptionally null
+            }
     }
 
     override fun doInitialize()

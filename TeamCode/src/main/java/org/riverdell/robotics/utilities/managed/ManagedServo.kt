@@ -1,6 +1,8 @@
 package org.riverdell.robotics.utilities.managed
 
+import com.arcrobotics.ftclib.hardware.ServoEx
 import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
@@ -14,7 +16,7 @@ import kotlin.math.abs
  * @author Subham
  */
 class ManagedServo(
-    private val servo: Servo,
+    private val servo: ServoImplEx,
     stateHolder: StateHolder,
     private val constraints: () -> ProfileConstraints
 )
@@ -32,15 +34,18 @@ class ManagedServo(
     }, {
         if (motionProfile == null)
         {
-            timer = ElapsedTime()
             return@state 0.0
         }
 
         val motionProfileState = motionProfile!!.calculate(timer.time())
-
         servo.position = motionProfileState.x
         servo.position
     }, { current, finalPosition ->
+        if (motionProfile == null)
+        {
+            return@state false
+        }
+
         if (current == finalPosition)
         {
             motionProfile = null

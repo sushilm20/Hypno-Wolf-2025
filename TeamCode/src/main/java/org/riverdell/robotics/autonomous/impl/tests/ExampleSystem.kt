@@ -50,7 +50,6 @@ class ExampleSystem(opMode: LinearOpMode) : AbstractSubsystem()
     override fun start()
     {
         leftRotation.setMotionProfileTarget(0.5)
-
     }
 
     override fun doInitialize()

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonType
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
@@ -19,12 +20,12 @@ import kotlin.concurrent.thread
 )
 class HypnoticTeleOp : HypnoticOpMode()
 {
-    inner class TeleOpRobot : HypnoticRobot(this@HypnoticTeleOp)
+    class TeleOpRobot(opMode: HypnoticOpMode) : HypnoticRobot(opMode)
     {
-        private val gp1Commands by lazy { commands(gamepad1) }
-        private val gp2Commands by lazy { commands(gamepad2) }
+        private val gp1Commands by lazy { commands(opMode.gamepad1) }
+        private val gp2Commands by lazy { commands(opMode.gamepad2) }
 
-        val visionPipeline by lazy { VisionPipeline(this@HypnoticTeleOp) }
+        val visionPipeline by lazy { VisionPipeline(opMode) }
 
         override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands /*visionPipeline*/)
         override fun initialize()
@@ -36,7 +37,7 @@ class HypnoticTeleOp : HypnoticOpMode()
             multipleTelemetry.addLine("Configured all subsystems. Waiting for start...")
             multipleTelemetry.update()
 
-            while (!isStarted)
+            while (!opMode.isStarted)
             {
                 runPeriodics()
             }
@@ -44,32 +45,44 @@ class HypnoticTeleOp : HypnoticOpMode()
 
         override fun opModeStart()
         {
-            val robotDriver = GamepadEx(gamepad1)
+            val robotDriver = GamepadEx(opMode.gamepad1)
             buildCommands()
 
             multipleTelemetry.addLine("Started!")
             multipleTelemetry.update()
-
-            thread {
-                while (opModeIsActive())
-                {
-                    runPeriodics()
-                }
-            }
-
-            while (opModeIsActive())
+            while (opMode.opModeIsActive())
             {
-                val multiplier = 0.5 + gamepad1.right_trigger * 0.5
+                val multiplier = 0.5 + opMode.gamepad1.right_trigger * 0.5
                 drivetrain.driveRobotCentric(robotDriver, multiplier)
 
-                telemetry.addLine("Intake State: ${intake.intakeState}")
-                telemetry.addLine("Wrist State: ${intake.wristState}")
-                telemetry.addLine("4BR State: ${intakeV4B.v4bState}")
-                telemetry.addLine("Coaxial State: ${intakeV4B.coaxialState}")
-                telemetry.update()
+                opMode.telemetry.addLine("Intake State: ${intake.intakeState}")
+                opMode.telemetry.addLine("Wrist State: ${intake.wristState}")
+                opMode.telemetry.addLine("4BR State: ${intakeV4B.v4bState}")
+                opMode.telemetry.addLine("Coaxial State: ${intakeV4B.coaxialState}")
+
+                opMode.telemetry.addLine("Extendo Left (MASTER) Position: ${extension.leftSlide.currentPosition}")
+                opMode.telemetry.addLine("Extendo Right (MASTER) Position: ${extension.rightSlide.currentPosition}")
+
+                opMode.telemetry.addLine(
+                    "Extendo Right Current: ${
+                        extension.rightSlide.getCurrent(
+                            CurrentUnit.AMPS
+                        )
+                    }"
+                )
+                opMode.telemetry.addLine(
+                    "Extendo Left (MASTER) Current: ${
+                        extension.rightSlide.getCurrent(
+                            CurrentUnit.AMPS
+                        )
+                    }"
+                )
+                opMode.telemetry.update()
 
                 gp1Commands.run()
                 gp2Commands.run()
+
+                runPeriodics()
             }
         }
 
@@ -90,27 +103,38 @@ class HypnoticTeleOp : HypnoticOpMode()
                 .whenPressedOnce()
 
             gp1Commands
+                .where(ButtonType.PlayStationCircle)
+                .triggers {
+                    intake.openIntake()
+                }
+                .whenPressedOnce()
+
+            gp1Commands
                 .where(ButtonType.ButtonY)
-                .dependsOn(*intakeV4B.states.toTypedArray())
                 .triggers {
                     if (intakeV4B.v4bState == V4BState.Lock)
                     {
-                        intakeV4B.coaxialIntake()
-                        intakeV4B.v4bSampleSelect()
+                        intakeV4B.v4bUnlock()
                             .thenCompose {
-                                intake.openIntake()
+                                CompletableFuture.allOf(
+                                    extension.extendToAndStayAt(424),
+                                    intakeV4B.v4bSamplePickup(),
+                                    intakeV4B.coaxialIntake(),
+                                    intake.lateralWrist()
+                                )
                             }
+
+                        intake.openIntake()
                     } else
                     {
                         intakeV4B.v4bSamplePickup()
                             .thenCompose {
-                                intake.closeIntake()
-                            }
-                            .thenCompose {
                                 CompletableFuture.allOf(
+                                    intake.closeIntake(),
                                     intakeV4B.coaxialTransfer(),
                                     intake.lateralWrist(),
-                                    intakeV4B.v4bLock()
+                                    intakeV4B.v4bLock(),
+                                    extension.extendToAndStayAt(0)
                                 )
                             }
                     }
@@ -161,5 +185,5 @@ class HypnoticTeleOp : HypnoticOpMode()
         }
     }
 
-    override fun buildRobot() = TeleOpRobot()
+    override fun buildRobot() = TeleOpRobot(this)
 }

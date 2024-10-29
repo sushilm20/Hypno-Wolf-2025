@@ -42,7 +42,6 @@ class ManagedMotorGroup(
 
     private val state by stateHolder.state<Int>(
         write = {
-            val currentPosition = master.currentPosition
             stable = System.currentTimeMillis()
 
             master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
@@ -57,7 +56,9 @@ class ManagedMotorGroup(
             master.currentPosition
         },
         complete = { current, target ->
-            (current == target || if (stuckProtection == null)
+            println("position: ${abs(target - current)}")
+
+            (abs(target - current) < 8 || if (stuckProtection == null)
             {
                 false
             } else
@@ -87,6 +88,8 @@ class ManagedMotorGroup(
 
     init
     {
+        resetEncoders()
+
         master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         slaves.forEach {
             it.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
