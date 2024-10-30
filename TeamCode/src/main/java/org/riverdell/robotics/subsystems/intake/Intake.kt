@@ -16,6 +16,7 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
     var wristState = WristState.Lateral
 
     private var dynamicPosition = 0.5
+    fun currentDynamicPosition() = dynamicPosition
 
     fun openIntake() = setIntake(IntakeState.Open)
     fun closeIntake() = setIntake(IntakeState.Closed)
@@ -39,6 +40,11 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
         if (wristState == state && wristState != WristState.Dynamic)
             return@let CompletableFuture.completedFuture(null)
 
+        if (state != WristState.Dynamic)
+        {
+            dynamicPosition = state.position
+        }
+
         wristState = state
         return@let updateWristState()
     }
@@ -52,7 +58,7 @@ class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
     {
         if (wristState == WristState.Dynamic)
         {
-            return wristRotateTo(dynamicPosition)
+            return wrist.forcefullySetTarget(dynamicPosition)
         }
 
         return wristRotateTo(wristState.position)

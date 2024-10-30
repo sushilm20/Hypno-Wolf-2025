@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import org.riverdell.robotics.subsystems.intake.CoaxialState
+import org.riverdell.robotics.subsystems.intake.v4b.CoaxialState
 import org.riverdell.robotics.subsystems.intake.WristState
 
 class HypnoticRobotHardware(private val opMode: HypnoticOpMode)

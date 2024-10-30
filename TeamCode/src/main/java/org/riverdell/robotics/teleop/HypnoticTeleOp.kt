@@ -2,18 +2,17 @@ package org.riverdell.robotics.teleop
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotorEx
 import io.liftgate.robotics.mono.Mono.commands
-import io.liftgate.robotics.mono.gamepad.ButtonDynamic
 import io.liftgate.robotics.mono.gamepad.ButtonType
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
+import io.liftgate.robotics.mono.gamepad.CommandBundle
+import io.liftgate.robotics.mono.gamepad.GamepadCommands
+import io.liftgate.robotics.mono.gamepad.bundle
 import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
-import org.riverdell.robotics.subsystems.intake.V4BState
-import java.util.concurrent.CompletableFuture
-import kotlin.concurrent.thread
+import org.riverdell.robotics.subsystems.intake.composite.IntakeCompositeState
 import kotlin.math.max
+import kotlin.math.min
 
 @TeleOp(
     name = "Multiplayer",
@@ -71,83 +70,58 @@ class HypnoticTeleOp : HypnoticOpMode()
             }
         }
 
+        lateinit var intakeCommands: CommandBundle
+        lateinit var defaultCommands: CommandBundle
+
         private fun buildCommands()
         {
-            gp1Commands
-                .where(ButtonType.BumperLeft)
-                .triggers {
-                    intake.perpendicularWrist()
-                }
-                .whenPressedOnce()
-
-            gp1Commands
-                .where(ButtonType.BumperRight)
-                .triggers {
-                    intake.lateralWrist()
-                }
-                .whenPressedOnce()
-
-            gp1Commands
-                .where(ButtonType.PlayStationCircle)
-                .triggers {
-                    intake.openIntake()
-                }
-                .whenPressedOnce()
-
-            /*gp1Commands
-                .whereDynamicGT(ButtonDynamic.TriggerRight, 0.2F)
-                .onlyWhenNot { intakeV4B.v4bState == V4BState.Lock }
-                .triggers {
-                    extension
-                        .extendToAndStayAt(
-                            max(extension.position() + 10, 425)
-                        )
-                }
-                .repeatedlyWhilePressed()
-
-            gp1Commands
-                .whereDynamicGT(ButtonDynamic.TriggerLeft, 0.2F)
-                .onlyWhenNot { intakeV4B.v4bState == V4BState.Lock }
-                .triggers {
-                    extension
-                        .extendToAndStayAt(
-                            max(extension.position() - 10, 0)
-                        )
-                }
-                .repeatedlyWhilePressed()*/
-
-            gp1Commands
-                .where(ButtonType.ButtonY)
-                .triggers {
-                    if (intakeV4B.v4bState == V4BState.Lock)
-                    {
-                        intakeV4B.v4bUnlock()
-                            .thenCompose {
-                                CompletableFuture.allOf(
-                                    extension.extendToAndStayAt(424),
-                                    intakeV4B.v4bSamplePickup(),
-                                    intakeV4B.coaxialIntake()
-                                        .thenCompose {
-                                            intake.openIntake()
-                                        },
-                                    intake.lateralWrist()
-                                )
-                            }
-                    } else
-                    {
-                        intakeV4B.v4bSamplePickup()
-                            .thenCompose {
-                                CompletableFuture.allOf(
-                                    intake.closeIntake(),
-                                    intakeV4B.coaxialRest(),
-                                    intake.lateralWrist(),
-                                    intakeV4B.v4bLock(),
-                                    extension.extendToAndStayAt(0)
-                                )
-                            }
+            intakeCommands = opMode.gamepad2.bundle {
+                where(ButtonType.DPadLeft)
+                    .triggers {
+                        intake.perpendicularWrist()
                     }
-                }
-                .whenPressedOnce()
+                    .whenPressedOnce()
+
+                where(ButtonType.DPadRight)
+                    .triggers {
+                        intake.lateralWrist()
+                    }
+                    .whenPressedOnce()
+
+                where(ButtonType.BumperRight)
+                    .triggers(100L) {
+                        intake.dynamicWrist(
+                            min(intake.currentDynamicPosition() + 0.05, 1.0)
+                        )
+                    }
+                    .repeatedlyWhilePressed()
+
+                where(ButtonType.BumperLeft)
+                    .triggers(100L) {
+                        intake.dynamicWrist(
+                            max(intake.currentDynamicPosition() - 0.05, 0.0)
+                        )
+                    }
+                    .repeatedlyWhilePressed()
+
+                where(ButtonType.ButtonA)
+                    .triggers {
+                        intakeComposite.cancelPickupAndReturnToRest() // TODO: Transfer
+                        defaultCommands.applyTo(gp2Commands)
+                    }
+                    .whenPressedOnce()
+            }
+
+            defaultCommands = opMode.gamepad2.bundle {
+                where(ButtonType.ButtonA)
+                    .triggers {
+                        intakeComposite.prepareForPickup()
+                        intakeCommands.applyTo(gp2Commands)
+                    }
+                    .whenPressedOnce()
+            }
+
+            defaultCommands.applyTo(gp2Commands)
 
             gp1Commands.doButtonUpdatesManually()
             gp2Commands.doButtonUpdatesManually()
