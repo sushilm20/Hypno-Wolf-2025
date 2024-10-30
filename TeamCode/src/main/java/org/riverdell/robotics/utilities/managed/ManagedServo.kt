@@ -29,9 +29,6 @@ class ManagedServo(
             it,
             constraints()
         )
-        servo.position = motionProfile!!
-            .calculate(timer.time())
-            .x
     }, {
         if (motionProfile == null)
         {

@@ -4,6 +4,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import io.liftgate.robotics.mono.Mono.commands
+import io.liftgate.robotics.mono.gamepad.ButtonDynamic
 import io.liftgate.robotics.mono.gamepad.ButtonType
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticOpMode
@@ -12,6 +13,7 @@ import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.subsystems.intake.V4BState
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
+import kotlin.math.max
 
 @TeleOp(
     name = "Multiplayer",
@@ -108,6 +110,28 @@ class HypnoticTeleOp : HypnoticOpMode()
                 }
                 .whenPressedOnce()
 
+            /*gp1Commands
+                .whereDynamicGT(ButtonDynamic.TriggerRight, 0.2F)
+                .onlyWhenNot { intakeV4B.v4bState == V4BState.Lock }
+                .triggers {
+                    extension
+                        .extendToAndStayAt(
+                            max(extension.position() + 10, 425)
+                        )
+                }
+                .repeatedlyWhilePressed()
+
+            gp1Commands
+                .whereDynamicGT(ButtonDynamic.TriggerLeft, 0.2F)
+                .onlyWhenNot { intakeV4B.v4bState == V4BState.Lock }
+                .triggers {
+                    extension
+                        .extendToAndStayAt(
+                            max(extension.position() - 10, 0)
+                        )
+                }
+                .repeatedlyWhilePressed()*/
+
             gp1Commands
                 .where(ButtonType.ButtonY)
                 .triggers {
@@ -118,19 +142,20 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 CompletableFuture.allOf(
                                     extension.extendToAndStayAt(424),
                                     intakeV4B.v4bSamplePickup(),
-                                    intakeV4B.coaxialIntake(),
+                                    intakeV4B.coaxialIntake()
+                                        .thenCompose {
+                                            intake.openIntake()
+                                        },
                                     intake.lateralWrist()
                                 )
                             }
-
-                        intake.openIntake()
                     } else
                     {
                         intakeV4B.v4bSamplePickup()
                             .thenCompose {
                                 CompletableFuture.allOf(
                                     intake.closeIntake(),
-                                    intakeV4B.coaxialTransfer(),
+                                    intakeV4B.coaxialRest(),
                                     intake.lateralWrist(),
                                     intakeV4B.v4bLock(),
                                     extension.extendToAndStayAt(0)

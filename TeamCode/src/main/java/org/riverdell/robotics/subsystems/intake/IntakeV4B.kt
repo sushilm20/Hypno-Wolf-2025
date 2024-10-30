@@ -17,6 +17,7 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 
     fun coaxialIntermediate() = setCoaxial(CoaxialState.Intermediate)
     fun coaxialIntake() = setCoaxial(CoaxialState.Intake)
+    fun coaxialRest() = setCoaxial(CoaxialState.Rest)
     fun coaxialTransfer() = setCoaxial(CoaxialState.Transfer)
 
     fun setCoaxial(state: CoaxialState) = let {

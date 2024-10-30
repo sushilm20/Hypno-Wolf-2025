@@ -6,7 +6,7 @@ import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import org.riverdell.robotics.utilities.managed.pidf.PIDFConfig
 
-class Extension(robot: HypnoticRobot) : AbstractSubsystem()
+class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
 {
     private val slides = with(PIDFConfig(0.0025, 0.0, 0.0)) {
         ManagedMotorGroup(
@@ -18,6 +18,7 @@ class Extension(robot: HypnoticRobot) : AbstractSubsystem()
         ).withTimeout(1500L)
     }
 
+    fun position() = robot.hardware.extensionMotorRight.currentPosition
     fun extendToAndStayAt(position: Int) = slides.goTo(position)
     fun isExtending() = slides.isTravelling()
 
