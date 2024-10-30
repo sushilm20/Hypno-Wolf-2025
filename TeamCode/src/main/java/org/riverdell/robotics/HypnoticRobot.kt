@@ -61,11 +61,6 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
         hardware = HypnoticRobotHardware(opMode)
         hardware.initializeHardware()
 
-        /*val hardware = opMode.hardwareMap
-            .getAll(LynxServoController::class.java)
-            .firstOrNull()
-        hardware?.initializeHardware()*/
-
         register(
             drivetrain, intake, intakeV4B, extension,
             *additionalSubSystems().toTypedArray()

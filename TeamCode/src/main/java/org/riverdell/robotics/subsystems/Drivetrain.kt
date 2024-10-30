@@ -12,10 +12,9 @@ import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 
 class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
+    private val voltageSensor = robot.opMode.hardwareMap.voltageSensor.first()
     private val imuState by state(write = { _ -> }, read = { robot.hardware.imu.robotYawPitchRollAngles })
-    private val voltageState by state(write = { _ -> }, read = {
-        robot.opMode.hardwareMap.voltageSensor.first().voltage
-    })
+    private val voltageState by state(write = { _ -> }, read = voltageSensor::getVoltage)
 
     val localizer by lazy {
         TwoWheelLocalizer(robot)

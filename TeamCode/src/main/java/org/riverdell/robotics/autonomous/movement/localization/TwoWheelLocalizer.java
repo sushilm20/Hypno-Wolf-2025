@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.TwoTrackingWheelLocalizer;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 
+import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.riverdell.robotics.HypnoticRobot;
 import org.riverdell.robotics.autonomous.movement.geometry.Pose;
@@ -42,8 +43,8 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
 
     private final HypnoticRobot hypnoticRobot;
 
-    private final Motor.Encoder lateral;
-    private final Motor.Encoder perpendicular;
+    private final Supplier<Integer> lateral;
+    private final  Supplier<Integer> perpendicular;
 
     public TwoWheelLocalizer(HypnoticRobot hypnoticRobot) {
         super(Arrays.asList(
@@ -52,9 +53,8 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
         ));
 
         this.hypnoticRobot = hypnoticRobot;
-
-        this.lateral = new Motor(hypnoticRobot.getOpMode().hardwareMap, "frontLeft").encoder;
-        this.perpendicular = new Motor(hypnoticRobot.getOpMode().hardwareMap, "backLeft").encoder;
+        lateral = hypnoticRobot.getHardware().getFrontLeft()::getCurrentPosition;
+        perpendicular = hypnoticRobot.getHardware().getBackLeft()::getCurrentPosition;
     }
 
     public static double encoderTicksToInches(double ticks) {
@@ -64,8 +64,8 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
     @NonNull
     @Override
     public List<Double> getWheelPositions() {
-        double lateralPos = lateral.getPosition();
-        double perpPos = perpendicular.getPosition();
+        double lateralPos = lateral.get();
+        double perpPos = perpendicular.get();
         return Arrays.asList(
                 encoderTicksToInches(lateralPos),
                 encoderTicksToInches(perpPos)

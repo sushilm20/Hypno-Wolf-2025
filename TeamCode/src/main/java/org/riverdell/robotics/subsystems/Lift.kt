@@ -13,8 +13,8 @@ class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
             this@Lift,
             PIDCoefficients(kP, kI, kD),
             kV, kA, kStatic,
-            master = robot.hardware.extensionMotorRight,
-            slaves = listOf(robot.hardware.extensionMotorLeft)
+            master = robot.hardware.liftMotorRight,
+            slaves = listOf(robot.hardware.liftMotorLeft)
         ).withTimeout(1500L)
     }
 
