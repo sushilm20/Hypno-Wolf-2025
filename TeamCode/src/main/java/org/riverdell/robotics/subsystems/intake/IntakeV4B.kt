@@ -70,14 +70,6 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     override fun doInitialize()
     {
         updateCoaxialState()
-            .exceptionally {
-                it.printStackTrace()
-                return@exceptionally null
-            }
         updateFourBarState()
-            .exceptionally {
-                it.printStackTrace()
-                return@exceptionally null
-            }
     }
 }

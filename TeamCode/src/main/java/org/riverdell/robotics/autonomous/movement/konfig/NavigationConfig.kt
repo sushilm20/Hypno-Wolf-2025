@@ -2,7 +2,6 @@ package org.riverdell.robotics.autonomous.movement.konfig
 
 import kotlinx.serialization.Serializable
 
-@Serializable
 class NavigationConfig(
     val kStatic: Double = 1.85,
     val xP: Double = 0.07,

@@ -26,12 +26,7 @@ abstract class HypnoticAuto(
 
    inner class HypnoticAutoRobot : HypnoticRobot(this@HypnoticAuto)
    {
-       val navigationConfig by lazy {
-           konfig<NavigationConfig> {
-               withCustomFileID("navigation")
-           }
-       }
-
+       val navigationConfig = NavigationConfig()
 //       val visionPipeline by lazy { VisionPipeline(this@HypnoticAuto) } // TODO: new season
 
        override fun additionalSubSystems() = listOf<AbstractSubsystem>(/*visionPipeline*/)

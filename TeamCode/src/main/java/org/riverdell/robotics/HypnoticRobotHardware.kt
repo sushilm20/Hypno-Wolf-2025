@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.ServoImplEx
 import org.riverdell.robotics.subsystems.intake.CoaxialState
+import org.riverdell.robotics.subsystems.intake.WristState
 
 class HypnoticRobotHardware(private val opMode: HypnoticOpMode)
 {
@@ -70,7 +71,7 @@ class HypnoticRobotHardware(private val opMode: HypnoticOpMode)
         intakeV4BCoaxial.position = CoaxialState.Rest.position
 
         intakeWrist = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeWrist")
-        intakeWrist.position = 0.0
+        intakeWrist.position = WristState.Lateral.position
 
         intakeClawLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawLeft")
         intakeClawLeft.position = 0.7

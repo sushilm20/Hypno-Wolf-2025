@@ -1,8 +1,5 @@
 package org.riverdell.robotics.utilities.managed.pidf
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class PIDFConfig(
     var kP: Double = 0.0,
     var kI: Double = 0.0,

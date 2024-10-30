@@ -61,23 +61,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                 opMode.telemetry.addLine("4BR State: ${intakeV4B.v4bState}")
                 opMode.telemetry.addLine("Coaxial State: ${intakeV4B.coaxialState}")
 
-                opMode.telemetry.addLine("Extendo Left Position: ${hardware.extensionMotorLeft.currentPosition}")
                 opMode.telemetry.addLine("Extendo Right (MASTER) Position: ${hardware.extensionMotorRight.currentPosition}")
-
-                opMode.telemetry.addLine(
-                    "Extendo Right Current: ${
-                        hardware.extensionMotorRight.getCurrent(
-                            CurrentUnit.AMPS
-                        )
-                    }"
-                )
-                opMode.telemetry.addLine(
-                    "Extendo Left (MASTER) Current: ${
-                        hardware.extensionMotorLeft.getCurrent(
-                            CurrentUnit.AMPS
-                        )
-                    }"
-                )
                 opMode.telemetry.update()
 
                 gp1Commands.run()

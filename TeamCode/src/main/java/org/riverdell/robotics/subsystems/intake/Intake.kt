@@ -1,13 +1,9 @@
 package org.riverdell.robotics.subsystems.intake
 
-import io.liftgate.robotics.mono.konfig.konfig
-import io.liftgate.robotics.mono.states.StateResult
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
-import kotlinx.serialization.Serializable
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.subsystems.motionProfiledServo
 import org.riverdell.robotics.utilities.motionprofile.Constraint
-import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
 
 class Intake(opMode: HypnoticRobot) : AbstractSubsystem()
