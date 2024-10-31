@@ -5,12 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonType
 import io.liftgate.robotics.mono.gamepad.CommandBundle
-import io.liftgate.robotics.mono.gamepad.GamepadCommands
 import io.liftgate.robotics.mono.gamepad.bundle
 import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
-import org.riverdell.robotics.subsystems.intake.composite.IntakeCompositeState
 import kotlin.math.max
 import kotlin.math.min
 
@@ -50,8 +48,12 @@ class HypnoticTeleOp : HypnoticOpMode()
 
             multipleTelemetry.addLine("Started!")
             multipleTelemetry.update()
+
+            var loopTime: Long
             while (opMode.opModeIsActive())
             {
+                loopTime = System.nanoTime()
+
                 val multiplier = 0.5 + opMode.gamepad1.right_trigger * 0.5
                 drivetrain.driveRobotCentric(robotDriver, multiplier)
 
@@ -61,17 +63,18 @@ class HypnoticTeleOp : HypnoticOpMode()
                 opMode.telemetry.addLine("Coaxial State: ${intakeV4B.coaxialState}")
 
                 opMode.telemetry.addLine("Extendo Right (MASTER) Position: ${hardware.extensionMotorRight.currentPosition}")
-                opMode.telemetry.update()
 
                 gp1Commands.run()
                 gp2Commands.run()
 
                 runPeriodics()
+                opMode.telemetry.addData("hz ", 1000000000 / (System.nanoTime() - loopTime).toDouble())
+                opMode.telemetry.update()
             }
         }
 
-        lateinit var intakeCommands: CommandBundle
-        lateinit var defaultCommands: CommandBundle
+        private lateinit var intakeCommands: CommandBundle
+        private lateinit var defaultCommands: CommandBundle
 
         private fun buildCommands()
         {

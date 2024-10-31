@@ -8,6 +8,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
 import org.riverdell.robotics.subsystems.Drivetrain
+import org.riverdell.robotics.subsystems.hang.Hang
 import org.riverdell.robotics.subsystems.slides.Extension
 import org.riverdell.robotics.subsystems.slides.Lift
 import org.riverdell.robotics.subsystems.intake.Intake
@@ -31,6 +32,7 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
     val intakeComposite by lazy { CompositeIntake(this) }
     val extension by lazy { Extension(this) }
     val lift by lazy { Lift(this) }
+    val hang by lazy { Hang(this) }
 
     val multipleTelemetry by lazy {
         MultipleTelemetry(
