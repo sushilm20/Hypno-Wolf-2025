@@ -14,6 +14,7 @@ import org.riverdell.robotics.subsystems.slides.Lift
 import org.riverdell.robotics.subsystems.intake.Intake
 import org.riverdell.robotics.subsystems.intake.composite.CompositeIntake
 import org.riverdell.robotics.subsystems.intake.v4b.IntakeV4B
+import org.riverdell.robotics.subsystems.outtake.Outtake
 
 abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
 {
@@ -33,6 +34,7 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
     val extension by lazy { Extension(this) }
     val lift by lazy { Lift(this) }
     val hang by lazy { Hang(this) }
+    val outtake by lazy { Outtake(this) }
 
     val multipleTelemetry by lazy {
         MultipleTelemetry(

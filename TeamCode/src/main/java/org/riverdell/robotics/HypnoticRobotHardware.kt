@@ -12,6 +12,8 @@ import org.riverdell.robotics.subsystems.intake.IntakeState
 import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.intake.v4b.CoaxialState
 import org.riverdell.robotics.subsystems.intake.v4b.V4BState
+import org.riverdell.robotics.subsystems.outtake.OuttakeClawState
+import org.riverdell.robotics.subsystems.outtake.OuttakeRotationState
 
 class HypnoticRobotHardware(private val opMode: HypnoticOpMode)
 {
@@ -35,6 +37,10 @@ class HypnoticRobotHardware(private val opMode: HypnoticOpMode)
     lateinit var intakeWrist: ServoImplEx
     lateinit var intakeClawLeft: ServoImplEx
     lateinit var intakeClawRight: ServoImplEx
+
+    lateinit var outtakeRotationLeft: ServoImplEx
+    lateinit var outtakeRotationRight: ServoImplEx
+    lateinit var outtakeClaw: ServoImplEx
 
     lateinit var hangLeft: CRServoImplEx
     lateinit var hangRight: CRServoImplEx
@@ -86,6 +92,15 @@ class HypnoticRobotHardware(private val opMode: HypnoticOpMode)
 
         intakeClawRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawRight")
         intakeClawRight.position = IntakeState.Closed.position
+
+        outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
+        outtakeRotationRight.position = OuttakeRotationState.Transfer.position
+
+        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
+        outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Transfer.position
+
+        outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
+        outtakeClaw.position = OuttakeClawState.Open.position
 
         hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
         hangLeft.pwmRange = PwmRange(500.0, 2500.0)
