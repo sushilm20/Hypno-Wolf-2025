@@ -11,7 +11,10 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
         intakeV4B.v4bUnlock()
             .thenCompose {
                 CompletableFuture.allOf(
-                    extension.extendToAndStayAt(IntakeConfig.MAX_EXTENSION),
+                    extension.extendToAndStayAt(IntakeConfig.MAX_EXTENSION)
+                        .thenAcceptAsync {
+                            extension.slides.idle()
+                        },
                     intakeV4B.v4bSamplePickup(),
                     intakeV4B.coaxialIntake()
                         .thenCompose {
@@ -30,7 +33,13 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
                     intakeV4B.coaxialRest(),
                     intake.lateralWrist(),
                     intakeV4B.v4bLock(),
-                    extension.extendToAndStayAt(0)
+                    with(extension) {
+//                        slides.usingCustomPower(-1.0)
+                        extendToAndStayAt(0)
+                            /*.thenAccept {
+                                slides.resetCustomPower()
+                            }*/
+                    }
                 )
             }
     }

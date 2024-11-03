@@ -70,7 +70,7 @@ public class PositionChangeAction {
     }
 
     private void populateDefaults() {
-        final NavigationConfig config = ((HypnoticAuto.HypnoticAutoRobot) instance.getRobot()).getNavigationConfig().get();
+        final NavigationConfig config = ((HypnoticAuto.HypnoticAutoRobot) instance.getRobot()).getNavigationConfig();
         K_STATIC = config.getKStatic();
 
         MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = config.getMinimumRotationalDifferenceFromTarget();

@@ -42,8 +42,8 @@ class HypnoticRobotHardware(private val opMode: HypnoticOpMode)
     lateinit var outtakeRotationRight: ServoImplEx
     lateinit var outtakeClaw: ServoImplEx
 
-    lateinit var hangLeft: CRServoImplEx
-    lateinit var hangRight: CRServoImplEx
+//    lateinit var hangLeft: CRServoImplEx
+//    lateinit var hangRight: CRServoImplEx
 
     fun initializeHardware()
     {
@@ -102,10 +102,10 @@ class HypnoticRobotHardware(private val opMode: HypnoticOpMode)
         outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
         outtakeClaw.position = OuttakeClawState.Open.position
 
-        hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
+        /*hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
         hangLeft.pwmRange = PwmRange(500.0, 2500.0)
 
         hangRight = hardwareMap.get(CRServoImplEx::class.java, "hangRight")
-        hangRight.pwmRange = PwmRange(500.0, 2500.0)
+        hangRight.pwmRange = PwmRange(500.0, 2500.0)*/
     }
 }

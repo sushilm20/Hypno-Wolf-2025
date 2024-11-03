@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import io.liftgate.robotics.mono.states.StateResult
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
@@ -56,9 +57,9 @@ class ManagedMotorGroup(
             master.currentPosition
         },
         complete = { current, target ->
-            println("position: ${abs(target - current)}")
+            println("position: ${abs(target - current)}, ${abs(target - current) < 5}")
 
-            (abs(target - current) < 8 || if (stuckProtection == null)
+            (abs(target - current) < 5 || current < 0 || if (stuckProtection == null)
             {
                 false
             } else
@@ -78,6 +79,8 @@ class ManagedMotorGroup(
         }
     )
 
+    fun currentPosition() = state.current()
+
     fun resetEncoders()
     {
         master.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -86,9 +89,20 @@ class ManagedMotorGroup(
         }
     }
 
+    private var customPower: Double? = null
+    fun usingCustomPower(customPower: Double)
+    {
+        this.customPower = customPower
+    }
+
+    fun resetCustomPower()
+    {
+        this.customPower = null
+    }
+
     init
     {
-        resetEncoders()
+//        resetEncoders()
 
         master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         slaves.forEach {
@@ -119,22 +133,30 @@ class ManagedMotorGroup(
         if (slaves.isEmpty())
         {
             state.additionalPeriodic { current, _ ->
-                val power = generatePower(current)
-                    ?: return@additionalPeriodic
+                val power = customPower ?: (generatePower(current)
+                    ?: return@additionalPeriodic)
 
                 master.power = power
             }
         } else
         {
             state.additionalPeriodic { current, _ ->
-                val power = generatePower(current)
-                    ?: return@additionalPeriodic
+                val power = customPower ?: (generatePower(current)
+                    ?: return@additionalPeriodic)
 
                 master.power = power
                 slaves.forEach { slave ->
                     slave.power = power
                 }
             }
+        }
+    }
+
+    fun supplyPowerToAll(power: Double)
+    {
+        master.power = power
+        slaves.forEach { slave ->
+            slave.power = power
         }
     }
 
