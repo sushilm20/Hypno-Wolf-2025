@@ -57,7 +57,7 @@ class ManagedMotorGroup(
             master.currentPosition
         },
         complete = { current, target ->
-            println("position: ${abs(target - current)}, ${abs(target - current) < 5}")
+//            println("position: ${abs(target - current)}, ${abs(target - current) < 5}")
 
             (abs(target - current) < 8 || if (stuckProtection == null)
             {
