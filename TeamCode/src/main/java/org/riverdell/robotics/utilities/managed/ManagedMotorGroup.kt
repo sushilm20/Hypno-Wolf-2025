@@ -18,9 +18,9 @@ class ManagedMotorGroup(
     var kA: Double = 0.1, // acceleration gain
     var kStatic: Double = 0.1, // additive feedforward
     /**
-     * Inputs: Measured position, measured velocity
+     * Inputs: Measured position, target position, measured velocity
      */
-    private var kF: (Double, Double?) -> Double = { _, _ -> 0.0 },
+    private var kF: (Double, Double, Double?) -> Double = { _, _, _ -> 0.0 },
     private val master: DcMotorEx,
     private val slaves: List<DcMotorEx> = listOf()
 )
@@ -29,12 +29,12 @@ class ManagedMotorGroup(
     private var previousPosition: Int = 0
 
     private var stable = System.currentTimeMillis()
-
-    private val pidfBuilder = {
-        PIDFController(pid, kV, kA, kStatic, kF)
-    }
-
     private var pidfController = pidfBuilder()
+
+    private fun pidfBuilder(): PIDFController =
+        PIDFController(pid, kV, kA, kStatic, { measured, velocity ->
+            kF(measured, pidfController.targetPosition, velocity)
+        })
 
     /**
      * No PID updates.
@@ -59,7 +59,7 @@ class ManagedMotorGroup(
         complete = { current, target ->
             println("position: ${abs(target - current)}, ${abs(target - current) < 5}")
 
-            (abs(target - current) < 5 || current < 0 || if (stuckProtection == null)
+            (abs(target - current) < 8 || if (stuckProtection == null)
             {
                 false
             } else
@@ -152,6 +152,8 @@ class ManagedMotorGroup(
         }
     }
 
+    fun cancel() = state.reset()
+
     fun supplyPowerToAll(power: Double)
     {
         master.power = power
@@ -170,17 +172,17 @@ class ManagedMotorGroup(
 
         fun static(value: Double)
         {
-            kF = { _, _ -> value }
+            kF = { _, _, _ -> value }
             pidfController = pidfBuilder()
         }
 
         fun none()
         {
-            kF = { _, _ -> 0.0 }
+            kF = { _, _, _ -> 0.0 }
             pidfController = pidfBuilder()
         }
 
-        fun dynamic(block: (Double, Double?) -> Double)
+        fun dynamic(block: (Double, Double, Double?) -> Double)
         {
             kF = block
             pidfController = pidfBuilder()

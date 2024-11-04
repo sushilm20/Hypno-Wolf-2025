@@ -66,7 +66,7 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
         hardware.initializeHardware()
 
         register(
-            drivetrain, intake, intakeV4B, extension,
+            drivetrain, intake, intakeV4B, extension, lift,
             *additionalSubSystems().toTypedArray()
         )
 

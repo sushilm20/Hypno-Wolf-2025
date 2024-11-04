@@ -10,6 +10,7 @@ import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.subsystems.intake.composite.IntakeCompositeState
 import org.riverdell.robotics.subsystems.intake.composite.IntakeConfig
+import org.riverdell.robotics.subsystems.slides.LiftConfig
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -65,7 +66,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                 if (intakeComposite.state == IntakeCompositeState.Pickup)
                 {
                     val wantedPower = -opMode.gamepad2.left_trigger + opMode.gamepad2.right_trigger
-                    if (wantedPower.absoluteValue > 0.1)
+                    if (wantedPower.absoluteValue > 0.1 && !extension.slides.isTravelling())
                     {
                         if (wantedPower < 0)
                         {
@@ -99,8 +100,11 @@ class HypnoticTeleOp : HypnoticOpMode()
                 opMode.telemetry.addLine("Coaxial State: ${intakeV4B.coaxialState}")
                 opMode.telemetry.addLine("Composite State: ${intakeComposite.state}")
 
-                opMode.telemetry.addLine("Extendo Right (MASTER) Position: ${hardware.extensionMotorLeft.currentPosition}")
-                opMode.telemetry.addLine("Extendo Right Current Draw: ${hardware.extensionMotorRight.getCurrent(CurrentUnit.AMPS)}")
+                opMode.telemetry.addLine("LIFT Right Position: ${hardware.liftMotorLeft.currentPosition}")
+                opMode.telemetry.addLine("LIFT Left Position: ${hardware.liftMotorRight.currentPosition}")
+
+                opMode.telemetry.addLine("Extendo Left Position: ${hardware.extensionMotorLeft.currentPosition}")
+                opMode.telemetry.addLine("Extendo Right Position: ${hardware.extensionMotorRight.currentPosition}")
                 opMode.telemetry.update()
             }
         }
@@ -139,6 +143,18 @@ class HypnoticTeleOp : HypnoticOpMode()
                        )
                    }
                    .repeatedlyWhilePressed()
+
+               where(ButtonType.ButtonB)
+                   .triggers {
+                       lift.extendToAndStayAt(LiftConfig.MAX_EXTENSION)
+                   }
+                   .whenPressedOnce()
+
+               where(ButtonType.ButtonY)
+                   .triggers {
+                       lift.extendToAndStayAt(0)
+                   }
+                   .whenPressedOnce()
 
                where(ButtonType.ButtonA)
                    .triggers {
