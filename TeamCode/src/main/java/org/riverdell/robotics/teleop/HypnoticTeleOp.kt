@@ -87,6 +87,9 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(wantedPower.toDouble() / 2.0)
                             }
                         }
+                    } else if (!extension.slides.isTravelling())
+                    {
+                        extension.slides.supplyPowerToAll(0.0)
                     }
                 }
 
