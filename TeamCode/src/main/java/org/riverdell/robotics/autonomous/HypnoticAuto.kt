@@ -11,6 +11,7 @@ import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.HypnoticAuto.Companion
+import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
@@ -89,6 +90,7 @@ abstract class HypnoticAuto(
                )
            }
 
+           ManagedMotorGroup.keepEncoderPositions = true
            executionGroup.executeBlocking()
        }
    }

@@ -15,22 +15,22 @@ class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
             PIDCoefficients(kP, kI, kD),
             kV, kA, kStatic,
             kF = { position, targetPosition, velocity ->
-                if ((position - targetPosition) < 100)
+                if ((position - targetPosition) < 100) // If elevator is below 100 units above the target
                 {
-                    if ((position - targetPosition) > 10)
+                    if ((position - targetPosition) > 10) // If elevator is more than 10 units above the target
                     {
-                        -0.4
+                        -0.4 + velocity!! * 20 // Pull down hard at slow speed
                     } else {
                         if (position < 10)
                         {
-                            0.0
+                            0.0 // Don't pull down if already close enough to target
                         } else {
                             0.35
                         }
                     }
                 } else
                 {
-                    0.0
+                    0.5 // Resist gravity if below target position
                 }
             },
             master = robot.hardware.liftMotorRight,

@@ -5,6 +5,8 @@ enum class IntakeCompositeState
     Rest,
     Pickup,
     WallIntake,
-    Transfer
+    Transfer,
+
+    InProgress
 
 }

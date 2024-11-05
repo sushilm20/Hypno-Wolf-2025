@@ -49,7 +49,7 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
 
     private fun clawRotateTo(position: Double) = claw.setMotionProfileTarget(position)
     private fun rotationRotateTo(position: Double) = CompletableFuture.allOf(
-        leftRotation.forcefullySetTarget(1.0 - position),
+        leftRotation.forcefullySetTarget(position),
         rightRotation.forcefullySetTarget(position)
     )
 

@@ -70,7 +70,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                     {
                         if (wantedPower < 0)
                         {
-                            if (extension.slides.currentPosition() < 5)
+                            if (extension.slides.currentPosition() < 35)
                             {
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
@@ -160,6 +160,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                    .whenPressedOnce()
 
                where(ButtonType.ButtonA)
+                   .onlyWhen { intakeComposite.state != IntakeCompositeState.InProgress }
                    .triggers {
                        if (intakeComposite.state == IntakeCompositeState.Rest)
                        {

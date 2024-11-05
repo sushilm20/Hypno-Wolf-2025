@@ -7,6 +7,7 @@ import io.liftgate.robotics.mono.states.StateHolder
 import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
+import kotlin.math.abs
 
 /**
  * A [Servo] wrapper that keeps track of motion profile states.
@@ -44,7 +45,7 @@ class ManagedServo(
             return@state false
         }
 
-        if (current == finalPosition)
+        if (current == finalPosition || abs(current - finalPosition) < 0.01)
         {
             motionProfile = null
         }
@@ -53,7 +54,7 @@ class ManagedServo(
     })
 
     fun unwrapServo() = servo
-    fun setMotionProfileTarget(target: Double) = state.override(target, 0L)
+    fun setMotionProfileTarget(target: Double) = state.override(target, 2000L)
     fun cancelMotionProfile() = state.reset()
 
     /**

@@ -39,7 +39,7 @@ class ManagedMotorGroup(
     /**
      * No PID updates.
      */
-    private var idle = false
+    private var idle = true
 
     private val state by stateHolder.state<Int>(
         write = {
@@ -51,6 +51,7 @@ class ManagedMotorGroup(
             }
 
             pidfController.targetPosition = it.toDouble()
+            println("Wrote new target position $it")
             idle = false
         },
         read = {
@@ -100,9 +101,20 @@ class ManagedMotorGroup(
         this.customPower = null
     }
 
+    companion object
+    {
+        var keepEncoderPositions = false
+    }
+
     init
     {
-//        resetEncoders()
+        if (!keepEncoderPositions)
+        {
+            resetEncoders()
+        } else
+        {
+            keepEncoderPositions = false
+        }
 
         master.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         slaves.forEach {
@@ -120,7 +132,18 @@ class ManagedMotorGroup(
                 return null
             }
 
+            if (!state.inProgress())
+            {
+                return null
+            }
+
+            if (customPower != null)
+            {
+                return customPower
+            }
+
             val velocity = master.velocity
+            println("Powering towards: ${pidfController.targetPosition}")
 
             return pidfController
                 .update(
@@ -133,16 +156,16 @@ class ManagedMotorGroup(
         if (slaves.isEmpty())
         {
             state.additionalPeriodic { current, _ ->
-                val power = customPower ?: (generatePower(current)
-                    ?: return@additionalPeriodic)
+                val power = generatePower(current)
+                    ?: return@additionalPeriodic
 
                 master.power = power
             }
         } else
         {
             state.additionalPeriodic { current, _ ->
-                val power = customPower ?: (generatePower(current)
-                    ?: return@additionalPeriodic)
+                val power = generatePower(current)
+                    ?: return@additionalPeriodic
 
                 master.power = power
                 slaves.forEach { slave ->
@@ -215,7 +238,8 @@ class ManagedMotorGroup(
      */
     fun goTo(target: Int): CompletableFuture<StateResult>
     {
-        exitIdle()
+        println("Going to $target")
+//        exitIdle()
         return state.override(target, timeout = timeout)
     }
 

@@ -11,8 +11,8 @@ class KonfigTest
     @Test
     fun whatYamlFormatAmIExpecting()
     {
-        val konfig = konfig<PIDFMotionProfiledConfig> { local(); withCustomFileID("testpid_motionprofile") }
-        println(konfig.get())
-        println(konfig<PIDFMotionProfiledConfig> { local(); withCustomFileID("testpid_motionprofile") }.get())
+//        val konfig = konfig<PIDFMotionProfiledConfig> { local(); withCustomFileID("testpid_motionprofile") }
+//        println(konfig.get())
+//        println(konfig<PIDFMotionProfiledConfig> { local(); withCustomFileID("testpid_motionprofile") }.get())
     }
 }

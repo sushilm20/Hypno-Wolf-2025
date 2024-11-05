@@ -5,6 +5,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import org.riverdell.robotics.utilities.managed.pidf.PIDFConfig
+import java.util.concurrent.CompletableFuture
 
 class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
 {
@@ -13,7 +14,7 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
             this@Extension,
             PIDCoefficients(kP, kI, kD),
             kV, kA, kStatic,
-            kF = { position, _, velocity ->
+            kF = { position, target, velocity ->
                 if (position > 10 && position < 50 && velocity!! < 0) {
                     -0.3
                 } else
@@ -26,7 +27,13 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
         ).withTimeout(2000L)
     }
 
-    fun extendToAndStayAt(position: Int) = slides.goTo(position)
+    fun extendToAndStayAt(position: Int): CompletableFuture<*>
+    {
+        println("Writing position to go to $position")
+        return kotlin.runCatching {
+            slides.goTo(position)
+        }.onFailure { it.printStackTrace() }.getOrNull() ?: CompletableFuture.completedFuture(null)
+    }
     fun isExtending() = slides.isTravelling()
 
     override fun start()
