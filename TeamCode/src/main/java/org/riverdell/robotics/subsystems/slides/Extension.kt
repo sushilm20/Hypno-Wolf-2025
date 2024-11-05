@@ -15,8 +15,9 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
             PIDCoefficients(kP, kI, kD),
             kV, kA, kStatic,
             kF = { position, target, velocity ->
-                if (position > 10 && position < 50 && velocity!! < 0) {
-                    -0.3
+                val error = position - target
+                if (error > 10 && error < 50) { // If extendo is close to being fully retracted, pull harder
+                    -0.45
                 } else
                 {
                     0.0

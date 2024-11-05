@@ -17,6 +17,7 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 
     fun coaxialIntermediate() = setCoaxial(CoaxialState.Intermediate)
     fun coaxialIntake() = setCoaxial(CoaxialState.Intake)
+    fun coaxialPickup() = setCoaxial(CoaxialState.Pickup)
     fun coaxialRest() = setCoaxial(CoaxialState.Rest)
     fun coaxialTransfer() = setCoaxial(CoaxialState.Transfer)
 
@@ -40,6 +41,7 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     fun setV4B(state: V4BState) = let {
         if (state == v4bState)
         {
+            println("Same state! $state and $v4bState")
             return@let CompletableFuture.completedFuture(null)
         }
 
@@ -60,12 +62,14 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     private fun coaxialRotateTo(position: Double) = coaxialRotation.setMotionProfileTarget(position)
     private fun v4bRotateTo(position: Double): CompletableFuture<*>
     {
+        val future = CompletableFuture<Void>()
         leftRotation.setMotionProfileTarget(1.0 - position)
-        return rightRotation.setMotionProfileTarget(position)
-            .whenComplete { stateResult, throwable ->
-                println("result=${stateResult}")
-                throwable?.printStackTrace()
+        rightRotation.setMotionProfileTarget(position)
+            .whenComplete { _, _ ->
+                future.complete(null)
             }
+
+        return future
     }
 
     override fun start()

@@ -6,6 +6,6 @@ enum class V4BState(val position: Double)
     UnlockedIdleHover(0.07),
     Intermediate(0.3),
     Gateway(0.7),
-    Focus(0.73),
-    Pickup(0.76)
+//    Focus(0.73),
+    Pickup(0.75)
 }

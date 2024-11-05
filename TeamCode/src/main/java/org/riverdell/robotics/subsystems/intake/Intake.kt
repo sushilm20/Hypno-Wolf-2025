@@ -4,11 +4,12 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.subsystems.motionProfiledServo
 import org.riverdell.robotics.utilities.motionprofile.Constraint
+import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
 
 class Intake(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val wrist = motionProfiledServo(robot.hardware.intakeWrist, Constraint.HALF.scale(8.5))
+    private val wrist = motionProfiledServo(robot.hardware.intakeWrist, ProfileConstraints(20.0, 2.0, 2.0))
     private val leftGrip = motionProfiledServo(robot.hardware.intakeClawLeft, Constraint.HALF.scale(10.5))
     private val rightGrip = motionProfiledServo(robot.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
 
@@ -43,13 +44,15 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem()
         if (state != WristState.Dynamic)
         {
             dynamicPosition = state.position
+            wrist.forcefullySetTarget(dynamicPosition)
+            return@let CompletableFuture.completedFuture(null)
         }
 
         wristState = state
         return@let updateWristState()
     }
 
-    private fun updateIntakeState(): CompletableFuture<Void>
+    private fun updateIntakeState(): CompletableFuture<*>
     {
         return intakeRotateTo(intakeState.position)
     }
@@ -65,10 +68,12 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem()
     }
 
     private fun wristRotateTo(position: Double) = wrist.setMotionProfileTarget(position)
-    private fun intakeRotateTo(position: Double) = CompletableFuture.allOf(
-        leftGrip.forcefullySetTarget(1.0 - position),
+    private fun intakeRotateTo(position: Double): CompletableFuture<*>
+    {
+        leftGrip.forcefullySetTarget(1.0 - position)
         rightGrip.forcefullySetTarget(position)
-    )
+        return CompletableFuture.completedFuture(null)
+    }
 
     override fun start()
     {

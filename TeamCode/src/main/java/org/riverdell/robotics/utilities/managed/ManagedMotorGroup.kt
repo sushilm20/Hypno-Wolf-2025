@@ -43,7 +43,6 @@ class ManagedMotorGroup(
     private var idle = true
 
     private val groupId = UUID.randomUUID()
-
     private val state by stateHolder.state<Int>(
         write = {
             stable = System.currentTimeMillis()
@@ -146,7 +145,6 @@ class ManagedMotorGroup(
             }
 
             val velocity = master.velocity
-            println("Powering towards: ${pidfController.targetPosition}")
 
             return pidfController
                 .update(
@@ -241,8 +239,7 @@ class ManagedMotorGroup(
      */
     fun goTo(target: Int): CompletableFuture<StateResult>
     {
-        println("Going to $target")
-//        exitIdle()
+        exitIdle()
         return state.override(target, timeout = timeout)
     }
 

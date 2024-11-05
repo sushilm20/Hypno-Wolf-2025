@@ -133,7 +133,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                    .onlyWhen { intakeComposite.state == IntakeCompositeState.Pickup }
                    .triggers {
                        intake.dynamicWrist(
-                           min(intake.currentDynamicPosition() + 0.05, 1.0)
+                           min(intake.currentDynamicPosition() + 0.02, 1.0)
                        )
                    }
                    .repeatedlyWhilePressed()
@@ -142,7 +142,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                    .onlyWhen { intakeComposite.state == IntakeCompositeState.Pickup }
                    .triggers {
                        intake.dynamicWrist(
-                           max(intake.currentDynamicPosition() - 0.05, 0.0)
+                           max(intake.currentDynamicPosition() - 0.02, 0.0)
                        )
                    }
                    .repeatedlyWhilePressed()

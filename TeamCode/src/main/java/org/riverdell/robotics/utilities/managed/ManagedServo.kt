@@ -54,7 +54,7 @@ class ManagedServo(
     })
 
     fun unwrapServo() = servo
-    fun setMotionProfileTarget(target: Double) = state.override(target, 2000L)
+    fun setMotionProfileTarget(target: Double) = state.override(target, 0L)
     fun cancelMotionProfile() = state.reset()
 
     /**
