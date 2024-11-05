@@ -60,8 +60,12 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     private fun coaxialRotateTo(position: Double) = coaxialRotation.setMotionProfileTarget(position)
     private fun v4bRotateTo(position: Double): CompletableFuture<*>
     {
-        rightRotation.setMotionProfileTarget(position)
-        return leftRotation.setMotionProfileTarget(1.0 - position)
+        leftRotation.setMotionProfileTarget(1.0 - position)
+        return rightRotation.setMotionProfileTarget(position)
+            .whenComplete { stateResult, throwable ->
+                println("result=${stateResult}")
+                throwable?.printStackTrace()
+            }
     }
 
     override fun start()

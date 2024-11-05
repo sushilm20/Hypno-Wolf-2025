@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture
 
 class Intake(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val wrist = motionProfiledServo(robot.hardware.intakeWrist, Constraint.HALF.scale(6.5))
+    private val wrist = motionProfiledServo(robot.hardware.intakeWrist, Constraint.HALF.scale(8.5))
     private val leftGrip = motionProfiledServo(robot.hardware.intakeClawLeft, Constraint.HALF.scale(10.5))
     private val rightGrip = motionProfiledServo(robot.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
 

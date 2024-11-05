@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import io.liftgate.robotics.mono.states.StateResult
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
@@ -41,6 +42,8 @@ class ManagedMotorGroup(
      */
     private var idle = true
 
+    private val groupId = UUID.randomUUID()
+
     private val state by stateHolder.state<Int>(
         write = {
             stable = System.currentTimeMillis()
@@ -51,7 +54,7 @@ class ManagedMotorGroup(
             }
 
             pidfController.targetPosition = it.toDouble()
-            println("Wrote new target position $it")
+            println("Wrote new target position $it for $groupId")
             idle = false
         },
         read = {

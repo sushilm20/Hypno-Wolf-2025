@@ -12,12 +12,9 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
             intakeV4B.v4bUnlock()
                 .thenCompose {
                     intakeV4B.v4bSampleGateway()
+                    extension.extendToAndStayAt(IntakeConfig.MAX_EXTENSION)
 
                     CompletableFuture.allOf(
-                        extension.extendToAndStayAt(IntakeConfig.MAX_EXTENSION)
-                            .thenAccept {
-                                extension.slides.idle()
-                            },
                         intakeV4B.coaxialIntake()
                             .thenCompose {
                                 intake.openIntake()
@@ -31,18 +28,18 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
         stateMachineRestrict(IntakeCompositeState.Pickup, IntakeCompositeState.Rest) {
             intakeV4B.v4bSamplePickup()
                 .thenCompose {
-                    intakeV4B.v4bSampleGateway()
-
                     CompletableFuture.allOf(
-                        intake.closeIntake(),
-                        intakeV4B.coaxialIntermediate()
+                        intakeV4B.coaxialIntermediate(),
+                        intakeV4B.v4bSampleGateway(),
+                        intake.closeIntake()
                     )
+                }
+                .thenCompose {
+                    intake.lateralWrist()
                 }
                 .thenCompose {
                     intakeV4B.v4bLock()
                     intakeV4B.coaxialRest()
-                    intake.lateralWrist()
-
                     extension.extendToAndStayAt(0).thenAccept {  }
                 }
         }
