@@ -7,38 +7,84 @@ import java.util.concurrent.CompletableFuture
 class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     var state = IntakeCompositeState.Rest
+    var current: CompletableFuture<*>? = null
     fun prepareForPickup() =
         stateMachineRestrict(IntakeCompositeState.Rest, IntakeCompositeState.Pickup) {
             intakeV4B.v4bUnlock()
-                .thenCompose {
-                    intakeV4B.v4bSampleGateway()
+                .thenAcceptAsync {
                     extension.extendToAndStayAt(IntakeConfig.MAX_EXTENSION)
+                        .thenAccept {
+                            extension.slides.idle()
+                        }
+
+                    outtake.transferRotation()
+                    outtake.openClaw()
 
                     CompletableFuture.allOf(
+                        intakeV4B.v4bSampleGateway(),
                         intakeV4B.coaxialIntake()
                             .thenCompose {
                                 intake.openIntake()
                             },
                         intake.lateralWrist()
-                    )
+                    ).join()
                 }
         }
 
-    fun cancelPickupAndReturnToRest() =
-        stateMachineRestrict(IntakeCompositeState.Pickup, IntakeCompositeState.Rest) {
+    fun intakeAndConfirm() =
+        stateMachineRestrict(IntakeCompositeState.Pickup, IntakeCompositeState.Confirm) {
             intakeV4B.v4bSamplePickup()
-                .thenCompose {
-                    intakeV4B.v4bSampleGateway()
+                .thenRunAsync {
+                    CompletableFuture.allOf(
+                        intake.closeIntake(),
+                        CompletableFuture.runAsync {
+                            Thread.sleep(200L)
+                            intake.lateralWrist()
+                        },
+                        intakeV4B.v4bIntermediate(),
+                        intakeV4B.coaxialIntermediate()
+                    ).join()
                 }
-                .thenCompose {
-                    intake.closeIntake()
-                    intakeV4B.coaxialIntermediate()
-                    intake.lateralWrist()
-                }
-                .thenCompose {
-                    intakeV4B.v4bLock()
+        }
+
+    fun declineAndIntake() =
+        stateMachineRestrict(IntakeCompositeState.Confirm, IntakeCompositeState.Pickup) {
+            CompletableFuture.allOf(
+                intakeV4B.v4bSampleGateway(),
+                intakeV4B.coaxialIntake()
+                    .thenCompose {
+                        intake.openIntake()
+                    },
+                intake.lateralWrist()
+            )
+        }
+
+    fun confirmAndTransferAndRest() =
+        stateMachineRestrict(IntakeCompositeState.Confirm, IntakeCompositeState.Rest) {
+            outtake.openClaw()
+            intakeV4B.v4bTransfer()
+                .thenRunAsync {
+                    CompletableFuture.allOf(
+                        extension.extendToAndStayAt(55),
+                        intakeV4B.coaxialRest()
+                    ).join()
+
+                    intakeV4B.coaxialTransfer().join()
+
+                    outtake.closeClaw()
+                    Thread.sleep(250L)
+
+                    intake.openIntake()
+
+                    Thread.sleep(500L)
+                    outtake.depositRotation()
                     intakeV4B.coaxialRest()
-                    extension.extendToAndStayAt(0).thenAccept { }
+                        .thenRun {
+                            intake.closeIntake()
+                        }
+
+                    extension.extendToAndStayAt(0).join()
+                    intakeV4B.v4bLock()
                 }
         }
 
@@ -52,8 +98,11 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
             return CompletableFuture.completedFuture(null)
         }
 
-        state = to
+        state = IntakeCompositeState.InProgress
         return supplier(robot)
+            .whenComplete { _, _ ->
+                state = to
+            }
     }
 
     override fun doInitialize()

@@ -28,13 +28,7 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
         ).withTimeout(2000L)
     }
 
-    fun extendToAndStayAt(position: Int): CompletableFuture<*>
-    {
-        println("Writing position to go to $position")
-        return kotlin.runCatching {
-            slides.goTo(position)
-        }.onFailure { it.printStackTrace() }.getOrNull() ?: CompletableFuture.completedFuture(null)
-    }
+    fun extendToAndStayAt(position: Int) = slides.goTo(position)
     fun isExtending() = slides.isTravelling()
 
     override fun start()

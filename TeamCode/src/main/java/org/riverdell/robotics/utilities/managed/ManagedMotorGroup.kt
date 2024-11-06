@@ -134,11 +134,6 @@ class ManagedMotorGroup(
                 return null
             }
 
-            if (!state.inProgress())
-            {
-                return null
-            }
-
             if (customPower != null)
             {
                 return customPower

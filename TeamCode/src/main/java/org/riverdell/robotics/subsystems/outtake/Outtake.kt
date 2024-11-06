@@ -8,8 +8,8 @@ import java.util.concurrent.CompletableFuture
 
 class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val claw = motionProfiledServo(robot.hardware.intakeWrist, Constraint.HALF.scale(6.5))
-    private val leftRotation = motionProfiledServo(robot.hardware.outtakeRotationLeft, Constraint.HALF.scale(10.5))
+    private val claw = motionProfiledServo(robot.hardware.outtakeClaw, Constraint.HALF.scale(10.5))
+//    private val leftRotation = motionProfiledServo(robot.hardware.outtakeRotationLeft, Constraint.HALF.scale(10.5))
     private val rightRotation = motionProfiledServo(robot.hardware.outtakeRotationRight, Constraint.HALF.scale(10.5))
 
     var clawState = OuttakeClawState.Closed
@@ -47,11 +47,11 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
         return clawRotateTo(clawState.position)
     }
 
-    private fun clawRotateTo(position: Double) = claw.setMotionProfileTarget(position)
-    private fun rotationRotateTo(position: Double) = CompletableFuture.allOf(
-        leftRotation.forcefullySetTarget(position),
+    private fun clawRotateTo(position: Double) = claw.forcefullySetTarget(position)
+    private fun rotationRotateTo(position: Double) = rightRotation.forcefullySetTarget(position)/*CompletableFuture.allOf(
+//        leftRotation.forcefullySetTarget(position),
         rightRotation.forcefullySetTarget(position)
-    )
+    )*/
 
     override fun start()
     {

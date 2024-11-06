@@ -4,6 +4,7 @@ enum class IntakeCompositeState
 {
     Rest,
     Pickup,
+    Confirm,
     WallIntake,
     Transfer,
 

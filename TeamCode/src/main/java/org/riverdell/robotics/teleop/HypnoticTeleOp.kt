@@ -1,6 +1,7 @@
 package org.riverdell.robotics.teleop
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx
+import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonType
@@ -56,6 +57,7 @@ class HypnoticTeleOp : HypnoticOpMode()
             while (opMode.opModeIsActive())
             {
                 loopTime = System.nanoTime()
+                runPeriodics()
 
                 val multiplier = 0.5 + opMode.gamepad1.right_trigger * 0.5
                 drivetrain.driveRobotCentric(robotDriver, multiplier)
@@ -92,8 +94,6 @@ class HypnoticTeleOp : HypnoticOpMode()
                         extension.slides.supplyPowerToAll(0.0)
                     }
                 }
-
-                runPeriodics()
 
                 opMode.telemetry.addData("Loop Refresh Rate ", 1000000000 / (System.nanoTime() - loopTime).toDouble())
 
@@ -159,15 +159,33 @@ class HypnoticTeleOp : HypnoticOpMode()
                    }
                    .whenPressedOnce()
 
+               where(ButtonType.ButtonX)
+                   .onlyWhen {
+                       intakeComposite.state != IntakeCompositeState.InProgress &&
+                           intakeComposite.state == IntakeCompositeState.Confirm
+                   }
+                   .triggers {
+                       intakeComposite.declineAndIntake()
+                   }
+                   .whenPressedOnce()
+
                where(ButtonType.ButtonA)
-                   .onlyWhen { intakeComposite.state != IntakeCompositeState.InProgress }
+                   .onlyWhen {
+                       intakeComposite.state != IntakeCompositeState.InProgress
+                   }
                    .triggers {
                        if (intakeComposite.state == IntakeCompositeState.Rest)
                        {
                            intakeComposite.prepareForPickup()
                        } else
                        {
-                           intakeComposite.cancelPickupAndReturnToRest()
+                           if (intakeComposite.state == IntakeCompositeState.Pickup)
+                           {
+                               intakeComposite.intakeAndConfirm()
+                           } else if (intakeComposite.state == IntakeCompositeState.Confirm)
+                           {
+                               intakeComposite.confirmAndTransferAndRest()
+                           }
                        }
                    }
                    .whenPressedOnce()
