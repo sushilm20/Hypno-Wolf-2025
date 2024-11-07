@@ -12,7 +12,7 @@ import org.riverdell.robotics.subsystems.hang.Hang
 import org.riverdell.robotics.subsystems.slides.Extension
 import org.riverdell.robotics.subsystems.slides.Lift
 import org.riverdell.robotics.subsystems.intake.Intake
-import org.riverdell.robotics.subsystems.intake.composite.CompositeIntake
+import org.riverdell.robotics.subsystems.intake.composite.CompositeInteraction
 import org.riverdell.robotics.subsystems.intake.v4b.IntakeV4B
 import org.riverdell.robotics.subsystems.outtake.Outtake
 
@@ -30,7 +30,7 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
     val drivetrain by lazy { Drivetrain(this) }
     val intake by lazy { Intake(this) }
     val intakeV4B by lazy { IntakeV4B(this) }
-    val intakeComposite by lazy { CompositeIntake(this) }
+    val intakeComposite by lazy { CompositeInteraction(this) }
     val extension by lazy { Extension(this) }
     val lift by lazy { Lift(this) }
     val hang by lazy { Hang(this) }

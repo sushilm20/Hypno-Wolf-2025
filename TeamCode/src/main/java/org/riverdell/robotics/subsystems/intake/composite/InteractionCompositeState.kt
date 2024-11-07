@@ -1,13 +1,11 @@
 package org.riverdell.robotics.subsystems.intake.composite
 
-enum class IntakeCompositeState
+enum class InteractionCompositeState
 {
     Rest,
     Pickup,
     Confirm,
-    WallIntake,
-    Transfer,
-
+    WallIntakeViaOuttake,
     InProgress
 
 }

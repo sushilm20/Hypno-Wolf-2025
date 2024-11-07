@@ -4,12 +4,35 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
 import java.util.concurrent.CompletableFuture
 
-class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
+class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    var state = IntakeCompositeState.Rest
+    var state = InteractionCompositeState.Rest
     var current: CompletableFuture<*>? = null
+
+    fun wallOuttakeFromRest() =
+        stateMachineRestrict(
+            InteractionCompositeState.Rest,
+            InteractionCompositeState.WallIntakeViaOuttake
+        ) {
+            CompletableFuture.allOf(
+                robot.outtake.depositRotation(),
+                robot.outtake.openClaw()
+            )
+        }
+
+    fun wallOuttakeToRest() =
+        stateMachineRestrict(
+            InteractionCompositeState.WallIntakeViaOuttake,
+            InteractionCompositeState.Rest
+        ) {
+            CompletableFuture.allOf(
+                robot.outtake.depositRotation(),
+                robot.outtake.closeClaw()
+            )
+        }
+
     fun prepareForPickup() =
-        stateMachineRestrict(IntakeCompositeState.Rest, IntakeCompositeState.Pickup) {
+        stateMachineRestrict(InteractionCompositeState.Rest, InteractionCompositeState.Pickup) {
             intakeV4B.v4bUnlock()
                 .thenAcceptAsync {
                     extension.extendToAndStayAt(IntakeConfig.MAX_EXTENSION)
@@ -32,7 +55,7 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
         }
 
     fun intakeAndConfirm() =
-        stateMachineRestrict(IntakeCompositeState.Pickup, IntakeCompositeState.Confirm) {
+        stateMachineRestrict(InteractionCompositeState.Pickup, InteractionCompositeState.Confirm) {
             intakeV4B.v4bSamplePickup()
                 .thenRunAsync {
                     CompletableFuture.allOf(
@@ -48,7 +71,7 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
         }
 
     fun declineAndIntake() =
-        stateMachineRestrict(IntakeCompositeState.Confirm, IntakeCompositeState.Pickup) {
+        stateMachineRestrict(InteractionCompositeState.Confirm, InteractionCompositeState.Pickup) {
             CompletableFuture.allOf(
                 intakeV4B.v4bSampleGateway(),
                 intakeV4B.coaxialIntake()
@@ -60,8 +83,7 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
         }
 
     fun confirmAndTransferAndRest() =
-        stateMachineRestrict(IntakeCompositeState.Confirm, IntakeCompositeState.Rest) {
-            outtake.openClaw()
+        stateMachineRestrict(InteractionCompositeState.Confirm, InteractionCompositeState.Rest) {
             intakeV4B.v4bTransfer()
                 .thenRunAsync {
                     CompletableFuture.allOf(
@@ -72,16 +94,17 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
                     intakeV4B.coaxialTransfer().join()
 
                     outtake.closeClaw()
-                    Thread.sleep(250L)
+                    Thread.sleep(150)
 
                     intake.openIntake()
+                    Thread.sleep(100)
 
-                    Thread.sleep(500L)
                     outtake.depositRotation()
                     intakeV4B.coaxialRest()
                         .thenRun {
                             intake.closeIntake()
                         }
+                        .join()
 
                     extension.extendToAndStayAt(0).join()
                     intakeV4B.v4bLock()
@@ -89,7 +112,7 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
         }
 
     private fun stateMachineRestrict(
-        from: IntakeCompositeState, to: IntakeCompositeState,
+        from: InteractionCompositeState, to: InteractionCompositeState,
         supplier: HypnoticRobot.() -> CompletableFuture<Void>
     ): CompletableFuture<Void>
     {
@@ -98,7 +121,7 @@ class CompositeIntake(private val robot: HypnoticRobot) : AbstractSubsystem()
             return CompletableFuture.completedFuture(null)
         }
 
-        state = IntakeCompositeState.InProgress
+        state = InteractionCompositeState.InProgress
         return supplier(robot)
             .whenComplete { _, _ ->
                 state = to

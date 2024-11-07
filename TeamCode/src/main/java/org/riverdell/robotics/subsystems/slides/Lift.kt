@@ -9,13 +9,14 @@ import org.riverdell.robotics.utilities.managed.pidf.PIDFConfig
 
 class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val slides = with(PIDFConfig(0.0, 0.0, 0.0)) {
+    private val slides = with(PIDFConfig(0.01, 0.0, 0.0005)) {
         ManagedMotorGroup(
             this@Lift,
             PIDCoefficients(kP, kI, kD),
             kV, kA, kStatic,
             kF = { position, targetPosition, velocity ->
-                val error = position - targetPosition
+                0.0
+                /*val error = position - targetPosition
                 if (error > 0 && error < 100) { // If elevator is just above the target position
                     if (error > 10) { // If elevator is more than 10 units above the target
                         -0.5// + velocity!! * 15 // Pull down hard at slow speed
@@ -29,10 +30,10 @@ class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
                     } else {
                         0.0 // Resist gravity less if going down
                     }
-                }
+                }*/
             },
-            master = robot.hardware.liftMotorRight,
-            slaves = listOf(robot.hardware.liftMotorLeft)
+            master = robot.hardware.liftMotorLeft,
+            slaves = listOf(robot.hardware.liftMotorRight)
         ).withTimeout(2500L)
     }
 

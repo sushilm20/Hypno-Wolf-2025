@@ -1,15 +1,13 @@
 package org.riverdell.robotics.teleop
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx
-import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonType
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
-import org.riverdell.robotics.subsystems.intake.composite.IntakeCompositeState
+import org.riverdell.robotics.subsystems.intake.composite.InteractionCompositeState
 import org.riverdell.robotics.subsystems.intake.composite.IntakeConfig
 import org.riverdell.robotics.subsystems.slides.LiftConfig
 import kotlin.math.absoluteValue
@@ -65,7 +63,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                 gp1Commands.run()
                 gp2Commands.run()
 
-                if (intakeComposite.state == IntakeCompositeState.Pickup)
+                if (intakeComposite.state == InteractionCompositeState.Pickup)
                 {
                     val wantedPower = -opMode.gamepad2.left_trigger + opMode.gamepad2.right_trigger
                     if (wantedPower.absoluteValue > 0.1 && !extension.slides.isTravelling())
@@ -103,8 +101,10 @@ class HypnoticTeleOp : HypnoticOpMode()
                 opMode.telemetry.addLine("Coaxial State: ${intakeV4B.coaxialState}")
                 opMode.telemetry.addLine("Composite State: ${intakeComposite.state}")
 
-                opMode.telemetry.addLine("LIFT Right Position: ${hardware.liftMotorLeft.currentPosition}")
-                opMode.telemetry.addLine("LIFT Left Position: ${hardware.liftMotorRight.currentPosition}")
+                opMode.telemetry.addLine("LIFT Left Position: ${hardware.liftMotorLeft.currentPosition}")
+                opMode.telemetry.addLine("LIFT Left Power: ${hardware.liftMotorLeft.power}")
+                opMode.telemetry.addLine("LIFT Right Position: ${hardware.liftMotorRight.currentPosition}")
+                opMode.telemetry.addLine("LIFT Right Power: ${hardware.liftMotorRight.power}")
 
                 opMode.telemetry.addLine("Extendo Left Position: ${hardware.extensionMotorLeft.currentPosition}")
                 opMode.telemetry.addLine("Extendo Right Position: ${hardware.extensionMotorRight.currentPosition}")
@@ -116,21 +116,21 @@ class HypnoticTeleOp : HypnoticOpMode()
         {
            gp2Commands.apply {
                where(ButtonType.DPadLeft)
-                   .onlyWhen { intakeComposite.state == IntakeCompositeState.Pickup }
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.Pickup }
                    .triggers {
                        intake.perpendicularWrist()
                    }
                    .whenPressedOnce()
 
                where(ButtonType.DPadRight)
-                   .onlyWhen { intakeComposite.state == IntakeCompositeState.Pickup }
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.Pickup }
                    .triggers {
                        intake.lateralWrist()
                    }
                    .whenPressedOnce()
 
                where(ButtonType.BumperRight)
-                   .onlyWhen { intakeComposite.state == IntakeCompositeState.Pickup }
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.Pickup }
                    .triggers {
                        intake.dynamicWrist(
                            min(intake.currentDynamicPosition() + 0.02, 1.0)
@@ -139,7 +139,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                    .repeatedlyWhilePressed()
 
                where(ButtonType.BumperLeft)
-                   .onlyWhen { intakeComposite.state == IntakeCompositeState.Pickup }
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.Pickup }
                    .triggers {
                        intake.dynamicWrist(
                            max(intake.currentDynamicPosition() - 0.02, 0.0)
@@ -147,22 +147,37 @@ class HypnoticTeleOp : HypnoticOpMode()
                    }
                    .repeatedlyWhilePressed()
 
-               where(ButtonType.ButtonB)
+               where(ButtonType.DPadUp)
                    .triggers {
                        lift.extendToAndStayAt(LiftConfig.MAX_EXTENSION)
                    }
                    .whenPressedOnce()
 
-               where(ButtonType.ButtonY)
+               where(ButtonType.DPadDown)
                    .triggers {
                        lift.extendToAndStayAt(0)
                    }
                    .whenPressedOnce()
 
+               where(ButtonType.ButtonY)
+                   .onlyWhen {
+                       intakeComposite.state != InteractionCompositeState.InProgress
+                   }
+                   .triggers {
+                       if (intakeComposite.state == InteractionCompositeState.Rest)
+                       {
+                           intakeComposite.wallOuttakeFromRest()
+                       } else if (intakeComposite.state == InteractionCompositeState.WallIntakeViaOuttake)
+                       {
+                           intakeComposite.wallOuttakeToRest()
+                       }
+                   }
+                   .whenPressedOnce()
+
                where(ButtonType.ButtonX)
                    .onlyWhen {
-                       intakeComposite.state != IntakeCompositeState.InProgress &&
-                           intakeComposite.state == IntakeCompositeState.Confirm
+                       intakeComposite.state != InteractionCompositeState.InProgress &&
+                           intakeComposite.state == InteractionCompositeState.Confirm
                    }
                    .triggers {
                        intakeComposite.declineAndIntake()
@@ -171,18 +186,18 @@ class HypnoticTeleOp : HypnoticOpMode()
 
                where(ButtonType.ButtonA)
                    .onlyWhen {
-                       intakeComposite.state != IntakeCompositeState.InProgress
+                       intakeComposite.state != InteractionCompositeState.InProgress
                    }
                    .triggers {
-                       if (intakeComposite.state == IntakeCompositeState.Rest)
+                       if (intakeComposite.state == InteractionCompositeState.Rest)
                        {
                            intakeComposite.prepareForPickup()
                        } else
                        {
-                           if (intakeComposite.state == IntakeCompositeState.Pickup)
+                           if (intakeComposite.state == InteractionCompositeState.Pickup)
                            {
                                intakeComposite.intakeAndConfirm()
-                           } else if (intakeComposite.state == IntakeCompositeState.Confirm)
+                           } else if (intakeComposite.state == InteractionCompositeState.Confirm)
                            {
                                intakeComposite.confirmAndTransferAndRest()
                            }
