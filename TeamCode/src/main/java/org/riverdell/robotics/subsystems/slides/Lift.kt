@@ -37,7 +37,7 @@ class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
         ).withTimeout(2500L)
     }
 
-    fun position() = robot.hardware.liftMotorRight.currentPosition
+    fun position() = robot.hardware.liftMotorLeft.currentPosition
     fun extendToAndStayAt(position: Int) = slides.goTo(position)
     fun isExtending() = slides.isTravelling()
 

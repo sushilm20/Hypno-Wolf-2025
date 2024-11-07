@@ -1,6 +1,7 @@
 package org.riverdell.robotics
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.CRServoImplEx
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -15,7 +16,7 @@ import org.riverdell.robotics.subsystems.intake.v4b.V4BState
 import org.riverdell.robotics.subsystems.outtake.OuttakeClawState
 import org.riverdell.robotics.subsystems.outtake.OuttakeRotationState
 
-class HypnoticRobotHardware(private val opMode: HypnoticOpMode)
+class HypnoticRobotHardware(private val opMode: LinearOpMode)
 {
     lateinit var liftMotorLeft: DcMotorEx
     lateinit var liftMotorRight: DcMotorEx

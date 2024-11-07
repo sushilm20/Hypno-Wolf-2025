@@ -4,5 +4,5 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class LiftConfig {
-    public static int MAX_EXTENSION = 1000;
+    public static int MAX_EXTENSION = 1800;
 }
