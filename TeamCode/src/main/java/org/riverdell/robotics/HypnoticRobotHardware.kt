@@ -101,7 +101,7 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Transfer.position*/
 
         outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
-        outtakeClaw.position = OuttakeClawState.Open.position
+        outtakeClaw.position = OuttakeClawState.Closed.position
 
         /*hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
         hangLeft.pwmRange = PwmRange(500.0, 2500.0)

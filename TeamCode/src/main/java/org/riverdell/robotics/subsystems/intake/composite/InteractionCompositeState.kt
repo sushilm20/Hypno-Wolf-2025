@@ -6,6 +6,7 @@ enum class InteractionCompositeState
     Pickup,
     Confirm,
     WallIntakeViaOuttake,
+    OuttakeReady,
     InProgress
 
 }

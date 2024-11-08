@@ -67,7 +67,7 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem()
         return wristRotateTo(wristState.position)
     }
 
-    private fun wristRotateTo(position: Double) = wrist.setMotionProfileTarget(position)
+    private fun wristRotateTo(position: Double) = wrist.forcefullySetTarget(position)
     private fun intakeRotateTo(position: Double): CompletableFuture<*>
     {
         leftGrip.forcefullySetTarget(1.0 - position)

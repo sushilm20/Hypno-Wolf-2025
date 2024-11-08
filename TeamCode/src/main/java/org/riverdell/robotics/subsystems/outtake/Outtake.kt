@@ -16,6 +16,7 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
     var rotationState = OuttakeRotationState.Transfer
 
     fun transferRotation() = setRotation(OuttakeRotationState.Transfer)
+    fun forceRotation() = setRotation(OuttakeRotationState.Force)
     fun depositRotation() = setRotation(OuttakeRotationState.Deposit)
 
     fun setRotation(state: OuttakeRotationState) = let {

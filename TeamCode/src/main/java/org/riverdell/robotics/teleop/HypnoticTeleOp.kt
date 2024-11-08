@@ -154,8 +154,11 @@ class HypnoticTeleOp : HypnoticOpMode()
                    .whenPressedOnce()
 
                where(ButtonType.DPadDown)
+                   .onlyWhen {
+                       intakeComposite.state == InteractionCompositeState.OuttakeReady
+                   }
                    .triggers {
-                       lift.extendToAndStayAt(0)
+                       intakeComposite.outtakeAndRest()
                    }
                    .whenPressedOnce()
 
@@ -169,7 +172,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                            intakeComposite.wallOuttakeFromRest()
                        } else if (intakeComposite.state == InteractionCompositeState.WallIntakeViaOuttake)
                        {
-                           intakeComposite.wallOuttakeToRest()
+                           intakeComposite.wallOuttakeToOuttakeReady()
                        }
                    }
                    .whenPressedOnce()
@@ -199,7 +202,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                intakeComposite.intakeAndConfirm()
                            } else if (intakeComposite.state == InteractionCompositeState.Confirm)
                            {
-                               intakeComposite.confirmAndTransferAndRest()
+                               intakeComposite.confirmAndTransferAndReady()
                            }
                        }
                    }

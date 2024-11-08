@@ -7,7 +7,6 @@ import java.util.concurrent.CompletableFuture
 class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     var state = InteractionCompositeState.Rest
-    var current: CompletableFuture<*>? = null
 
     fun wallOuttakeFromRest() =
         stateMachineRestrict(
@@ -20,15 +19,27 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             )
         }
 
-    fun wallOuttakeToRest() =
+    fun wallOuttakeToOuttakeReady() =
         stateMachineRestrict(
             InteractionCompositeState.WallIntakeViaOuttake,
-            InteractionCompositeState.Rest
+            InteractionCompositeState.OuttakeReady
         ) {
             CompletableFuture.allOf(
-                robot.outtake.depositRotation(),
                 robot.outtake.closeClaw()
             )
+        }
+
+    fun outtakeAndRest() =
+        stateMachineRestrict(
+            InteractionCompositeState.OuttakeReady,
+            InteractionCompositeState.Rest
+        ) {
+            outtake.forceRotation()
+                .thenRunAsync {
+                    outtake.openClaw()
+                    Thread.sleep(150L)
+                    outtake.transferRotation().join()
+                }
         }
 
     fun prepareForPickup() =
@@ -82,8 +93,8 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             )
         }
 
-    fun confirmAndTransferAndRest() =
-        stateMachineRestrict(InteractionCompositeState.Confirm, InteractionCompositeState.Rest) {
+    fun confirmAndTransferAndReady() =
+        stateMachineRestrict(InteractionCompositeState.Confirm, InteractionCompositeState.OuttakeReady) {
             intakeV4B.v4bTransfer()
                 .thenRunAsync {
                     CompletableFuture.allOf(
