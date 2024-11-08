@@ -18,17 +18,15 @@ class PrepareFourBar : LinearOpMode()
             return
         }
 
-        val hardware = hardwareMap["intakeV4BLeft"] as Servo
-        hardware.position = 1.0
-
+        val left = hardwareMap["intakeV4BLeft"] as Servo
         val right = hardwareMap["intakeV4BRight"] as Servo
-        right.position = 0.0
-
-        val coa = hardwareMap["intakeV4BCoaxial"] as Servo
-        coa.position = 0.0
+        val coaxial = hardwareMap["intakeV4BCoaxial"] as Servo
 
         while (opModeIsActive())
         {
+            left.position = 1.0
+            right.position = 0.0
+            coaxial.position = 0.0
             Thread.sleep(50L)
         }
     }

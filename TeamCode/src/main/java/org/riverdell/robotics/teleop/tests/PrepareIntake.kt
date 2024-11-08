@@ -18,13 +18,13 @@ class PrepareIntake : LinearOpMode()
             return
         }
 
-        val hardware = hardwareMap["intakeClawLeft"] as Servo
+        val left = hardwareMap["intakeClawLeft"] as Servo
         val right = hardwareMap["intakeClawRight"] as Servo
         val wrist = hardwareMap["intakeWrist"] as Servo
 
         while (opModeIsActive())
         {
-            hardware.position = 1.0
+            left.position = 1.0
             right.position = 0.0
             wrist.position = 0.5
             Thread.sleep(50L)

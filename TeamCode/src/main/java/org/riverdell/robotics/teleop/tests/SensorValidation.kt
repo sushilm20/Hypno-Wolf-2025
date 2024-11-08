@@ -6,10 +6,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.riverdell.robotics.HypnoticRobotHardware
 
 @TeleOp(
-    name = "Analysis",
+    name = "Sensor Validation",
     group = "Tests"
 )
-class Analysis : LinearOpMode()
+class SensorValidation : LinearOpMode()
 {
     override fun runOpMode()
     {

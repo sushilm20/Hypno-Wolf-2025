@@ -1,4 +1,4 @@
-package org.riverdell.robotics.teleop.tests;
+package org.riverdell.robotics.teleop.tests.config;
 
 import com.acmerobotics.dashboard.config.Config;
 
