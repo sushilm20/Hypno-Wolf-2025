@@ -93,6 +93,20 @@ class HypnoticTeleOp : HypnoticOpMode()
                     }
                 }
 
+                if (intakeComposite.state == InteractionCompositeState.InProgress)
+                {
+                    val timeInProgress = System.currentTimeMillis() - intakeComposite.attemptTime
+                    if (timeInProgress > 5000L)
+                    {
+                        if (intakeComposite.attemptedState != null)
+                        {
+                            intakeComposite.state = intakeComposite.attemptedState!!
+                            intakeComposite.attemptTime = System.currentTimeMillis()
+                            intakeComposite.attemptedState = null
+                        }
+                    }
+                }
+
                 opMode.telemetry.addData("Loop Refresh Rate ", 1000000000 / (System.nanoTime() - loopTime).toDouble())
 
                 opMode.telemetry.addLine("Intake State: ${intake.intakeState}")
@@ -147,9 +161,23 @@ class HypnoticTeleOp : HypnoticOpMode()
                    }
                    .repeatedlyWhilePressed()
 
-               where(ButtonType.DPadUp)
+               where(ButtonType.DPadLeft)
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.OuttakeReady }
                    .triggers {
-                       lift.extendToAndStayAt(LiftConfig.MAX_EXTENSION)
+                       intakeComposite.cancelOuttakeReadyToRest()
+                   }
+                   .whenPressedOnce()
+
+               where(ButtonType.DPadUp)
+                   .onlyWhenNot { intakeComposite.state == InteractionCompositeState.InProgress }
+                   .triggers {
+                       if (intakeComposite.state == InteractionCompositeState.OuttakeReady)
+                       {
+                           intakeComposite.outtakeToMax()
+                       } else
+                       {
+                           intakeComposite.outtakeCompleteAndRest()
+                       }
                    }
                    .whenPressedOnce()
 

@@ -7,6 +7,31 @@ import java.util.concurrent.CompletableFuture
 class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     var state = InteractionCompositeState.Rest
+    var attemptedState: InteractionCompositeState? = null
+    var attemptTime = System.currentTimeMillis()
+
+    fun outtakeToMax() = stateMachineRestrict(
+        InteractionCompositeState.OuttakeReady,
+        InteractionCompositeState.Outtaking
+    ) {
+        CompletableFuture.allOf(
+            robot.lift.extendToAndStayAt(1800)
+        )
+    }
+
+    fun outtakeCompleteAndRest() = stateMachineRestrict(
+        InteractionCompositeState.Outtaking,
+        InteractionCompositeState.Rest
+    ) {
+        CompletableFuture.allOf(
+            robot.lift.extendToAndStayAt(0),
+            robot.outtake.openClaw()
+                .thenRunAsync {
+                    Thread.sleep(250L)
+                    robot.outtake.transferRotation()
+                }
+        )
+    }
 
     fun wallOuttakeFromRest() =
         stateMachineRestrict(
@@ -18,6 +43,16 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 robot.outtake.openClaw()
             )
         }
+
+    fun cancelOuttakeReadyToRest() = stateMachineRestrict(
+        InteractionCompositeState.OuttakeReady,
+        InteractionCompositeState.Rest
+    ) {
+        CompletableFuture.allOf(
+            robot.outtake.openClaw(),
+            robot.outtake.transferRotation()
+        )
+    }
 
     fun wallOuttakeToOuttakeReady() =
         stateMachineRestrict(
@@ -98,11 +133,12 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             intakeV4B.v4bTransfer()
                 .thenRunAsync {
                     CompletableFuture.allOf(
-                        extension.extendToAndStayAt(55),
+                        extension.extendToAndStayAt(85),
                         intakeV4B.coaxialRest()
                     ).join()
 
                     intakeV4B.coaxialTransfer().join()
+                    extension.extendToAndStayAt(45).join()
 
                     outtake.closeClaw()
                     Thread.sleep(150)
@@ -133,6 +169,9 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         }
 
         state = InteractionCompositeState.InProgress
+        attemptedState = to
+        attemptTime = System.currentTimeMillis()
+
         return supplier(robot)
             .whenComplete { _, _ ->
                 state = to

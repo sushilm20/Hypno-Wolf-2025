@@ -8,6 +8,7 @@ import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 
 /**
  * A [Servo] wrapper that keeps track of motion profile states.

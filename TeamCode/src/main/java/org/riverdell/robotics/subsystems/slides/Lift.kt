@@ -6,31 +6,28 @@ import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.movement.cubicBezier
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import org.riverdell.robotics.utilities.managed.pidf.PIDFConfig
+import kotlin.math.abs
 
 class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val slides = with(PIDFConfig(0.01, 0.0, 0.0005)) {
+    private val slides = with(PIDFConfig(0.0075, 0.0, 0.0005)) { //0.01, 0.0, 0.0005
         ManagedMotorGroup(
             this@Lift,
             PIDCoefficients(kP, kI, kD),
             kV, kA, kStatic,
             kF = { position, targetPosition, velocity ->
-                0.0
-                /*val error = position - targetPosition
-                if (error > 0 && error < 100) { // If elevator is just above the target position
-                    if (error > 10) { // If elevator is more than 10 units above the target
-                        -0.5// + velocity!! * 15 // Pull down hard at slow speed
-                    } else {
-                        0.0 // Don't pull down if very close to target
-                    }
-                } else {
-                    if (error < 0)
+                val error = position - targetPosition
+                if (targetPosition > 50.0) // If going up, always resist gravity
+                {
+                    0.17
+                } else { // If going near 0, give extra push down
+                    if (error > -20 && error < 60) // When elevator is just above the target position
                     {
-                        0.5 // Resist gravity if below target position and going up
+                        (0.01 * error * abs(error)).coerceIn(-0.15, 0.15)
                     } else {
-                        0.0 // Resist gravity less if going down
+                        0.0 // Don't pull down when very far from target
                     }
-                }*/
+                }
             },
             master = robot.hardware.liftMotorLeft,
             slaves = listOf(robot.hardware.liftMotorRight)
