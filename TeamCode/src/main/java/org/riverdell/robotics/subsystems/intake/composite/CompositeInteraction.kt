@@ -2,35 +2,74 @@ package org.riverdell.robotics.subsystems.intake.composite
 
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
+import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 import java.util.concurrent.CompletableFuture
+import kotlin.math.max
+import kotlin.math.min
 
 class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     var state = InteractionCompositeState.Rest
     var attemptedState: InteractionCompositeState? = null
     var attemptTime = System.currentTimeMillis()
+    var outtakeLevel = OuttakeLevel.Bar1
 
-    fun outtakeToMax() = stateMachineRestrict(
+    fun outtakeNext(): CompletableFuture<*>
+    {
+        if (state != InteractionCompositeState.Outtaking)
+        {
+            return CompletableFuture.completedFuture(null)
+        }
+
+        if (outtakeLevel.next() == null)
+        {
+            return CompletableFuture.completedFuture(null)
+        }
+
+        outtakeLevel = outtakeLevel.next()!!
+        return robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
+    }
+
+    fun initialOuttake() = stateMachineRestrict(
         InteractionCompositeState.OuttakeReady,
         InteractionCompositeState.Outtaking
     ) {
+        outtakeLevel = OuttakeLevel.Bar1
         CompletableFuture.allOf(
-            robot.lift.extendToAndStayAt(1800)
+            robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
         )
+    }
+
+    fun outtakeCompleteAndRestSimple() = stateMachineRestrict(
+        InteractionCompositeState.Outtaking,
+        InteractionCompositeState.Rest
+    ) {
+        CompletableFuture.runAsync {
+            outtake.openClaw()
+            Thread.sleep(500L)
+
+            CompletableFuture.allOf(
+                outtake.transferRotation(),
+                robot.lift.extendToAndStayAt(0)
+            ).join()
+        }
     }
 
     fun outtakeCompleteAndRest() = stateMachineRestrict(
         InteractionCompositeState.Outtaking,
         InteractionCompositeState.Rest
     ) {
-        CompletableFuture.allOf(
-            robot.lift.extendToAndStayAt(0),
-            robot.outtake.openClaw()
-                .thenRunAsync {
-                    Thread.sleep(250L)
-                    robot.outtake.transferRotation()
-                }
-        )
+
+        robot.lift.extendToAndStayAt(max(robot.lift.position() - 50, 0))
+            .thenRunAsync {
+                outtake.forceRotation()
+                Thread.sleep(300L)
+                outtake.openClaw()
+                CompletableFuture.allOf(
+                    outtake.transferRotation(),
+                    robot.lift.extendToAndStayAt(0)
+                ).join()
+            }
     }
 
     fun wallOuttakeFromRest() =
@@ -71,8 +110,8 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         ) {
             outtake.forceRotation()
                 .thenRunAsync {
+                    Thread.sleep(300L)
                     outtake.openClaw()
-                    Thread.sleep(150L)
                     outtake.transferRotation().join()
                 }
         }
@@ -133,26 +172,22 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             intakeV4B.v4bTransfer()
                 .thenRunAsync {
                     CompletableFuture.allOf(
-                        extension.extendToAndStayAt(85),
+                        extension.extendToAndStayAt(65),
                         intakeV4B.coaxialRest()
                     ).join()
 
                     intakeV4B.coaxialTransfer().join()
-                    extension.extendToAndStayAt(45).join()
+                    extension.extendToAndStayAt(25).join()
 
                     outtake.closeClaw()
                     Thread.sleep(150)
-
                     intake.openIntake()
                     Thread.sleep(100)
 
+                    extension.extendToAndStayAt(55).join()
                     outtake.depositRotation()
-                    intakeV4B.coaxialRest()
-                        .thenRun {
-                            intake.closeIntake()
-                        }
-                        .join()
-
+                    intakeV4B.coaxialRest().join()
+                    intake.closeIntake()
                     extension.extendToAndStayAt(0).join()
                     intakeV4B.v4bLock()
                 }

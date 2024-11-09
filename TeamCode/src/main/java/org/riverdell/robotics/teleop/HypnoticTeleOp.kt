@@ -9,7 +9,7 @@ import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.subsystems.intake.composite.InteractionCompositeState
 import org.riverdell.robotics.subsystems.intake.composite.IntakeConfig
-import org.riverdell.robotics.subsystems.slides.LiftConfig
+import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -168,16 +168,34 @@ class HypnoticTeleOp : HypnoticOpMode()
                    }
                    .whenPressedOnce()
 
-               where(ButtonType.DPadUp)
-                   .onlyWhenNot { intakeComposite.state == InteractionCompositeState.InProgress }
+               where(ButtonType.DPadRight)
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.Outtaking }
                    .triggers {
-                       if (intakeComposite.state == InteractionCompositeState.OuttakeReady)
-                       {
-                           intakeComposite.outtakeToMax()
-                       } else
-                       {
-                           intakeComposite.outtakeCompleteAndRest()
-                       }
+                       intakeComposite.outtakeCompleteAndRestSimple()
+                   }
+                   .whenPressedOnce()
+
+               where(ButtonType.DPadUp)
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.Outtaking }
+                   .triggers {
+                       intakeComposite.outtakeNext()
+                   }
+                   .whenPressedOnce()
+
+               where(ButtonType.DPadUp)
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.OuttakeReady }
+                   .triggers {
+                       intakeComposite.initialOuttake()
+                   }
+                   .whenPressedOnce()
+
+               where(ButtonType.DPadDown)
+                   .onlyWhen {
+                       intakeComposite.state == InteractionCompositeState.Outtaking &&
+                               intakeComposite.outtakeLevel != OuttakeLevel.HighBasket
+                   }
+                   .triggers {
+                       intakeComposite.outtakeCompleteAndRest()
                    }
                    .whenPressedOnce()
 
