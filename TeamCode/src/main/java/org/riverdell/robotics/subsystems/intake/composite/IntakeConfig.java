@@ -4,5 +4,5 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class IntakeConfig {
-    public static int MAX_EXTENSION = 390;
+    public static int MAX_EXTENSION = 200;
 }

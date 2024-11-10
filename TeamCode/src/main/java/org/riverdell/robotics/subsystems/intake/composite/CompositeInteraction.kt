@@ -2,6 +2,7 @@ package org.riverdell.robotics.subsystems.intake.composite
 
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
+import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 import java.util.concurrent.CompletableFuture
 import kotlin.math.max
@@ -42,16 +43,10 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
     fun outtakeCompleteAndRestSimple() = stateMachineRestrict(
         InteractionCompositeState.Outtaking,
-        InteractionCompositeState.Rest
+        InteractionCompositeState.OuttakeReady
     ) {
         CompletableFuture.runAsync {
             outtake.openClaw()
-            Thread.sleep(500L)
-
-            CompletableFuture.allOf(
-                outtake.transferRotation(),
-                robot.lift.extendToAndStayAt(0)
-            ).join()
         }
     }
 
@@ -89,7 +84,8 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
     ) {
         CompletableFuture.allOf(
             robot.outtake.openClaw(),
-            robot.outtake.transferRotation()
+            robot.outtake.transferRotation(),
+            robot.lift.extendToAndStayAt(0)
         )
     }
 
@@ -141,18 +137,21 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
     fun intakeAndConfirm() =
         stateMachineRestrict(InteractionCompositeState.Pickup, InteractionCompositeState.Confirm) {
-            intakeV4B.v4bSamplePickup()
-                .thenRunAsync {
-                    CompletableFuture.allOf(
-                        intake.closeIntake(),
-                        CompletableFuture.runAsync {
-                            Thread.sleep(200L)
-                            intake.lateralWrist()
-                        },
-                        intakeV4B.v4bIntermediate(),
-                        intakeV4B.coaxialIntermediate()
-                    ).join()
-                }
+            CompletableFuture.allOf(
+                CompletableFuture.runAsync {
+                    Thread.sleep(225L)
+                    intake.closeIntake()
+                },
+                intakeV4B.v4bSamplePickup()
+            ).thenRunAsync {
+                CompletableFuture.allOf(
+                    intakeV4B.v4bIntermediate(),
+                    intakeV4B.coaxialIntermediate()
+                ).join()
+
+                intake.wristState = WristState.Lateral
+                intake.wrist.unwrapServo().position = WristState.Lateral.position
+            }
         }
 
     fun declineAndIntake() =
@@ -168,28 +167,34 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         }
 
     fun confirmAndTransferAndReady() =
-        stateMachineRestrict(InteractionCompositeState.Confirm, InteractionCompositeState.OuttakeReady) {
+        stateMachineRestrict(
+            InteractionCompositeState.Confirm,
+            InteractionCompositeState.OuttakeReady
+        ) {
             intakeV4B.v4bTransfer()
                 .thenRunAsync {
                     CompletableFuture.allOf(
-                        extension.extendToAndStayAt(65),
+                        extension.extendToAndStayAt(85),
                         intakeV4B.coaxialRest()
                     ).join()
 
                     intakeV4B.coaxialTransfer().join()
-                    extension.extendToAndStayAt(25).join()
+                    extension.extendToAndStayAt(35).join()
 
                     outtake.closeClaw()
                     Thread.sleep(150)
                     intake.openIntake()
                     Thread.sleep(100)
 
-                    extension.extendToAndStayAt(55).join()
+                    extension.extendToAndStayAt(85).join()
                     outtake.depositRotation()
-                    intakeV4B.coaxialRest().join()
-                    intake.closeIntake()
+                    intakeV4B.coaxialRest()
+
+                    Thread.sleep(250L)
                     extension.extendToAndStayAt(0).join()
-                    intakeV4B.v4bLock()
+                    intakeV4B.v4bLock().join()
+                    intake.closeIntake()
+                    extension.slides.idle()
                 }
         }
 

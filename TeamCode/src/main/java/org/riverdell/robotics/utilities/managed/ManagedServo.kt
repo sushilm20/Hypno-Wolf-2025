@@ -46,7 +46,7 @@ class ManagedServo(
             return@state false
         }
 
-        if (current == finalPosition || abs(current - finalPosition) < 0.01)
+        if (current == finalPosition || abs(current - finalPosition) < 0.03)
         {
             motionProfile = null
         }
