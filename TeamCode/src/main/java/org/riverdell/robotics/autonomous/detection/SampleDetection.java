@@ -86,7 +86,8 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
     public static double SAMPLE_TRACKING_DISTANCE = 300.0;
 
     /**
-     * AutoSnap: Keeps
+     * AutoSnap: Prefers a sample that was selected in the previous frame if it is nearby in the "SAMPLE_AUTOSNAP_RADIUS" 
+     * radius. If no sample is found in the "SAMPLE_AUTOSNAP_LIFETIME" timeframe, it'll search for a new sample.
      */
     public static double SAMPLE_AUTOSNAP_RADIUS = 25.0;
     public static double SAMPLE_AUTOSNAP_LIFETIME = 500L;
