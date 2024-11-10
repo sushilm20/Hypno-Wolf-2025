@@ -96,7 +96,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                 if (intakeComposite.state == InteractionCompositeState.InProgress)
                 {
                     val timeInProgress = System.currentTimeMillis() - intakeComposite.attemptTime
-                    if (timeInProgress > 5000L)
+                    if (timeInProgress > 2000L)
                     {
                         if (intakeComposite.attemptedState != null)
                         {

@@ -3,15 +3,17 @@ package org.riverdell.robotics.subsystems.intake
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.subsystems.motionProfiledServo
+import org.riverdell.robotics.utilities.managed.ServoBehavior
 import org.riverdell.robotics.utilities.motionprofile.Constraint
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
 
-class Intake(private val robot: HypnoticRobot) : AbstractSubsystem()
-{
+class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
     val wrist = motionProfiledServo(robot.hardware.intakeWrist, ProfileConstraints(20.0, 2.0, 2.0))
-    private val leftGrip = motionProfiledServo(robot.hardware.intakeClawLeft, Constraint.HALF.scale(10.5))
-    private val rightGrip = motionProfiledServo(robot.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
+    private val leftGrip =
+        motionProfiledServo(robot.hardware.intakeClawLeft, Constraint.HALF.scale(10.5))
+    private val rightGrip =
+        motionProfiledServo(robot.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
 
     var intakeState = IntakeState.Closed
     var wristState = WristState.Lateral
@@ -38,16 +40,13 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem()
     }
 
     fun setWrist(state: WristState) = let {
-        if (wristState == state)
-        {
-            if (state != WristState.Dynamic)
-            {
+        if (wristState == state) {
+            if (state != WristState.Dynamic) {
                 return@let CompletableFuture.completedFuture(null)
             }
         }
 
-        if (state == WristState.Dynamic)
-        {
+        if (state == WristState.Dynamic) {
             wrist.unwrapServo().position = dynamicPosition
             return@let CompletableFuture.completedFuture(null)
         }
@@ -57,36 +56,29 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem()
         return@let updateWristState()
     }
 
-    private fun updateIntakeState(): CompletableFuture<*>
-    {
+    private fun updateIntakeState(): CompletableFuture<*> {
         return intakeRotateTo(intakeState.position)
     }
 
-    private fun updateWristState(): CompletableFuture<*>
-    {
-        if (wristState == WristState.Dynamic)
-        {
-            return wrist.forcefullySetTarget(dynamicPosition)
+    private fun updateWristState(): CompletableFuture<*> {
+        if (wristState == WristState.Dynamic) {
+            return wrist.setTarget(dynamicPosition, ServoBehavior.Direct)
         }
 
         return wristRotateTo(wristState.position)
     }
 
-    private fun wristRotateTo(position: Double) = wrist.forcefullySetTarget(position)
-    private fun intakeRotateTo(position: Double): CompletableFuture<*>
-    {
-        leftGrip.forcefullySetTarget(1.0 - position)
-        rightGrip.forcefullySetTarget(position)
-        return CompletableFuture.completedFuture(null)
-    }
+    private fun wristRotateTo(position: Double) = wrist.setTarget(position, ServoBehavior.Direct)
+    private fun intakeRotateTo(position: Double) = CompletableFuture.allOf(
+        leftGrip.setTarget(1.0 - position, ServoBehavior.Direct),
+        rightGrip.setTarget(position, ServoBehavior.Direct)
+    )
 
-    override fun start()
-    {
+    override fun start() {
 
     }
 
-    override fun doInitialize()
-    {
+    override fun doInitialize() {
         updateIntakeState()
         updateWristState()
     }
