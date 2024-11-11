@@ -14,7 +14,7 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
             this@Extension,
             PIDCoefficients(kP, kI, kD),
             kV, kA, kStatic,
-            kF = { position, target, velocity ->
+            /*kF = { position, target, velocity ->
                 val error = position - target
                 if (error > 10 && error < 50) { // If extendo is close to being fully retracted, pull harder
                     -0.45
@@ -22,7 +22,7 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
                 {
                     0.0
                 }
-            },
+            },*/
             master = robot.hardware.extensionMotorRight,
             slaves = listOf(robot.hardware.extensionMotorLeft)
         ).withTimeout(1000L)

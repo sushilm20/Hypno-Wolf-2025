@@ -3,6 +3,7 @@ package org.riverdell.robotics
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.CRServoImplEx
+import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
@@ -70,6 +71,19 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         liftMotorRight = opMode.hardwareMap["liftRight"] as DcMotorEx
         liftMotorRight.direction = DcMotorSimple.Direction.REVERSE
 
+        var start = System.currentTimeMillis()
+        while (liftMotorLeft.velocity > 0.1 || System.currentTimeMillis() - start < 500L)
+        {
+            liftMotorLeft.power = -0.8
+            liftMotorRight.power = -0.8
+        }
+
+        liftMotorLeft.power = 0.0
+        liftMotorRight.power = 0.0
+
+        liftMotorLeft.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        liftMotorRight.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+
         extensionMotorLeft = opMode.hardwareMap["extendoLeft"] as DcMotorEx
         extensionMotorLeft.direction = DcMotorSimple.Direction.REVERSE
 
@@ -77,9 +91,25 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         extensionMotorRight.direction = DcMotorSimple.Direction.FORWARD
 
         intakeV4BLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BLeft")
-        intakeV4BLeft.position = 1.0 - V4BState.Lock.position
-
         intakeV4BRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BRight")
+
+        intakeV4BLeft.position = 1.0 - V4BState.UnlockedIdleHover.position
+        intakeV4BRight.position = V4BState.UnlockedIdleHover.position
+
+        start = System.currentTimeMillis()
+        while (extensionMotorRight.velocity > 0.1 || System.currentTimeMillis() - start < 500L)
+        {
+            extensionMotorLeft.power = -0.8
+            extensionMotorRight.power = -0.8
+        }
+
+        extensionMotorLeft.power = 0.0
+        extensionMotorRight.power = 0.0
+
+        extensionMotorRight.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        extensionMotorLeft.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+
+        intakeV4BLeft.position = 1.0 - V4BState.Lock.position
         intakeV4BRight.position = V4BState.Lock.position
 
         intakeV4BCoaxial = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BCoaxial")
