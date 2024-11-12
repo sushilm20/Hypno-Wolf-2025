@@ -1,8 +1,13 @@
 package org.riverdell.robotics.subsystems.outtake
 
-enum class OuttakeLevel(val encoderLevel: Int)
+import org.riverdell.robotics.subsystems.slides.LiftConfig
+
+enum class OuttakeLevel(val encoderPercentage: Double)
 {
-    Bar1(170), Bar2(780), HighBasket(1700);
+    Bar1(0.2), Bar2(0.5), HighBasket(1.0);
+
+    val encoderLevel: Double
+        get() = encoderPercentage * LiftConfig.MAX_EXTENSION
 
     fun next() = entries.getOrNull(ordinal + 1)
     fun previous() = entries.getOrNull(ordinal - 1)
