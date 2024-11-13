@@ -3,6 +3,7 @@ package org.riverdell.robotics.subsystems.outtake
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.subsystems.motionProfiledServo
+import org.riverdell.robotics.utilities.managed.ServoBehavior
 import org.riverdell.robotics.utilities.motionprofile.Constraint
 import java.util.concurrent.CompletableFuture
 
@@ -48,8 +49,8 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
         return clawRotateTo(clawState.position)
     }
 
-    private fun clawRotateTo(position: Double) = claw.forcefullySetTarget(position)
-    private fun rotationRotateTo(position: Double) = rightRotation.forcefullySetTarget(position)/*CompletableFuture.allOf(
+    private fun clawRotateTo(position: Double) = claw.setTarget(position, ServoBehavior.Direct)
+    private fun rotationRotateTo(position: Double) = rightRotation.setTarget(position, ServoBehavior.Direct)/*CompletableFuture.allOf(
 //        leftRotation.forcefullySetTarget(position),
         rightRotation.forcefullySetTarget(position)
     )*/
