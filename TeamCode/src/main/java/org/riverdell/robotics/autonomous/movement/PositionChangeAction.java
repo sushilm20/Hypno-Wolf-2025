@@ -1,7 +1,6 @@
 package org.riverdell.robotics.autonomous.movement;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
