@@ -55,6 +55,30 @@ abstract class HypnoticAuto(
                    drivetrain.localizer.pose
                )
 
+               multipleTelemetry.addData(
+                   "H Velocity Error",
+                   0.0
+               )
+
+               multipleTelemetry.addData(
+                   "Y Velocity Error",
+                   0.0
+               )
+
+               multipleTelemetry.addData(
+                   "X Velocity Error",
+                   0.0
+               )
+
+               multipleTelemetry.addData(
+                   "Period",
+                   0.0
+               )
+               multipleTelemetry.addData(
+                   "Error Y",
+                   0.0
+               )
+
                multipleTelemetry.update()
            }
        }
@@ -65,7 +89,6 @@ abstract class HypnoticAuto(
                while (!isStopRequested)
                {
                    runPeriodics()
-                   drivetrain.localizer.update()
 
                    multipleTelemetry.addLine("--- Autonomous ---")
                    multipleTelemetry.addData(
@@ -96,8 +119,22 @@ abstract class HypnoticAuto(
                        PositionChangeAction.xController.velocityError
                    )
 
+                   multipleTelemetry.addData(
+                       "Period",
+                       PositionChangeAction.xController.period
+                   )
+
+                   multipleTelemetry.addData(
+                       "Error Y",
+                       PositionChangeAction.yController.positionError
+                   )
+
                    multipleTelemetry.update()
                }
+           }
+
+           thread {
+               drivetrain.localizer.update()
            }
 
            val executionGroup = Mono.buildExecutionGroup {

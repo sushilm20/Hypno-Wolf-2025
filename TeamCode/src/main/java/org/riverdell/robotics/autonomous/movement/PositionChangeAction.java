@@ -25,20 +25,20 @@ public class PositionChangeAction {
     private final HypnoticAuto instance;
     private final RootExecutionGroup executionGroup;
 
-    public double K_STATIC = 1.85;
+    public static double K_STATIC = 1.85;
 
-    public double xP = 0.07;
-    public double xD = 0.012;
+    public  static double xP = 0.05;
+    public  static double xD = 0.0; //0.00012
 
-    public double yP = 0.07;
-    public double yD = 0.012;
+    public   static double yP = 0.05;
+    public  static double yD = 0.0;
 
-    public double hP = 1;
-    public double hD = 0.075;
+    public static double hP = 1;
+    public static double hD = 0.075;
 
-    public double MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = 0.75;
-    public double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;
-    public double AT_TARGET_AUTOMATIC_DEATH = 100;
+    public static double MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = 0.75;
+    public static double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;
+    public static double AT_TARGET_AUTOMATIC_DEATH = 100;
 
     public static PIDFController xController;
     public static PIDFController yController;

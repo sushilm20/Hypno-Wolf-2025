@@ -1,5 +1,8 @@
 package org.riverdell.robotics.autonomous.movement;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 /**
  * This is a PID controller (https://en.wikipedia.org/wiki/PID_controller)
  * for your robot. Internally, it performs all the calculations for you.
@@ -26,10 +29,13 @@ public class PIDFController {
     private double prevErrorVal;
 
     private double errorTolerance_p = 0.05;
-    private double errorTolerance_v = Double.POSITIVE_INFINITY;
+    private double errorTolerance_v = 20;
 
     private double lastTimeStamp;
     private double period;
+    private double sum;
+    private double averagePeriod;
+    private LinkedList<Double> periods;
 
     /**
      * The base constructor for the PIDF controller
@@ -61,6 +67,7 @@ public class PIDFController {
 
         lastTimeStamp = 0;
         period = 0;
+        periods = new LinkedList<>();
 
         errorVal_p = setPoint - measuredValue;
         reset();
@@ -109,7 +116,7 @@ public class PIDFController {
     public void setSetPoint(double sp) {
         setPoint = sp;
         errorVal_p = setPoint - measuredValue;
-        errorVal_v = (errorVal_p - prevErrorVal) / period;
+        errorVal_v = (errorVal_p - prevErrorVal) / averagePeriod;
     }
 
     /**
@@ -184,10 +191,23 @@ public class PIDFController {
     public double calculate(double pv) {
         prevErrorVal = errorVal_p;
 
-        double currentTimeStamp = (double) System.nanoTime() / 1E9;
+        double currentTimeStamp = (double) System.currentTimeMillis()*1000;
         if (lastTimeStamp == 0) lastTimeStamp = currentTimeStamp;
+
         period = currentTimeStamp - lastTimeStamp;
         lastTimeStamp = currentTimeStamp;
+
+        periods.add(period);
+        if (periods.size() > 20) {
+            periods.pop();
+        }
+
+        sum = 0;
+        for (double prevPeriod : periods) {
+            sum += prevPeriod;
+        }
+
+        averagePeriod = sum/periods.size();
 
         if (measuredValue == pv) {
             errorVal_p = setPoint - measuredValue;
@@ -196,8 +216,8 @@ public class PIDFController {
             measuredValue = pv;
         }
 
-        if (Math.abs(period) > 1E-6) {
-            errorVal_v = (errorVal_p - prevErrorVal) / period;
+        if (Math.abs(averagePeriod) > 1) {
+            errorVal_v = (errorVal_p - prevErrorVal) / averagePeriod;
         } else {
             errorVal_v = 0;
         }
@@ -262,7 +282,6 @@ public class PIDFController {
     }
 
     public double getPeriod() {
-        return period;
+        return averagePeriod;
     }
-
 }

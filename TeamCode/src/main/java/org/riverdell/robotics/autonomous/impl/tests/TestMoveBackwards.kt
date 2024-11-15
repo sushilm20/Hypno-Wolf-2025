@@ -13,6 +13,6 @@ import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
 @Autonomous(name = "Test | Move Backwards", group = "Test")
 class TestMoveBackwards : HypnoticAuto({ _ ->
     single("go to position") {
-        navigateTo(Pose(0.0, 10.0, 0.degrees))
+        navigateTo(Pose(0.0, 50.0, 0.degrees))
     }
 })
