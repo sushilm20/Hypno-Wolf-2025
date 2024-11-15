@@ -11,6 +11,7 @@ import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.HypnoticAuto.Companion
+import org.riverdell.robotics.autonomous.movement.PositionChangeAction
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
@@ -78,6 +79,21 @@ abstract class HypnoticAuto(
                    multipleTelemetry.addData(
                        "Pose",
                        drivetrain.localizer.pose
+                   )
+
+                   multipleTelemetry.addData(
+                       "H Velocity Error",
+                       PositionChangeAction.hController.velocityError
+                   )
+
+                   multipleTelemetry.addData(
+                       "Y Velocity Error",
+                       PositionChangeAction.yController.velocityError
+                   )
+
+                   multipleTelemetry.addData(
+                       "X Velocity Error",
+                       PositionChangeAction.xController.velocityError
                    )
 
                    multipleTelemetry.update()

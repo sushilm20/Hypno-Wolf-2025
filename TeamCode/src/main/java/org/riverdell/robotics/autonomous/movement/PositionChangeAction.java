@@ -41,9 +41,9 @@ public class PositionChangeAction {
     public double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;
     public double AT_TARGET_AUTOMATIC_DEATH = 100;
 
-    public PIDFController xController;
-    public PIDFController yController;
-    public PIDFController hController;
+    public static PIDFController xController;
+    public static PIDFController yController;
+    public static PIDFController hController;
 
     private final ElapsedTime activeTimer = new ElapsedTime();
     private final ElapsedTime atTargetTimer = new ElapsedTime();
