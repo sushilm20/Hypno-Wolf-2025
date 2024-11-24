@@ -16,6 +16,7 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
         motionProfiledServo(robot.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
 
     var intakeState = IntakeState.Closed
+    var lockState = IntakeState.Lock
     var wristState = WristState.Lateral
 
     private var dynamicPosition = 0.5
@@ -23,6 +24,7 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
 
     fun openIntake() = setIntake(IntakeState.Open)
     fun closeIntake() = setIntake(IntakeState.Closed)
+    fun lockIntake() = setIntake(IntakeState.Lock)
 
     fun setIntake(state: IntakeState) = let {
         if (intakeState == state)
@@ -57,7 +59,7 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
     }
 
     private fun updateIntakeState(): CompletableFuture<*> {
-        return intakeRotateTo(intakeState.position)
+        return intakeRotateTo(intakeState)
     }
 
     private fun updateWristState(): CompletableFuture<*> {
@@ -69,9 +71,9 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
     }
 
     private fun wristRotateTo(position: Double) = wrist.setTarget(position, ServoBehavior.Direct)
-    private fun intakeRotateTo(position: Double) = CompletableFuture.allOf(
-        leftGrip.setTarget(1.0 - position, ServoBehavior.Direct),
-        rightGrip.setTarget(position, ServoBehavior.Direct)
+    private fun intakeRotateTo(state: IntakeState) = CompletableFuture.allOf(
+        leftGrip.setTarget(state.positionLeft, ServoBehavior.Direct),
+        rightGrip.setTarget(state.positionRight, ServoBehavior.Direct)
     )
 
     override fun start() {

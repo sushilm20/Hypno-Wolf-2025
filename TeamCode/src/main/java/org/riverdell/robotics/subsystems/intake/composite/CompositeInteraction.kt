@@ -54,17 +54,14 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         InteractionCompositeState.Outtaking,
         InteractionCompositeState.Rest
     ) {
+        robot.lift.extendToAndStayAt(0)
 
-        robot.lift.extendToAndStayAt(max(robot.lift.position() - 50, 0))
-            .thenRunAsync {
-                outtake.forceRotation()
-                Thread.sleep(300L)
-                outtake.openClaw()
-                CompletableFuture.allOf(
-                    outtake.transferRotation(),
-                    robot.lift.extendToAndStayAt(0)
-                ).join()
-            }
+        outtake.forceRotation()
+        outtake.openClaw()
+
+        CompletableFuture.allOf(
+            outtake.transferRotation()
+        )
     }
 
     fun wallOuttakeFromRest() =
@@ -86,6 +83,14 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             robot.outtake.openClaw(),
             robot.outtake.transferRotation(),
             robot.lift.extendToAndStayAt(0)
+        )
+    }
+
+    fun inToOut() = stateMachineRestrict(InteractionCompositeState.Rest,
+        InteractionCompositeState.OuttakeReady) {
+
+        CompletableFuture.allOf(
+            robot.outtake.depositRotation()
         )
     }
 
@@ -139,7 +144,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         stateMachineRestrict(InteractionCompositeState.Pickup, InteractionCompositeState.Confirm) {
             CompletableFuture.allOf(
                 CompletableFuture.runAsync {
-                    Thread.sleep(225L)
+                    Thread.sleep(500L)
                     intake.closeIntake()
                 },
                 intakeV4B.v4bSamplePickup()
@@ -171,27 +176,29 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             InteractionCompositeState.Confirm,
             InteractionCompositeState.OuttakeReady
         ) {
+            intake.lockIntake()
             intakeV4B.v4bTransfer()
                 .thenRunAsync {
                     CompletableFuture.allOf(
-                        extension.extendToAndStayAt(85),
+                        extension.extendToAndStayAt(135),
                         intakeV4B.coaxialRest()
                     ).join()
 
                     intakeV4B.coaxialTransfer().join()
-                    extension.extendToAndStayAt(35).join()
+                    extension.extendToAndStayAt(80).join()
 
                     outtake.closeClaw()
                     Thread.sleep(150)
                     intake.openIntake()
                     Thread.sleep(100)
 
-                    extension.extendToAndStayAt(85).join()
+                    extension.extendToAndStayAt(150).join()
                     outtake.depositRotation()
                     intakeV4B.coaxialRest()
 
                     Thread.sleep(250L)
                     extension.extendToAndStayAt(0).join()
+
                     intakeV4B.v4bLock().join()
                     intake.closeIntake()
                     extension.slides.idle()

@@ -75,7 +75,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll(wantedPower.toDouble() / 2.0)
+                                extension.slides.supplyPowerToAll(wantedPower.toDouble() / 4.0)
                             }
                         } else
                         {
@@ -84,7 +84,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll(wantedPower.toDouble() / 2.0)
+                                extension.slides.supplyPowerToAll(wantedPower.toDouble() / 4.0)
                             }
                         }
                     } else if (!extension.slides.isTravelling())
@@ -120,8 +120,10 @@ class HypnoticTeleOp : HypnoticOpMode()
                 opMode.telemetry.addLine("LIFT Right Position: ${hardware.liftMotorRight.currentPosition}")
                 opMode.telemetry.addLine("LIFT Right Power: ${hardware.liftMotorRight.power}")
 
-                opMode.telemetry.addLine("Extendo Left Position: ${hardware.extensionMotorLeft.currentPosition}")
-                opMode.telemetry.addLine("Extendo Right Position: ${hardware.extensionMotorRight.currentPosition}")
+                opMode.telemetry.addLine("EXTENDO Left Position: ${hardware.extensionMotorLeft.currentPosition}")
+                opMode.telemetry.addLine("EXTENDO Left Power: ${hardware.extensionMotorLeft.power}")
+                opMode.telemetry.addLine("EXTENDO Right Position: ${hardware.extensionMotorRight.currentPosition}")
+                opMode.telemetry.addLine("EXTENDO Right Power: ${hardware.extensionMotorRight.power}")
                 opMode.telemetry.update()
             }
         }

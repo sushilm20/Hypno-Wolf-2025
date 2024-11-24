@@ -11,8 +11,25 @@ import org.riverdell.robotics.autonomous.movement.purepursuit.ActionWaypoint
 import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
 
 @Autonomous(name = "Test | Move Backwards", group = "Test")
-class TestMoveBackwards : HypnoticAuto({ _ ->
+class TestMoveBackwards : HypnoticAuto({ opMode ->
     single("go to position") {
-        navigateTo(Pose(0.0, 10.0, 0.degrees))
+        navigateTo(Pose(0.0, 30.0, 90.degrees))
     }
+
+    single("intake") {
+        opMode.robot.intakeComposite
+            .prepareForPickup()
+            .join()
+
+        Thread.sleep(500)
+        opMode.robot.intakeComposite
+            .intakeAndConfirm()
+            .join()
+        Thread.sleep(500L)
+
+        opMode.robot.intakeComposite
+            .confirmAndTransferAndReady()
+            .join()
+    }
+
 })

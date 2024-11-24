@@ -1,5 +1,7 @@
 package org.riverdell.robotics.autonomous.movement;
 
+import java.util.LinkedList;
+
 /**
  * This is a PID controller (https://en.wikipedia.org/wiki/PID_controller)
  * for your robot. Internally, it performs all the calculations for you.
@@ -30,6 +32,9 @@ public class PIDFController {
 
     private double lastTimeStamp;
     private double period;
+    public double averageVelocity;
+    private LinkedList<Double> prevVels;
+    private double sum;
 
     /**
      * The base constructor for the PIDF controller
@@ -61,6 +66,8 @@ public class PIDFController {
 
         lastTimeStamp = 0;
         period = 0;
+        prevVels = new LinkedList<>();
+        averageVelocity = 0;
 
         errorVal_p = setPoint - measuredValue;
         reset();
@@ -197,6 +204,16 @@ public class PIDFController {
         }
 
         if (Math.abs(period) > 1E-6) {
+            prevVels.add((errorVal_p - prevErrorVal) / period);
+            if (prevVels.size() > 3) {
+                prevVels.pop();
+            }
+            sum = 0;
+            for (double prevPeriod : prevVels) {
+                sum += prevPeriod;
+            }
+
+            averageVelocity = -sum/prevVels.size();
             errorVal_v = (errorVal_p - prevErrorVal) / period;
         } else {
             errorVal_v = 0;

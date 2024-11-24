@@ -20,41 +20,25 @@ class ManagedServo(
     private val constraints: () -> ProfileConstraints
 )
 {
-    private var behavior = ServoBehavior.MotionProfile
     private var motionProfile: AsymmetricMotionProfile? = null
     private var timer = ElapsedTime()
     private var target = 0.0
 
     private val state by stateHolder.state<Double>({
-        if (behavior == ServoBehavior.MotionProfile)
-        {
-            timer = ElapsedTime()
-            motionProfile = AsymmetricMotionProfile(
-                servo.position,
-                it,
-                constraints()
-            )
-        } else
-        {
-            target = it
-        }
+        timer = ElapsedTime()
+        motionProfile = AsymmetricMotionProfile(
+            servo.position,
+            it,
+            constraints()
+        )
     }, {
-        if (behavior == ServoBehavior.MotionProfile)
+        if (motionProfile == null)
         {
-            if (motionProfile == null)
-            {
-                return@state 0.0
-            }
-
-            val motionProfileState = motionProfile!!.calculate(timer.time())
-            servo.position = motionProfileState.x
-        } else
-        {
-            if (servo.position != target)
-            {
-                servo.position = target
-            }
+            return@state 0.0
         }
+
+        val motionProfileState = motionProfile!!.calculate(timer.time())
+        servo.position = motionProfileState.x
         servo.position
     }, { current, finalPosition ->
         if (motionProfile == null)
@@ -73,8 +57,13 @@ class ManagedServo(
     fun unwrapServo() = servo
     fun setTarget(target: Double, behavior: ServoBehavior = ServoBehavior.MotionProfile): CompletableFuture<*>
     {
-        this.behavior = behavior
-        return state.override(target, 1000L)
+        if (behavior == ServoBehavior.MotionProfile)
+        {
+            return state.override(target, 1000L)
+        }
+
+        servo.position = target
+        return CompletableFuture.completedFuture(null)
     }
     fun cancelMotionProfile() = state.reset()
 }

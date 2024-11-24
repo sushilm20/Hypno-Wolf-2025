@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture
 
 class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    val slides = with(PIDFConfig(0.0025, 0.0, 0.0)) {
+    val slides = with(PIDFConfig(0.004, 0.0, 0.0)) {
         ManagedMotorGroup(
             this@Extension,
             PIDCoefficients(kP, kI, kD),
@@ -33,7 +33,7 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
 
     override fun start()
     {
-        extendToAndStayAt(0)
+        slides.idle()
     }
 
     override fun doInitialize()

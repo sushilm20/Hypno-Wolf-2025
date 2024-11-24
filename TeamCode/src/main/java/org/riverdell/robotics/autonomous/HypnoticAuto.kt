@@ -55,6 +55,27 @@ abstract class HypnoticAuto(
                    drivetrain.localizer.pose
                )
 
+               multipleTelemetry.addData(
+                   "H Velocity Error",
+                   0.0
+               )
+
+               multipleTelemetry.addData(
+                   "X Velocity Error",
+                   0.0
+               )
+
+
+               multipleTelemetry.addData(
+                   "Y Velocity Error",
+                   0.0
+               )
+
+               multipleTelemetry.addData(
+                   "Period",
+                   0.0
+               )
+
                multipleTelemetry.update()
            }
        }
@@ -65,7 +86,6 @@ abstract class HypnoticAuto(
                while (!isStopRequested)
                {
                    runPeriodics()
-                   drivetrain.localizer.update()
 
                    multipleTelemetry.addLine("--- Autonomous ---")
                    multipleTelemetry.addData(
@@ -81,22 +101,37 @@ abstract class HypnoticAuto(
                        drivetrain.localizer.pose
                    )
 
-                   multipleTelemetry.addData(
-                       "H Velocity Error",
-                       PositionChangeAction.hController.velocityError
-                   )
-
-                   multipleTelemetry.addData(
-                       "Y Velocity Error",
-                       PositionChangeAction.yController.velocityError
-                   )
-
+//                   multipleTelemetry.addData(
+//                       "H Velocity Error",
+//                       PositionChangeAction.hController.velocityError
+//                   )
+//
+//                   multipleTelemetry.addData(
+//                       "Y Velocity Error",
+//                       PositionChangeAction.yController.velocityError
+//                   )
+//
                    multipleTelemetry.addData(
                        "X Velocity Error",
-                       PositionChangeAction.xController.velocityError
+                       PositionChangeAction.xController.averageVelocity
                    )
+                   multipleTelemetry.addData(
+                       "Y Velocity Error",
+                       PositionChangeAction.yController.averageVelocity
+                   )
+//
+//                   multipleTelemetry.addData(
+//                       "Period",
+//                       PositionChangeAction.xController.period
+//                   )
 
                    multipleTelemetry.update()
+               }
+           }
+
+           thread {
+               while (!isStopRequested) {
+                   drivetrain.localizer.update()
                }
            }
 

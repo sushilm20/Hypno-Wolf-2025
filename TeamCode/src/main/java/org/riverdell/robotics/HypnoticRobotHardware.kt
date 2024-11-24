@@ -119,10 +119,10 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         intakeWrist.position = WristState.Lateral.position
 
         intakeClawLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawLeft")
-        intakeClawLeft.position = 1.0 - IntakeState.Closed.position
+        intakeClawLeft.position = IntakeState.Closed.positionLeft
 
         intakeClawRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawRight")
-        intakeClawRight.position = IntakeState.Closed.position
+        intakeClawRight.position = IntakeState.Closed.positionRight
 
         outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
         outtakeRotationRight.position = OuttakeRotationState.Transfer.position
