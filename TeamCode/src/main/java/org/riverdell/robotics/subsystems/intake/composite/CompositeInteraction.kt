@@ -178,8 +178,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                     intakeV4B.coaxialIntermediate()
                 ).join()
 
-                intake.wristState = WristState.Lateral
-                intake.wrist.unwrapServo().position = WristState.Lateral.position
+                intake.setWrist(WristState.Lateral)
             }
         }
 

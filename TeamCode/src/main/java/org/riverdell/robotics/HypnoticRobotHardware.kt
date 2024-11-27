@@ -71,6 +71,15 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         liftMotorRight = opMode.hardwareMap["liftRight"] as DcMotorEx
         liftMotorRight.direction = DcMotorSimple.Direction.REVERSE
 
+        outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
+        outtakeRotationRight.position = OuttakeRotationState.Transfer.position
+
+        /*        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
+                outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Transfer.position*/
+
+        outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
+        outtakeClaw.position = OuttakeClawState.Closed.position
+
         var start = System.currentTimeMillis()
         while (liftMotorLeft.velocity > 0.1 || System.currentTimeMillis() - start < 500L)
         {
@@ -123,15 +132,6 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
 
         intakeClawRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawRight")
         intakeClawRight.position = IntakeState.Closed.positionRight
-
-        outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
-        outtakeRotationRight.position = OuttakeRotationState.Transfer.position
-
-/*        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
-        outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Transfer.position*/
-
-        outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
-        outtakeClaw.position = OuttakeClawState.Closed.position
 
         /*hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
         hangLeft.pwmRange = PwmRange(500.0, 2500.0)

@@ -49,8 +49,7 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
         }
 
         if (state == WristState.Dynamic) {
-            wrist.unwrapServo().position = dynamicPosition
-            return@let CompletableFuture.completedFuture(null)
+            return@let wrist.setTarget(dynamicPosition, ServoBehavior.Direct)
         }
 
         dynamicPosition = state.position
