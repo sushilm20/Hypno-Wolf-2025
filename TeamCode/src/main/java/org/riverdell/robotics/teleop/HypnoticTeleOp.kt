@@ -13,6 +13,8 @@ import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sign
 
 @TeleOp(
     name = "Multiplayer",
@@ -75,7 +77,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll(wantedPower.toDouble() / 4.0)
+                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())))
                             }
                         } else
                         {
@@ -84,7 +86,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll(wantedPower.toDouble() / 4.0)
+                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())))
                             }
                         }
                     } else if (!extension.slides.isTravelling())
