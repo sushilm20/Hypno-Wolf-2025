@@ -16,7 +16,7 @@ class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     private val voltageSensor = robot.opMode.hardwareMap.voltageSensor.first()
     private val imuState by state(write = { _ -> }, read = { robot.hardware.imu.robotYawPitchRollAngles })
-    private val voltageState by state(write = { _ -> }, read = voltageSensor::getVoltage)
+    private val voltageState by state(write = { _ -> }, read = { voltageSensor.voltage })
 
     val localizer by lazy {
         TwoWheelLocalizer(robot)

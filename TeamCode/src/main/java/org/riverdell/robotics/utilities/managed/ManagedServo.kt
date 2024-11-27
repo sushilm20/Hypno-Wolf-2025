@@ -22,7 +22,6 @@ class ManagedServo(
 ) {
     private var motionProfile: AsymmetricMotionProfile? = null
     private var timer = ElapsedTime()
-    private var target = 0.0
     private var behavior = ServoBehavior.MotionProfile
     private var profileState: ProfileState? = null
 
@@ -41,9 +40,10 @@ class ManagedServo(
         }
     }, { _ ->
         servo.position
-    }, { _, _ ->
+    }, { _, target ->
         if (behavior == ServoBehavior.Direct) {
             servo.position = target
+            println("set position to $target instantly")
             return@state true
         } else
         {
