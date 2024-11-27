@@ -25,7 +25,7 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
             },*/
             master = robot.hardware.extensionMotorRight,
             slaves = listOf(robot.hardware.extensionMotorLeft)
-        ).withTimeout(1000L)
+        ).withTimeout(5000L)
     }
 
     fun extendToAndStayAt(position: Int) = slides.goTo(position)

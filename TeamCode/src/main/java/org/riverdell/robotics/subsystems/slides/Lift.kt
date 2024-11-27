@@ -31,7 +31,7 @@ class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
             },
             master = robot.hardware.liftMotorLeft,
             slaves = listOf(robot.hardware.liftMotorRight)
-        ).withTimeout(2500L)
+        ).withTimeout(5000L)
     }
 
     fun position() = robot.hardware.liftMotorLeft.currentPosition
