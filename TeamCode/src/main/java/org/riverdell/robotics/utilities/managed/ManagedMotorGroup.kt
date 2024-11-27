@@ -22,6 +22,7 @@ class ManagedMotorGroup(
      * Inputs: Measured position, target position, measured velocity
      */
     private var kF: (Double, Double, Double?) -> Double = { _, _, _ -> 0.0 },
+    private val tolerance: Long = 3,
     private val master: DcMotorEx,
     private val slaves: List<DcMotorEx> = listOf()
 )
@@ -62,7 +63,7 @@ class ManagedMotorGroup(
         complete = { current, target ->
 //            println("position: ${abs(target - current)}, ${abs(target - current) < 5}")
 
-            (abs(target - current) < 3 || if (stuckProtection == null)
+            (abs(target - current) < tolerance || if (stuckProtection == null)
             {
                 false
             } else
