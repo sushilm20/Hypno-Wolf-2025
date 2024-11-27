@@ -31,11 +31,34 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         return robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
     }
 
-    fun initialOuttake() = stateMachineRestrict(
+    fun outtakeLevel(newLevel: OuttakeLevel): CompletableFuture<*>
+    {
+        if (state != InteractionCompositeState.Outtaking)
+        {
+            return CompletableFuture.completedFuture(null)
+        }
+
+        outtakeLevel = newLevel
+        return robot.lift.extendToAndStayAt(newLevel.encoderLevel)
+    }
+
+    fun initialOuttakeFromRest(preferredLevel: OuttakeLevel = OuttakeLevel.Bar1) = stateMachineRestrict(
+        InteractionCompositeState.Rest,
+        InteractionCompositeState.Outtaking
+    ) {
+        outtakeLevel = preferredLevel
+        robot.outtake.depositRotation()
+
+        CompletableFuture.allOf(
+            robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
+        )
+    }
+
+    fun initialOuttake(preferredLevel: OuttakeLevel = OuttakeLevel.Bar1) = stateMachineRestrict(
         InteractionCompositeState.OuttakeReady,
         InteractionCompositeState.Outtaking
     ) {
-        outtakeLevel = OuttakeLevel.Bar1
+        outtakeLevel = preferredLevel
         CompletableFuture.allOf(
             robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
         )
@@ -86,9 +109,10 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         )
     }
 
-    fun inToOut() = stateMachineRestrict(InteractionCompositeState.Rest,
-        InteractionCompositeState.OuttakeReady) {
-
+    fun inToOut() = stateMachineRestrict(
+        InteractionCompositeState.Rest,
+        InteractionCompositeState.OuttakeReady
+    ) {
         CompletableFuture.allOf(
             robot.outtake.depositRotation()
         )
@@ -117,7 +141,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 }
         }
 
-    fun prepareForPickup() =
+    fun prepareForPickup(wristState: WristState = WristState.Lateral) =
         stateMachineRestrict(InteractionCompositeState.Rest, InteractionCompositeState.Pickup) {
             intakeV4B.v4bUnlock()
                 .thenAcceptAsync {
@@ -135,7 +159,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                             .thenCompose {
                                 intake.openIntake()
                             },
-                        intake.lateralWrist()
+                        intake.setWrist(wristState)
                     ).join()
                 }
         }

@@ -1,72 +1,108 @@
 package org.riverdell.robotics.autonomous.impl.intothedeep
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import io.liftgate.robotics.mono.pipeline.simultaneous
 import io.liftgate.robotics.mono.pipeline.single
-import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.navigateTo
+import org.riverdell.robotics.subsystems.intake.WristState
+import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 
-@Autonomous(name = "Pre Load Basket", group = "Test")
-
+@Autonomous(name = "4+0 Basket & Park", group = "Test")
 class PreLoadBasket : HypnoticAuto({ opMode ->
-    single("go to positions") {
+    fun depositToHighBasket()
+    {
+        single("high basket deposit") {
+            navigateTo(Pose(-83.0, 28.0, 128.degrees))
+            opMode.robot.intakeComposite
+                .initialOuttakeFromRest(OuttakeLevel.HighBasket)
+                .join()
 
-        //navigateTo(Pose(0.0, 34.0, 0.degrees))
+            navigateTo(Pose(-83.0, 20.0, 128.degrees))
+            opMode.robot.intakeComposite.outtakeCompleteAndRestSimple()
+            Thread.sleep(350L)
 
-        navigateTo(Pose(-83.0, 28.0, 128.degrees))
-
-        opMode.robot.intakeComposite.inToOut()
-        opMode.robot.intakeComposite.initialOuttake()
-        Thread.sleep(500)
-        opMode.robot.intakeComposite.outtakeNext()
-        opMode.robot.intakeComposite.outtakeNext()
-        opMode.robot.intakeComposite.outtakeNext()
-        Thread.sleep(1500)
-
-        navigateTo(Pose(-81.0, 22.0, 128.degrees))
-        opMode.robot.intakeComposite.outtakeCompleteAndRestSimple().join()
-        Thread.sleep(500)
-
-        navigateTo(Pose(-75.0, 27.0, 128.degrees))
-        opMode.robot.intakeComposite.cancelOuttakeReadyToRest().join()
-        Thread.sleep(200)
-
-        navigateTo(Pose(-82.2, 28.6, 180.degrees))
+            navigateTo(Pose(-75.0, 27.0, 128.degrees))
+            opMode.robot.intakeComposite.cancelOuttakeReadyToRest().join()
+        }
     }
-    single("intake") {
-        opMode.robot.intakeComposite
-            .prepareForPickup()
-            .join()
 
-        Thread.sleep(500)
-        opMode.robot.intakeComposite
-            .intakeAndConfirm()
-            .join()
-        Thread.sleep(500L)
+    fun prepareForIntake(
+        at: Pose,
+        wristState: WristState = WristState.Lateral,
+        submersible: Boolean = false,
+    )
+    {
+        /**
+         * With the submersible pickups, we want to avoid
+         * entering the pickup state until we're perfectly
+         * in the pickup position.
+         *
+         * So, when [submersible] is true, we'll do a consecutive
+         * rather than a simultaneous.
+         */
+        if (!submersible)
+        {
+            simultaneous("prepare for ground intake") {
+                single("navigate to pickup position") {
+                    navigateTo(at)
+                }
 
-        opMode.robot.intakeComposite
-            .confirmAndTransferAndReady()
-            .join()
+                single("prepare for pickup") {
+                    opMode.robot.intakeComposite
+                        .prepareForPickup(wristState)
+                        .join()
+                }
+            }
+        } else
+        {
+            single("navigate to pickup position") {
+                navigateTo(at)
+            }
+
+            single("prepare for pickup") {
+                opMode.robot.intakeComposite
+                    .prepareForPickup(wristState)
+                    .join()
+            }
+        }
     }
-    single("drop") {
-        navigateTo(Pose(-83.0, 28.0, 128.degrees))
 
-        opMode.robot.intakeComposite.inToOut()
-        opMode.robot.intakeComposite.initialOuttake()
-        Thread.sleep(500)
-        opMode.robot.intakeComposite.outtakeNext()
-        opMode.robot.intakeComposite.outtakeNext()
-        opMode.robot.intakeComposite.outtakeNext()
-        Thread.sleep(1500)
+    fun confirmIntakeAndTransfer()
+    {
+        single("confirm intake") {
+            opMode.robot.intakeComposite
+                .intakeAndConfirm()
+                .join()
 
-        navigateTo(Pose(-81.0, 22.0, 128.degrees))
-        opMode.robot.intakeComposite.outtakeCompleteAndRestSimple().join()
-        Thread.sleep(500)
+            opMode.robot.intakeComposite
+                .confirmAndTransferAndReady()
+                .join()
+        }
+    }
 
-        navigateTo(Pose(-77.0, 25.0, 128.degrees))
-        opMode.robot.intakeComposite.cancelOuttakeReadyToRest().join()
-        Thread.sleep(200)
+    // preload
+    depositToHighBasket()
+
+    val pickupPositions = listOf(
+        GroundPickupPosition(pose = Pose(-82.2, 28.6, 180.degrees)),
+        // TODO: add 2nd, and 3rd ground sample poses & wrist states
+    )
+
+    // ground pickup positions
+    pickupPositions.forEach {
+        prepareForIntake(
+            at = it.pose,
+            wristState = it.wristState
+        )
+        confirmIntakeAndTransfer()
+        depositToHighBasket()
+    }
+
+    single("park near submersible") {
+        // TODO: change submersible park pose
+        navigateTo(Pose(0.0, 0.0, 0.0))
     }
 })
