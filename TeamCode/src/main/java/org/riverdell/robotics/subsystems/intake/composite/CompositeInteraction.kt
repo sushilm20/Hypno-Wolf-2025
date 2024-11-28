@@ -210,7 +210,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                     ).join()
 
                     intakeV4B.coaxialTransfer().join()
-                    extension.extendToAndStayAt(60).join()
+                    extension.extendToAndStayAt(50).join()
 
                     outtake.closeClaw()
                     Thread.sleep(150)
