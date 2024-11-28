@@ -77,7 +77,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 12)
+                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 8)
                             }
                         } else
                         {
@@ -86,7 +86,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 12)
+                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 8)
                             }
                         }
                     } else if (!extension.slides.isTravelling())

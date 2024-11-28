@@ -63,10 +63,10 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
         instance = this
 
         hardware = HypnoticRobotHardware(opMode)
-        hardware.initializeHardware()
+        hardware.initializeHardware(opMode.gamepad1.a)
 
         register(
-            drivetrain, intake, intakeV4B, extension, lift,
+            drivetrain, intake, intakeV4B, outtake, extension, lift,
             *additionalSubSystems().toTypedArray()
         )
 

@@ -77,7 +77,6 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 
     override fun doInitialize()
     {
-        updateCoaxialState()
-        updateFourBarState()
+
     }
 }

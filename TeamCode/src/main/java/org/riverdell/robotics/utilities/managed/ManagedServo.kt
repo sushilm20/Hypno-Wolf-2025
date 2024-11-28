@@ -29,6 +29,7 @@ class ManagedServo(
         timer = ElapsedTime()
         if (behavior == ServoBehavior.MotionProfile)
         {
+            println("Motion profile going from ${servo.position} to $it")
             motionProfile = AsymmetricMotionProfile(
                 servo.position,
                 it,
@@ -43,7 +44,6 @@ class ManagedServo(
     }, { _, target ->
         if (behavior == ServoBehavior.Direct) {
             servo.position = target
-            println("set position to $target instantly")
             return@state true
         } else
         {
@@ -63,7 +63,7 @@ class ManagedServo(
         behavior: ServoBehavior = ServoBehavior.MotionProfile
     ): CompletableFuture<*> {
         this.behavior = behavior
-        return state.override(target, 1000L)
+        return state.override(target)
     }
 
     fun cancelMotionProfile() = state.reset()

@@ -62,7 +62,6 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
 
     override fun doInitialize()
     {
-        updateRotationState()
-        updateClawState()
+
     }
 }

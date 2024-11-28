@@ -48,7 +48,7 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
 //    lateinit var hangLeft: CRServoImplEx
 //    lateinit var hangRight: CRServoImplEx
 
-    fun initializeHardware()
+    fun initializeHardware(shouldHardReset: Boolean = false)
     {
         imu = opMode.hardwareMap["imu"] as IMU
         imu.initialize(
@@ -72,9 +72,6 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         liftMotorRight = opMode.hardwareMap["liftRight"] as DcMotorEx
         liftMotorRight.direction = DcMotorSimple.Direction.REVERSE
 
-        outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
-        outtakeRotationRight.position = OuttakeRotationState.Transfer.position
-
         /*        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
                 outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Transfer.position*/
 
@@ -82,10 +79,13 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         outtakeClaw.position = OuttakeClawState.Closed.position
 
         var start = System.currentTimeMillis()
-        while (liftMotorLeft.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L)
+        if (shouldHardReset)
         {
-            liftMotorLeft.power = -0.3
-            liftMotorRight.power = -0.3
+            while (liftMotorLeft.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L)
+            {
+                liftMotorLeft.power = -0.3
+                liftMotorRight.power = -0.3
+            }
         }
 
         liftMotorLeft.power = 0.0
@@ -107,10 +107,13 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         intakeV4BRight.position = V4BState.UnlockedIdleHover.position
 
         start = System.currentTimeMillis()
-        while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L)
+        if (shouldHardReset)
         {
-            extensionMotorLeft.power = -0.15
-            extensionMotorRight.power = -0.15
+            while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L)
+            {
+                extensionMotorLeft.power = -0.20
+                extensionMotorRight.power = -0.20
+            }
         }
 
         extensionMotorLeft.power = 0.0
@@ -133,6 +136,9 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
 
         intakeClawRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawRight")
         intakeClawRight.position = IntakeState.Closed.positionRight
+
+        outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
+        outtakeRotationRight.position = OuttakeRotationState.Transfer.position
 
         /*hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
         hangLeft.pwmRange = PwmRange(500.0, 2500.0)
