@@ -9,11 +9,12 @@ import java.util.concurrent.CompletableFuture
 
 class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    val slides = with(PIDFConfig(0.004, 0.0, 0.0)) {
+    val slides = with(PIDFConfig(0.0025, 0.0, 0.0)) {
         ManagedMotorGroup(
             this@Extension,
             PIDCoefficients(kP, kI, kD),
-            kV, kA, kStatic,
+            kV, kA,
+            .15,
             /*kF = { position, target, velocity ->
                 val error = position - target
                 if (error > 10 && error < 50) { // If extendo is close to being fully retracted, pull harder

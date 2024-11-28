@@ -68,7 +68,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                 if (intakeComposite.state == InteractionCompositeState.Pickup)
                 {
                     val wantedPower = -opMode.gamepad2.left_trigger + opMode.gamepad2.right_trigger
-                    if (wantedPower.absoluteValue > 0.1 && !extension.slides.isTravelling())
+                    if (wantedPower.absoluteValue > 0.1/* && !extension.slides.isTravelling()*/)
                     {
                         if (wantedPower < 0)
                         {
@@ -77,7 +77,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())))
+                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 12)
                             }
                         } else
                         {
@@ -86,7 +86,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())))
+                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 12)
                             }
                         }
                     } else if (!extension.slides.isTravelling())

@@ -16,6 +16,7 @@ import org.riverdell.robotics.subsystems.intake.v4b.CoaxialState
 import org.riverdell.robotics.subsystems.intake.v4b.V4BState
 import org.riverdell.robotics.subsystems.outtake.OuttakeClawState
 import org.riverdell.robotics.subsystems.outtake.OuttakeRotationState
+import kotlin.math.absoluteValue
 
 class HypnoticRobotHardware(private val opMode: LinearOpMode)
 {
@@ -81,10 +82,10 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         outtakeClaw.position = OuttakeClawState.Closed.position
 
         var start = System.currentTimeMillis()
-        while (liftMotorLeft.velocity > 0.1 || System.currentTimeMillis() - start < 500L)
+        while (liftMotorLeft.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L)
         {
-            liftMotorLeft.power = -0.8
-            liftMotorRight.power = -0.8
+            liftMotorLeft.power = -0.3
+            liftMotorRight.power = -0.3
         }
 
         liftMotorLeft.power = 0.0
@@ -106,10 +107,10 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         intakeV4BRight.position = V4BState.UnlockedIdleHover.position
 
         start = System.currentTimeMillis()
-        while (extensionMotorRight.velocity > 0.1 || System.currentTimeMillis() - start < 500L)
+        while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L)
         {
-            extensionMotorLeft.power = -0.8
-            extensionMotorRight.power = -0.8
+            extensionMotorLeft.power = -0.15
+            extensionMotorRight.power = -0.15
         }
 
         extensionMotorLeft.power = 0.0

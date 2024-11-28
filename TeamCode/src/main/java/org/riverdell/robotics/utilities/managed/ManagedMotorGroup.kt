@@ -4,13 +4,12 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients
 import com.acmerobotics.roadrunner.control.PIDFController
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.util.ElapsedTime
 import io.liftgate.robotics.mono.states.StateHolder
 import io.liftgate.robotics.mono.states.StateResult
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
+import kotlin.math.sign
 
 class ManagedMotorGroup(
     stateHolder: StateHolder,
@@ -176,6 +175,8 @@ class ManagedMotorGroup(
 
     fun supplyPowerToAll(power: Double)
     {
+        cancel()
+
         master.power = power
         slaves.forEach { slave ->
             slave.power = power

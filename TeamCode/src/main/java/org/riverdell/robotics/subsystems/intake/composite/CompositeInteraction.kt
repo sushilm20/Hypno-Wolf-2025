@@ -44,7 +44,8 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
     fun initialOuttakeFromRest(preferredLevel: OuttakeLevel = OuttakeLevel.Bar1) = stateMachineRestrict(
         InteractionCompositeState.Rest,
-        InteractionCompositeState.Outtaking
+        InteractionCompositeState.Outtaking,
+        ignoreInProgress = true
     ) {
         outtakeLevel = preferredLevel
         robot.outtake.depositRotation()
@@ -56,12 +57,11 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
     fun initialOuttake(preferredLevel: OuttakeLevel = OuttakeLevel.Bar1) = stateMachineRestrict(
         InteractionCompositeState.OuttakeReady,
-        InteractionCompositeState.Outtaking
+        InteractionCompositeState.Outtaking,
+        ignoreInProgress = true
     ) {
         outtakeLevel = preferredLevel
-        CompletableFuture.allOf(
-            robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
-        )
+        CompletableFuture.allOf(robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel))
     }
 
     fun outtakeCompleteAndRestSimple() = stateMachineRestrict(
@@ -226,6 +226,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
     private fun stateMachineRestrict(
         from: InteractionCompositeState, to: InteractionCompositeState,
+        ignoreInProgress: Boolean = false,
         supplier: HypnoticRobot.() -> CompletableFuture<Void>
     ): CompletableFuture<Void>
     {
@@ -234,14 +235,24 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             return CompletableFuture.completedFuture(null)
         }
 
-        state = InteractionCompositeState.InProgress
+        if (!ignoreInProgress)
+        {
+            state = InteractionCompositeState.InProgress
+        } else
+        {
+            state = to
+        }
+
         attemptedState = to
         attemptTime = System.currentTimeMillis()
 
         return supplier(robot)
             .whenComplete { _, exception ->
                 exception.printStackTrace()
-                state = to
+                if (!ignoreInProgress)
+                {
+                    state = to
+                }
             }
     }
 
