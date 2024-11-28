@@ -1,7 +1,6 @@
 package org.riverdell.robotics.teleop
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import io.liftgate.robotics.mono.Mono.commands
 import io.liftgate.robotics.mono.gamepad.ButtonType
 import org.riverdell.robotics.HypnoticOpMode
@@ -15,18 +14,14 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sign
 
-@TeleOp(
-    name = "Multiplayer",
-    group = "Drive"
-)
-class HypnoticTeleOp : HypnoticOpMode()
+abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMode()
 {
-    class TeleOpRobot(opMode: HypnoticOpMode) : HypnoticRobot(opMode)
+    class TeleOpRobot(private val teleOp: HypnoticTeleOp) : HypnoticRobot(teleOp)
     {
-        private val gp1Commands by lazy { commands(opMode.gamepad1) }
-        private val gp2Commands by lazy { commands(opMode.gamepad2) }
+        private val gp1Commands by lazy { commands(teleOp.gamepad1) }
+        private val gp2Commands by lazy { commands(if (teleOp.solo) teleOp.gamepad1 else teleOp.gamepad2) }
 
-        val visionPipeline by lazy { VisionPipeline(opMode) }
+        val visionPipeline by lazy { VisionPipeline(teleOp) }
 
         override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands /*visionPipeline*/)
         override fun initialize()
@@ -38,7 +33,7 @@ class HypnoticTeleOp : HypnoticOpMode()
             multipleTelemetry.addLine("Configured all subsystems. Waiting for start...")
             multipleTelemetry.update()
 
-            while (!opMode.isStarted)
+            while (!teleOp.isStarted)
             {
                 runPeriodics()
             }
@@ -46,19 +41,20 @@ class HypnoticTeleOp : HypnoticOpMode()
 
         override fun opModeStart()
         {
-            val robotDriver = GamepadEx(opMode.gamepad1)
+            val robotDriver = GamepadEx(teleOp.gamepad1)
             buildCommands()
 
             multipleTelemetry.addLine("Started!")
             multipleTelemetry.update()
 
             var loopTime: Long
-            while (opMode.opModeIsActive())
+            while (teleOp.opModeIsActive())
             {
                 loopTime = System.nanoTime()
                 runPeriodics()
 
-                val multiplier = 0.5 + opMode.gamepad1.right_trigger * 0.5
+                val multiplier = 0.5 + if (intakeComposite.state == InteractionCompositeState.Pickup)
+                    0.0 else (teleOp.gamepad1.right_trigger * 0.5)
                 drivetrain.driveRobotCentric(robotDriver, multiplier)
 
                 gp1Commands.run()
@@ -66,7 +62,8 @@ class HypnoticTeleOp : HypnoticOpMode()
 
                 if (intakeComposite.state == InteractionCompositeState.Pickup)
                 {
-                    val wantedPower = -opMode.gamepad2.left_trigger + opMode.gamepad2.right_trigger
+                    val gamepadTarget = if (teleOp.solo) teleOp.gamepad1 else teleOp.gamepad2
+                    val wantedPower = -gamepadTarget.left_trigger + gamepadTarget.right_trigger
                     if (wantedPower.absoluteValue > 0.1/* && !extension.slides.isTravelling()*/)
                     {
                         if (wantedPower < 0)
@@ -108,9 +105,9 @@ class HypnoticTeleOp : HypnoticOpMode()
                     }
                 }
 
-                opMode.telemetry.addData("Loop Refresh Rate ", 1000000000 / (System.nanoTime() - loopTime).toDouble())
-                opMode.telemetry.addEssentialLines()
-                opMode.telemetry.update()
+                teleOp.telemetry.addData("Loop Refresh Rate ", 1000000000 / (System.nanoTime() - loopTime).toDouble())
+                teleOp.telemetry.addEssentialLines()
+                teleOp.telemetry.update()
             }
         }
 
