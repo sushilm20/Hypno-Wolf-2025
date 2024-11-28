@@ -16,7 +16,6 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
         motionProfiledServo(robot.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
 
     var intakeState = IntakeState.Closed
-    var lockState = IntakeState.Lock
     var wristState = WristState.Lateral
 
     private var dynamicPosition = 0.5
@@ -26,7 +25,6 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
         if (wideOpen) IntakeState.WideOpen else IntakeState.Open
     )
     fun closeIntake() = setIntake(IntakeState.Closed)
-    fun lockIntake() = setIntake(IntakeState.Lock)
 
     fun setIntake(state: IntakeState) = let {
         if (intakeState == state)

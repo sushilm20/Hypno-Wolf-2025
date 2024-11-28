@@ -69,7 +69,6 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
         CompletableFuture.allOf(
             robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
-                .exceptionally { return@exceptionally null }
         )
     }
 
@@ -79,8 +78,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         ignoreInProgress = true
     ) {
         outtakeLevel = preferredLevel
-        CompletableFuture.allOf(robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
-            .exceptionally { return@exceptionally null })
+        CompletableFuture.allOf(robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel))
     }
 
     fun outtakeCompleteAndReturnToOuttakeReady() = stateMachineRestrict(
@@ -108,6 +106,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         InteractionCompositeState.Rest,
         ignoreInProgress = true
     ) {
+        robot.outtake.openClaw()
         CompletableFuture.allOf(
             robot.outtake.transferRotation(),
             robot.lift.extendToAndStayAt(0)
@@ -174,6 +173,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         stateMachineRestrict(InteractionCompositeState.Pickup, InteractionCompositeState.Confirm) {
             intakeV4B.v4bSamplePickup().thenRunAsync {
                 intake.closeIntake()
+                Thread.sleep(125L)
 
                 CompletableFuture.allOf(
                     intakeV4B.v4bIntermediate(),
@@ -201,7 +201,6 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             InteractionCompositeState.Confirm,
             InteractionCompositeState.OuttakeReady
         ) {
-            intake.lockIntake()
             intakeV4B.v4bTransfer()
                 .thenRunAsync {
                     CompletableFuture.allOf(
@@ -210,7 +209,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                     ).join()
 
                     intakeV4B.coaxialTransfer().join()
-                    extension.extendToAndStayAt(50).join()
+                    extension.extendToAndStayAt(10).join()
 
                     outtake.closeClaw()
                     Thread.sleep(150)
