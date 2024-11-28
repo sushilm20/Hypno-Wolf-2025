@@ -12,7 +12,7 @@ class PurePursuitPath(vararg waypointLikes: WaypointLike)
             if (waypointLike is ActionWaypoint)
             {
                 val prev = waypointLikes.getOrNull(index - 1)
-                if (prev is PositionWaypoint)
+                if (prev is PositionWaypoint || prev is PoseWaypoint)
                 {
                     waypointLike.afterIndex = prev.id
                 } else
