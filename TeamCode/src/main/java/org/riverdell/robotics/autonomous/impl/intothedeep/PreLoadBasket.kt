@@ -18,13 +18,23 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     val startPoseHypnotic = Pose(startPose.x, startPose.y, startPose.heading)
     opMode.robot.drivetrain.localizer.poseEstimate = startPose
 
+    var preLoadCompleted = false
     fun ExecutionGroup.depositToHighBasket()
     {
         single("high basket deposit") {
             navigateTo(Pose(19.0, 33.0, 45.degrees))
-            opMode.robot.intakeComposite
-                .initialOuttakeFromRest(OuttakeLevel.HighBasket)
-                .join()
+            if (!preLoadCompleted)
+            {
+                preLoadCompleted = true
+                opMode.robot.intakeComposite
+                    .initialOuttakeFromRest(OuttakeLevel.HighBasket)
+                    .join()
+            } else
+            {
+                opMode.robot.intakeComposite
+                    .initialOuttake(OuttakeLevel.HighBasket)
+                    .join()
+            }
 
             navigateTo(Pose(16.0, 35.0, 45.degrees))
             opMode.robot.intakeComposite.outtakeCompleteAndReturnToOuttakeReady()
