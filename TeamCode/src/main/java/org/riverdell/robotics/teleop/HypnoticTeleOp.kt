@@ -9,7 +9,6 @@ import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.subsystems.intake.composite.InteractionCompositeState
 import org.riverdell.robotics.subsystems.intake.composite.IntakeConfig
-import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -77,7 +76,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 8)
+                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 6)
                             }
                         } else
                         {
@@ -86,7 +85,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                                 extension.slides.supplyPowerToAll(0.0)
                             } else
                             {
-                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 8)
+                                extension.slides.supplyPowerToAll((wantedPower.toDouble().pow(2) * sign(wantedPower.toDouble())) / 6)
                             }
                         }
                     } else if (!extension.slides.isTravelling())
@@ -110,22 +109,7 @@ class HypnoticTeleOp : HypnoticOpMode()
                 }
 
                 opMode.telemetry.addData("Loop Refresh Rate ", 1000000000 / (System.nanoTime() - loopTime).toDouble())
-
-                opMode.telemetry.addLine("Intake State: ${intake.intakeState}")
-                opMode.telemetry.addLine("Wrist State: ${intake.wristState}")
-                opMode.telemetry.addLine("4BR State: ${intakeV4B.v4bState}")
-                opMode.telemetry.addLine("Coaxial State: ${intakeV4B.coaxialState}")
-                opMode.telemetry.addLine("Composite State: ${intakeComposite.state}")
-
-                opMode.telemetry.addLine("LIFT Left Position: ${hardware.liftMotorLeft.currentPosition}")
-                opMode.telemetry.addLine("LIFT Left Power: ${hardware.liftMotorLeft.power}")
-                opMode.telemetry.addLine("LIFT Right Position: ${hardware.liftMotorRight.currentPosition}")
-                opMode.telemetry.addLine("LIFT Right Power: ${hardware.liftMotorRight.power}")
-
-                opMode.telemetry.addLine("EXTENDO Left Position: ${hardware.extensionMotorLeft.currentPosition}")
-                opMode.telemetry.addLine("EXTENDO Left Power: ${hardware.extensionMotorLeft.power}")
-                opMode.telemetry.addLine("EXTENDO Right Position: ${hardware.extensionMotorRight.currentPosition}")
-                opMode.telemetry.addLine("EXTENDO Right Power: ${hardware.extensionMotorRight.power}")
+                opMode.telemetry.addEssentialLines()
                 opMode.telemetry.update()
             }
         }
@@ -168,14 +152,14 @@ class HypnoticTeleOp : HypnoticOpMode()
                where(ButtonType.DPadLeft)
                    .onlyWhen { intakeComposite.state == InteractionCompositeState.OuttakeReady }
                    .triggers {
-                       intakeComposite.cancelOuttakeReadyToRest()
+                       intakeComposite.exitOuttakeReadyToRest()
                    }
                    .whenPressedOnce()
 
                where(ButtonType.DPadRight)
                    .onlyWhen { intakeComposite.state == InteractionCompositeState.Outtaking }
                    .triggers {
-                       intakeComposite.outtakeCompleteAndRestSimple()
+                       intakeComposite.outtakeCompleteAndReturnToOuttakeReady()
                    }
                    .whenPressedOnce()
 
@@ -186,29 +170,17 @@ class HypnoticTeleOp : HypnoticOpMode()
                    }
                    .whenPressedOnce()
 
+               where(ButtonType.DPadDown)
+                   .onlyWhen { intakeComposite.state == InteractionCompositeState.Outtaking }
+                   .triggers {
+                       intakeComposite.outtakePrevious()
+                   }
+                   .whenPressedOnce()
+
                where(ButtonType.DPadUp)
                    .onlyWhen { intakeComposite.state == InteractionCompositeState.OuttakeReady }
                    .triggers {
                        intakeComposite.initialOuttake()
-                   }
-                   .whenPressedOnce()
-
-               where(ButtonType.DPadDown)
-                   .onlyWhen {
-                       intakeComposite.state == InteractionCompositeState.Outtaking &&
-                               intakeComposite.outtakeLevel != OuttakeLevel.HighBasket
-                   }
-                   .triggers {
-                       intakeComposite.outtakeCompleteAndRest()
-                   }
-                   .whenPressedOnce()
-
-               where(ButtonType.DPadDown)
-                   .onlyWhen {
-                       intakeComposite.state == InteractionCompositeState.OuttakeReady
-                   }
-                   .triggers {
-                       intakeComposite.outtakeAndRest()
                    }
                    .whenPressedOnce()
 

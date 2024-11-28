@@ -1,6 +1,8 @@
 package org.riverdell.robotics.autonomous.impl.intothedeep
 
+import com.acmerobotics.roadrunner.geometry.Pose2d
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import io.liftgate.robotics.mono.pipeline.ExecutionGroup
 import io.liftgate.robotics.mono.pipeline.simultaneous
 import io.liftgate.robotics.mono.pipeline.single
 import org.riverdell.robotics.autonomous.HypnoticAuto
@@ -12,24 +14,28 @@ import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 
 @Autonomous(name = "4+0 Basket & Park", group = "Test")
 class PreLoadBasket : HypnoticAuto({ opMode ->
-    fun depositToHighBasket()
+    val startPose = Pose2d(0.0, 0.0, 0.degrees)
+    val startPoseHypnotic = Pose(startPose.x, startPose.y, startPose.heading)
+    opMode.robot.drivetrain.localizer.poseEstimate = startPose
+
+    fun ExecutionGroup.depositToHighBasket()
     {
         single("high basket deposit") {
-            navigateTo(Pose(-83.0, 28.0, 128.degrees))
+            navigateTo(Pose(19.0, 33.0, 45.degrees))
             opMode.robot.intakeComposite
                 .initialOuttakeFromRest(OuttakeLevel.HighBasket)
                 .join()
 
-            navigateTo(Pose(-83.0, 20.0, 128.degrees))
-            opMode.robot.intakeComposite.outtakeCompleteAndRestSimple()
+            navigateTo(Pose(16.0, 35.0, 45.degrees))
+            opMode.robot.intakeComposite.outtakeCompleteAndReturnToOuttakeReady()
             Thread.sleep(350L)
 
-            navigateTo(Pose(-75.0, 27.0, 128.degrees))
-            opMode.robot.intakeComposite.cancelOuttakeReadyToRest().join()
+            navigateTo(Pose(15.0, 30.0, 90.degrees))
+            opMode.robot.intakeComposite.exitOuttakeReadyToRest()
         }
     }
 
-    fun prepareForIntake(
+    fun ExecutionGroup.prepareForIntake(
         at: Pose,
         wristState: WristState = WristState.Lateral,
         submersible: Boolean = false,
@@ -52,8 +58,10 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
 
                 single("prepare for pickup") {
                     opMode.robot.intakeComposite
-                        .prepareForPickup(wristState)
+                        .prepareForPickup(wristState, wideOpen = true)
                         .join()
+
+                    Thread.sleep(1000L)
                 }
             }
         } else
@@ -70,7 +78,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
         }
     }
 
-    fun confirmIntakeAndTransfer()
+    fun ExecutionGroup.confirmIntakeAndTransfer()
     {
         single("confirm intake") {
             opMode.robot.intakeComposite
@@ -87,7 +95,9 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     depositToHighBasket()
 
     val pickupPositions = listOf(
-        GroundPickupPosition(pose = Pose(-82.2, 28.6, 180.degrees)),
+        GroundPickupPosition(pose = Pose(20.0, 33.0, 90.degrees)),
+        GroundPickupPosition(pose = Pose(20.0, 50.0, 90.degrees)),
+        GroundPickupPosition(pose = Pose(47.0, 24.0, 180.degrees), wristState = WristState.Perpendicular),
         // TODO: add 2nd, and 3rd ground sample poses & wrist states
     )
 
@@ -102,7 +112,6 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     }
 
     single("park near submersible") {
-        // TODO: change submersible park pose
-        navigateTo(Pose(0.0, 0.0, 0.0))
+        navigateTo(startPoseHypnotic)
     }
 })

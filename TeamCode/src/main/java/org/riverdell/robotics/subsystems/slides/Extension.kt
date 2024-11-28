@@ -14,7 +14,7 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
             this@Extension,
             PIDCoefficients(kP, kI, kD),
             kV, kA,
-            .15,
+            .1,
             /*kF = { position, target, velocity ->
                 val error = position - target
                 if (error > 10 && error < 50) { // If extendo is close to being fully retracted, pull harder
@@ -26,7 +26,7 @@ class Extension(val robot: HypnoticRobot) : AbstractSubsystem()
             },*/
             master = robot.hardware.extensionMotorRight,
             slaves = listOf(robot.hardware.extensionMotorLeft)
-        ).withTimeout(5000L)
+        ).withTimeout(1500L)
     }
 
     fun extendToAndStayAt(position: Int) = slides.goTo(position)

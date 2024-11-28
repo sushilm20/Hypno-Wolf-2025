@@ -22,7 +22,9 @@ class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
     private var dynamicPosition = 0.5
     fun currentDynamicPosition() = dynamicPosition
 
-    fun openIntake() = setIntake(IntakeState.Open)
+    fun openIntake(wideOpen: Boolean = false) = setIntake(
+        if (wideOpen) IntakeState.WideOpen else IntakeState.Open
+    )
     fun closeIntake() = setIntake(IntakeState.Closed)
     fun lockIntake() = setIntake(IntakeState.Lock)
 

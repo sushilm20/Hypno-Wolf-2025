@@ -7,6 +7,7 @@ import io.liftgate.robotics.mono.Mono
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.hang.Hang
 import org.riverdell.robotics.subsystems.slides.Extension
@@ -53,6 +54,25 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
             .forEach { it.allPeriodic() }
     }
 
+    fun Telemetry.addEssentialLines()
+    {
+        addLine("Intake State: ${intake.intakeState}")
+        addLine("Wrist State: ${intake.wristState}")
+        addLine("4BR State: ${intakeV4B.v4bState}")
+        addLine("Coaxial State: ${intakeV4B.coaxialState}")
+        addLine("Composite State: ${intakeComposite.state}")
+
+        addLine("LIFT Left Position: ${hardware.liftMotorLeft.currentPosition}")
+        addLine("LIFT Left Power: ${hardware.liftMotorLeft.power}")
+        addLine("LIFT Right Position: ${hardware.liftMotorRight.currentPosition}")
+        addLine("LIFT Right Power: ${hardware.liftMotorRight.power}")
+
+        addLine("EXTENDO Left Position: ${hardware.extensionMotorLeft.currentPosition}")
+        addLine("EXTENDO Left Power: ${hardware.extensionMotorLeft.power}")
+        addLine("EXTENDO Right Position: ${hardware.extensionMotorRight.currentPosition}")
+        addLine("EXTENDO Right Power: ${hardware.extensionMotorRight.power}")
+    }
+    
     open fun additionalSubSystems(): List<AbstractSubsystem>
     {
         return emptyList()

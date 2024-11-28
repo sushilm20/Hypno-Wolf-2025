@@ -8,5 +8,5 @@ enum class V4BState(val position: Double)
     Intermediate(0.5),
     Gateway(0.905),
 //    Focus(0.73),
-    Pickup(1.0) //0.935
+    Pickup(0.95) //0.935
 }

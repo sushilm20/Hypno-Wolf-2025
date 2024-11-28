@@ -5,8 +5,6 @@ import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 import java.util.concurrent.CompletableFuture
-import kotlin.math.max
-import kotlin.math.min
 
 class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
@@ -29,6 +27,24 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
         outtakeLevel = outtakeLevel.next()!!
         return robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
+            .exceptionally { return@exceptionally null }
+    }
+
+    fun outtakePrevious(): CompletableFuture<*>
+    {
+        if (state != InteractionCompositeState.Outtaking)
+        {
+            return CompletableFuture.completedFuture(null)
+        }
+
+        if (outtakeLevel.previous() == null)
+        {
+            return CompletableFuture.completedFuture(null)
+        }
+
+        outtakeLevel = outtakeLevel.previous()!!
+        return robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
+            .exceptionally { return@exceptionally null }
     }
 
     fun outtakeLevel(newLevel: OuttakeLevel): CompletableFuture<*>
@@ -40,6 +56,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
         outtakeLevel = newLevel
         return robot.lift.extendToAndStayAt(newLevel.encoderLevel)
+            .exceptionally { return@exceptionally null }
     }
 
     fun initialOuttakeFromRest(preferredLevel: OuttakeLevel = OuttakeLevel.Bar1) = stateMachineRestrict(
@@ -52,6 +69,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
         CompletableFuture.allOf(
             robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
+                .exceptionally { return@exceptionally null }
         )
     }
 
@@ -61,30 +79,17 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         ignoreInProgress = true
     ) {
         outtakeLevel = preferredLevel
-        CompletableFuture.allOf(robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel))
+        CompletableFuture.allOf(robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
+            .exceptionally { return@exceptionally null })
     }
 
-    fun outtakeCompleteAndRestSimple() = stateMachineRestrict(
+    fun outtakeCompleteAndReturnToOuttakeReady() = stateMachineRestrict(
         InteractionCompositeState.Outtaking,
         InteractionCompositeState.OuttakeReady
     ) {
         CompletableFuture.runAsync {
             outtake.openClaw()
         }
-    }
-
-    fun outtakeCompleteAndRest() = stateMachineRestrict(
-        InteractionCompositeState.Outtaking,
-        InteractionCompositeState.Rest
-    ) {
-        robot.lift.extendToAndStayAt(0)
-
-        outtake.forceRotation()
-        outtake.openClaw()
-
-        CompletableFuture.allOf(
-            outtake.transferRotation()
-        )
     }
 
     fun wallOuttakeFromRest() =
@@ -98,12 +103,12 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             )
         }
 
-    fun cancelOuttakeReadyToRest() = stateMachineRestrict(
+    fun exitOuttakeReadyToRest() = stateMachineRestrict(
         InteractionCompositeState.OuttakeReady,
-        InteractionCompositeState.Rest
+        InteractionCompositeState.Rest,
+        ignoreInProgress = true
     ) {
         CompletableFuture.allOf(
-            robot.outtake.openClaw(),
             robot.outtake.transferRotation(),
             robot.lift.extendToAndStayAt(0)
         )
@@ -133,6 +138,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             InteractionCompositeState.OuttakeReady,
             InteractionCompositeState.Rest
         ) {
+
             outtake.forceRotation()
                 .thenRunAsync {
                     Thread.sleep(300L)
@@ -141,7 +147,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 }
         }
 
-    fun prepareForPickup(wristState: WristState = WristState.Lateral) =
+    fun prepareForPickup(wristState: WristState = WristState.Lateral, wideOpen: Boolean = false) =
         stateMachineRestrict(InteractionCompositeState.Rest, InteractionCompositeState.Pickup) {
             intakeV4B.v4bUnlock()
                 .thenAcceptAsync {
@@ -157,7 +163,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                         intakeV4B.v4bSampleGateway(),
                         intakeV4B.coaxialIntake()
                             .thenCompose {
-                                intake.openIntake()
+                                intake.openIntake(wideOpen)
                             },
                         intake.setWrist(wristState)
                     ).join()
@@ -204,7 +210,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                     ).join()
 
                     intakeV4B.coaxialTransfer().join()
-                    extension.extendToAndStayAt(80).join()
+                    extension.extendToAndStayAt(60).join()
 
                     outtake.closeClaw()
                     Thread.sleep(150)
@@ -248,7 +254,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
         return supplier(robot)
             .whenComplete { _, exception ->
-                exception.printStackTrace()
+                exception?.printStackTrace()
                 if (!ignoreInProgress)
                 {
                     state = to

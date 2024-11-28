@@ -125,6 +125,7 @@ abstract class HypnoticAuto(
 //                       PositionChangeAction.xController.period
 //                   )
 
+                   multipleTelemetry.addEssentialLines()
                    multipleTelemetry.update()
                }
            }
