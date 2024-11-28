@@ -111,14 +111,16 @@ abstract class HypnoticAuto(
 //                       PositionChangeAction.yController.velocityError
 //                   )
 //
-                   multipleTelemetry.addData(
-                       "X Velocity Error",
-                       PositionChangeAction.xController.averageVelocity
-                   )
-                   multipleTelemetry.addData(
-                       "Y Velocity Error",
-                       PositionChangeAction.yController.averageVelocity
-                   )
+                   kotlin.runCatching {
+                       multipleTelemetry.addData(
+                           "X Velocity Error",
+                           PositionChangeAction.xController.averageVelocity
+                       )
+                       multipleTelemetry.addData(
+                           "Y Velocity Error",
+                           PositionChangeAction.yController.averageVelocity
+                       )
+                   }
 //
 //                   multipleTelemetry.addData(
 //                       "Period",

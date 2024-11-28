@@ -64,7 +64,7 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
                 {
                     val gamepadTarget = if (teleOp.solo) teleOp.gamepad1 else teleOp.gamepad2
                     val wantedPower = -gamepadTarget.left_trigger + gamepadTarget.right_trigger
-                    if (wantedPower.absoluteValue > 0.1/* && !extension.slides.isTravelling()*/)
+                    if (wantedPower.absoluteValue > 0.1 && !extension.slides.isTravelling())
                     {
                         if (wantedPower < 0)
                         {
