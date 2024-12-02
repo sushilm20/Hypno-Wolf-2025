@@ -30,11 +30,11 @@ class VisionPipeline(
             .setCamera(
                 opMode.hardwareMap["webcam"] as WebcamName
             )
-            .setCameraResolution(Size(640, 480))
+            .setCameraResolution(Size(3264, 2448))
             .enableLiveView(true)
             .setAutoStopLiveView(true)
             .addProcessors(sampleDetection)
-            .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+            .setStreamFormat(VisionPortal.StreamFormat.YUY2)
             .build()
 
         FtcDashboard.getInstance().startCameraStream(

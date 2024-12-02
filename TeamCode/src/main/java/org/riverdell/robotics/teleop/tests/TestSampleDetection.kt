@@ -19,7 +19,7 @@ class TestSampleDetection : LinearOpMode()
             return
         }
 
-        visionPipeline.start()
+        visionPipeline.doInitialize()
 
         while (opModeIsActive())
         {

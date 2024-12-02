@@ -16,7 +16,7 @@ import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
 import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 
-@Autonomous(name = "4+0 Basket & Park", group = "Test")
+@Autonomous(name = "4+0 Basket & hors", group = "Test")
 class PreLoadBasket : HypnoticAuto({ opMode ->
     val startPose = Pose2d(0.0, 0.0, 0.degrees)
     val startPoseHypnotic = Pose(startPose.x, startPose.y, startPose.heading)
@@ -25,7 +25,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     var preLoadCompleted = false
     fun ExecutionGroup.depositToHighBasket() {
         single("high basket deposit") {
-            navigateTo(Pose(22.0, 25.0, 45.degrees))
+            navigateTo(Pose(21.55, 27.81, 45.degrees))
             if (!preLoadCompleted) {
                 preLoadCompleted = true
                 opMode.robot.intakeComposite
@@ -37,7 +37,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                     .join()
             }
 
-            navigateTo(Pose(16.0, 32.0, 45.degrees))
+            navigateTo(Pose(13.27, 31.23, 45.degrees))
             opMode.robot.intakeComposite.outtakeCompleteAndReturnToOuttakeReady().join()
         }
     }
@@ -57,14 +57,10 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
          */
         if (!submersible) {
             single("navigate to pickup position") {
-                purePursuitNavigateTo(
-                    PoseWaypoint(Pose(22.0, 25.0, 45.degrees), 25.0),
-                    ActionWaypoint {
-                        opMode.robot.intakeComposite.exitOuttakeReadyToRest()
-                        opMode.robot.intakeComposite.prepareForPickup(wristState, wideOpen = true)
-                    },
-                    PoseWaypoint(at, 25.0)
-                )
+                navigateTo(Pose(22.0, 25.0, 45.degrees))
+                opMode.robot.intakeComposite.exitOuttakeReadyToRest()
+                opMode.robot.intakeComposite.prepareForPickup(wristState, wideOpen = true)
+                navigateTo(at)
 
                 Thread.sleep(1000L)
             }
@@ -98,13 +94,12 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     depositToHighBasket()
 
     val pickupPositions = listOf(
-        GroundPickupPosition(pose = Pose(25.0, 35.0, 90.degrees)),
-        GroundPickupPosition(pose = Pose(25.0, 50.0, 90.degrees)),
+        GroundPickupPosition(pose = Pose(23.33, 34.33, 90.degrees)),
+        GroundPickupPosition(pose = Pose(23.33, 50.51, 90.degrees)),
         GroundPickupPosition(
-            pose = Pose(47.0, 24.0, 180.degrees),
+            pose = Pose(44.98, 33.8, 180.degrees),
             wristState = WristState.Perpendicular
         ),
-        // TODO: add 2nd, and 3rd ground sample poses & wrist states
     )
 
     // ground pickup positions

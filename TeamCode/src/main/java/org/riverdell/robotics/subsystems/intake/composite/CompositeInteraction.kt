@@ -171,16 +171,17 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
     fun intakeAndConfirm() =
         stateMachineRestrict(InteractionCompositeState.Pickup, InteractionCompositeState.Confirm) {
+//            intakeV4B.coaxialPickup()
             intakeV4B.v4bSamplePickup().thenRunAsync {
+                Thread.sleep(125L)
                 intake.closeIntake()
                 Thread.sleep(125L)
 
                 CompletableFuture.allOf(
                     intakeV4B.v4bIntermediate(),
-                    intakeV4B.coaxialIntermediate()
+                    intakeV4B.coaxialIntermediate(),
+                    intake.setWrist(WristState.Lateral)
                 ).join()
-
-                intake.setWrist(WristState.Lateral)
             }
         }
 
@@ -204,7 +205,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             intakeV4B.v4bTransfer()
                 .thenRunAsync {
                     CompletableFuture.allOf(
-                        extension.extendToAndStayAt(135),
+                        extension.extendToAndStayAt(160),
                         intakeV4B.coaxialRest()
                     ).join()
 
