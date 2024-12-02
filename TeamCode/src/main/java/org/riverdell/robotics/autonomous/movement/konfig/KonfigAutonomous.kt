@@ -8,9 +8,6 @@ import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.navigatePurePursuit
 import org.riverdell.robotics.autonomous.movement.navigateToPosition
 import org.riverdell.robotics.autonomous.movement.navigateGVF
-import org.riverdell.robotics.autonomous.movement.purepursuit.ActionWaypoint
-import org.riverdell.robotics.autonomous.movement.purepursuit.PoseWaypoint
-import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
 
 abstract class KonfigAutonomous(
     private val konfigID: String,

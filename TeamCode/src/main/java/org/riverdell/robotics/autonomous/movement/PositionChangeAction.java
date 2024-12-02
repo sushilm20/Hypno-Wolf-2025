@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import org.riverdell.robotics.autonomous.HypnoticAuto;
 import org.riverdell.robotics.autonomous.movement.geometry.Pose;
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig;
-import org.riverdell.robotics.autonomous.movement.purepursuit.PathAlgorithm;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

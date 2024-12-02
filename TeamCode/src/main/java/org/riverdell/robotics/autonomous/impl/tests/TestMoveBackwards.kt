@@ -7,8 +7,6 @@ import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.navigateTo
 import org.riverdell.robotics.autonomous.movement.purePursuitNavigateTo
-import org.riverdell.robotics.autonomous.movement.purepursuit.ActionWaypoint
-import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
 
 @Autonomous(name = "Test | Move Backwards", group = "Test")
 class TestMoveBackwards : HypnoticAuto({ opMode ->

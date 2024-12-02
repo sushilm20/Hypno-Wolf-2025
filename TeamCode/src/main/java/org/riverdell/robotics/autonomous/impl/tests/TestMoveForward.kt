@@ -8,7 +8,6 @@ import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.navigatePurePursuit
 import org.riverdell.robotics.autonomous.movement.navigateToPosition
 import org.riverdell.robotics.autonomous.movement.purePursuitNavigateTo
-import org.riverdell.robotics.autonomous.movement.purepursuit.PositionWaypoint
 
 @Autonomous(name = "Test | Move Forward", group = "Test")
 class TestMoveForward : HypnoticAuto({ opMode ->

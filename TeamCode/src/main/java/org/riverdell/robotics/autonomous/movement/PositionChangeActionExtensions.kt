@@ -6,8 +6,8 @@ import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.geometry.CubicBezierCurve
 import org.riverdell.robotics.autonomous.movement.guidedvectorfield.GuidedVectorFieldPositionChangeAction
 import org.riverdell.robotics.autonomous.movement.guidedvectorfield.Vector2D
-import org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPositionChangeAction
 import org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPath
+import org.riverdell.robotics.autonomous.movement.purepursuit.PurePursuitPositionChangeAction
 import org.riverdell.robotics.autonomous.movement.purepursuit.WaypointLike
 
 val Double.degrees: Double
@@ -86,8 +86,6 @@ fun RootExecutionGroup.navigatePurePursuit(
     configure: PositionChangeAction.() -> Unit = { }
 )
 {
-
-
     single("PurePursuit navigation with ${waypoints.size} waypoints") {
         val command =
             PurePursuitPositionChangeAction(

@@ -9,7 +9,6 @@ import org.riverdell.robotics.autonomous.movement.cubicBezier
 import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.navigateGVF
 import org.riverdell.robotics.autonomous.movement.purePursuitNavigateTo
-import org.riverdell.robotics.autonomous.movement.purepursuit.PoseWaypoint
 
 @Autonomous(name = "Pose HORS", group = "Test")
 class TestGVF : HypnoticAuto({ _ ->

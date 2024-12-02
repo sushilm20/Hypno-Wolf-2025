@@ -1,4 +1,4 @@
-package org.riverdell.robotics.autonomous.movement.purepursuit
+package org.riverdell.robotics.autonomous.movement
 
 import org.riverdell.robotics.autonomous.movement.geometry.Pose
 
