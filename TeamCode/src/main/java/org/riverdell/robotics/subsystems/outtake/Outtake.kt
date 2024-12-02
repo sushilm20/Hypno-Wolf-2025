@@ -10,10 +10,13 @@ import java.util.concurrent.CompletableFuture
 class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     private val claw = motionProfiledServo(robot.hardware.outtakeClaw, Constraint.HALF.scale(10.5))
-//    private val leftRotation = motionProfiledServo(robot.hardware.outtakeRotationLeft, Constraint.HALF.scale(10.5))
-    private val rightRotation = motionProfiledServo(robot.hardware.outtakeRotationRight, Constraint.HALF.scale(10.5))
+
+    private val coaxial = motionProfiledServo(robot.hardware.outtakeCoaxial, Constraint.HALF.scale(20.5))
+    private val leftRotation = motionProfiledServo(robot.hardware.outtakeRotationLeft, Constraint.HALF.scale(20.5))
+    private val rightRotation = motionProfiledServo(robot.hardware.outtakeRotationRight, Constraint.HALF.scale(20.5))
 
     var clawState = OuttakeClawState.Closed
+    var coaxialState = OuttakeCoaxialState.Transfer
     var rotationState = OuttakeRotationState.Transfer
 
     fun transferRotation() = setRotation(OuttakeRotationState.Transfer)
@@ -49,11 +52,29 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
         return clawRotateTo(clawState.position)
     }
 
+    fun transferCoaxial() = setCoaxial(OuttakeCoaxialState.Transfer)
+    fun depositCoaxial() = setCoaxial(OuttakeCoaxialState.Deposit)
+    fun outsideIntakeCoaxial() = setCoaxial(OuttakeCoaxialState.OutsideIntake)
+
+    fun setCoaxial(state: OuttakeCoaxialState) = let {
+        if (coaxialState == state)
+            return@let CompletableFuture.completedFuture(null)
+
+        coaxialState = state
+        return@let updateCoaxialState()
+    }
+
+    private fun updateCoaxialState(): CompletableFuture<*>
+    {
+        return coaxialRotateTo(coaxialState.position)
+    }
+
     private fun clawRotateTo(position: Double) = claw.setTarget(position, ServoBehavior.Direct)
-    private fun rotationRotateTo(position: Double) = rightRotation.setTarget(position, ServoBehavior.MotionProfile)/*CompletableFuture.allOf(
-//        leftRotation.forcefullySetTarget(position),
-        rightRotation.forcefullySetTarget(position)
-    )*/
+    private fun coaxialRotateTo(position: Double) = coaxial.setTarget(position, ServoBehavior.MotionProfile)
+    private fun rotationRotateTo(position: Double) = CompletableFuture.allOf(
+        leftRotation.setTarget(position, ServoBehavior.MotionProfile),
+        rightRotation.setTarget(position, ServoBehavior.MotionProfile)
+    )
 
     override fun start()
     {

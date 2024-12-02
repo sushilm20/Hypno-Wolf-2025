@@ -15,11 +15,11 @@ import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.intake.v4b.CoaxialState
 import org.riverdell.robotics.subsystems.intake.v4b.V4BState
 import org.riverdell.robotics.subsystems.outtake.OuttakeClawState
+import org.riverdell.robotics.subsystems.outtake.OuttakeCoaxialState
 import org.riverdell.robotics.subsystems.outtake.OuttakeRotationState
 import kotlin.math.absoluteValue
 
-class HypnoticRobotHardware(private val opMode: LinearOpMode)
-{
+class HypnoticRobotHardware(private val opMode: LinearOpMode) {
     lateinit var liftMotorLeft: DcMotorEx
     lateinit var liftMotorRight: DcMotorEx
 
@@ -43,13 +43,13 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
 
     lateinit var outtakeRotationLeft: ServoImplEx
     lateinit var outtakeRotationRight: ServoImplEx
+    lateinit var outtakeCoaxial: ServoImplEx
     lateinit var outtakeClaw: ServoImplEx
 
 //    lateinit var hangLeft: CRServoImplEx
 //    lateinit var hangRight: CRServoImplEx
 
-    fun initializeHardware(shouldHardReset: Boolean = false)
-    {
+    fun initializeHardware(shouldHardReset: Boolean = false) {
         imu = opMode.hardwareMap["imu"] as IMU
         imu.initialize(
             IMU.Parameters(
@@ -72,17 +72,12 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
         liftMotorRight = opMode.hardwareMap["liftRight"] as DcMotorEx
         liftMotorRight.direction = DcMotorSimple.Direction.REVERSE
 
-        /*        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
-                outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Transfer.position*/
-
         outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
         outtakeClaw.position = OuttakeClawState.Closed.position
 
         var start = System.currentTimeMillis()
-        if (shouldHardReset)
-        {
-            while (liftMotorLeft.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L)
-            {
+        if (shouldHardReset) {
+            while (liftMotorLeft.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L) {
                 liftMotorLeft.power = -0.3
                 liftMotorRight.power = -0.3
             }
@@ -108,10 +103,8 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
 
         start = System.currentTimeMillis()
         var hasReset = false
-        while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 1000L)
-        {
-            if (System.currentTimeMillis() - start > 500L && !hasReset)
-            {
+        while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 1000L) {
+            if (System.currentTimeMillis() - start > 500L && !hasReset) {
                 intakeV4BLeft.position = 1.0 - V4BState.Lock.position
                 intakeV4BRight.position = V4BState.Lock.position
                 hasReset = true
@@ -141,6 +134,12 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode)
 
         outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
         outtakeRotationRight.position = OuttakeRotationState.Transfer.position
+
+        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
+        outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Transfer.position
+
+        outtakeCoaxial = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeCoaxial")
+        outtakeCoaxial.position = OuttakeCoaxialState.Transfer.position
 
         /*hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
         hangLeft.pwmRange = PwmRange(500.0, 2500.0)
