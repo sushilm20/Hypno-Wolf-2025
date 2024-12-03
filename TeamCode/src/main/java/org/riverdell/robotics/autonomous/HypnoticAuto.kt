@@ -145,7 +145,16 @@ abstract class HypnoticAuto(
            }
 
            ManagedMotorGroup.keepEncoderPositions = true
-           executionGroup.executeBlocking()
+           val operatingThread = thread {
+               executionGroup.executeBlocking()
+           }
+
+           while (opModeIsActive())
+           {
+               Thread.sleep(50L)
+           }
+
+           operatingThread.interrupt()
        }
    }
 

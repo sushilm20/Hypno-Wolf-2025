@@ -98,13 +98,15 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         intakeV4BLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BLeft")
         intakeV4BRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BRight")
 
-        intakeV4BLeft.position = 1.0 - V4BState.UnlockedIdleHover.position
-        intakeV4BRight.position = V4BState.UnlockedIdleHover.position
 
         if (shouldHardReset)
         {
+            intakeV4BLeft.position = 1.0 - V4BState.UnlockedIdleHover.position
+            intakeV4BRight.position = V4BState.UnlockedIdleHover.position
+
             start = System.currentTimeMillis()
             var hasReset = false
+
             while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 1000L) {
                 if (System.currentTimeMillis() - start > 500L && !hasReset) {
                     intakeV4BLeft.position = 1.0 - V4BState.Lock.position
