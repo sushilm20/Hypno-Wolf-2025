@@ -8,6 +8,7 @@ import org.riverdell.robotics.autonomous.movement.degrees
 import org.riverdell.robotics.autonomous.movement.navigatePurePursuit
 import org.riverdell.robotics.autonomous.movement.navigateToPosition
 import org.riverdell.robotics.autonomous.movement.purePursuitNavigateTo
+import org.riverdell.robotics.autonomous.movement.purepursuit.FieldWaypoint
 
 @Autonomous(name = "Test | Move Forward", group = "Test")
 class TestMoveForward : HypnoticAuto({ opMode ->
@@ -19,11 +20,11 @@ class TestMoveForward : HypnoticAuto({ opMode ->
         )
     )
     navigatePurePursuit(
-        PositionWaypoint(
+        FieldWaypoint(
             Pose(0.0, 0.0, 0.degrees),
             15.0
         ),
-        PositionWaypoint(
+        FieldWaypoint(
             Pose(0.0, -40.0, 0.degrees),
             15.0
         )
@@ -31,11 +32,11 @@ class TestMoveForward : HypnoticAuto({ opMode ->
 
     single("move forward and backward") {
         purePursuitNavigateTo(
-            PositionWaypoint(
+            FieldWaypoint(
                 Pose(0.0, 0.0, 0.degrees),
                 15.0
             ),
-            PositionWaypoint(
+            FieldWaypoint(
                 Pose(0.0, -40.0, 0.degrees),
                 15.0
             ),

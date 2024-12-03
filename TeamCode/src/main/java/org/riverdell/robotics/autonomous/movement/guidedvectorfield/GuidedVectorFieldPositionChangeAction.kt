@@ -1,6 +1,7 @@
 package org.riverdell.robotics.autonomous.movement.guidedvectorfield
 
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
+import org.riverdell.robotics.autonomous.movement.PathAlgorithm
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction
 import org.riverdell.robotics.autonomous.movement.geometry.CubicBezierCurve
 

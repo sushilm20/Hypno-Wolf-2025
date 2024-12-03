@@ -8,6 +8,8 @@ import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.navigatePurePursuit
 import org.riverdell.robotics.autonomous.movement.navigateToPosition
 import org.riverdell.robotics.autonomous.movement.navigateGVF
+import org.riverdell.robotics.autonomous.movement.purepursuit.ActionWaypoint
+import org.riverdell.robotics.autonomous.movement.purepursuit.FieldWaypoint
 
 abstract class KonfigAutonomous(
     private val konfigID: String,
@@ -41,10 +43,10 @@ abstract class KonfigAutonomous(
                     }
                 } else if (it.contains("pose"))
                 {
-                    globalJson.decodeFromString<PoseWaypoint>(it)
+                    globalJson.decodeFromString<FieldWaypoint>(it)
                 } else if (it.contains("point"))
                 {
-                    globalJson.decodeFromString<PositionWaypoint>(it)
+                    globalJson.decodeFromString<FieldWaypoint>(it)
                 } else
                 {
                     throw IllegalArgumentException(

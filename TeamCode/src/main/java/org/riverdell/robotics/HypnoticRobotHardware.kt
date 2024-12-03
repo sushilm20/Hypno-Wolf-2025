@@ -101,21 +101,24 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         intakeV4BLeft.position = 1.0 - V4BState.UnlockedIdleHover.position
         intakeV4BRight.position = V4BState.UnlockedIdleHover.position
 
-        start = System.currentTimeMillis()
-        var hasReset = false
-        while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 1000L) {
-            if (System.currentTimeMillis() - start > 500L && !hasReset) {
-                intakeV4BLeft.position = 1.0 - V4BState.Lock.position
-                intakeV4BRight.position = V4BState.Lock.position
-                hasReset = true
+        if (shouldHardReset)
+        {
+            start = System.currentTimeMillis()
+            var hasReset = false
+            while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 1000L) {
+                if (System.currentTimeMillis() - start > 500L && !hasReset) {
+                    intakeV4BLeft.position = 1.0 - V4BState.Lock.position
+                    intakeV4BRight.position = V4BState.Lock.position
+                    hasReset = true
+                }
+
+                extensionMotorLeft.power = -0.20
+                extensionMotorRight.power = -0.20
             }
 
-            extensionMotorLeft.power = -0.20
-            extensionMotorRight.power = -0.20
+            extensionMotorLeft.power = 0.0
+            extensionMotorRight.power = 0.0
         }
-
-        extensionMotorLeft.power = 0.0
-        extensionMotorRight.power = 0.0
 
         extensionMotorRight.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         extensionMotorLeft.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
