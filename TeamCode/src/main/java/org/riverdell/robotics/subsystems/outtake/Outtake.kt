@@ -16,9 +16,10 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
     private val rightRotation = motionProfiledServo(robot.hardware.outtakeRotationRight, Constraint.HALF.scale(20.5))
 
     var clawState = OuttakeClawState.Closed
-    var coaxialState = OuttakeCoaxialState.Transfer
+    var coaxialState = OuttakeCoaxialState.Ready
     var rotationState = OuttakeRotationState.Transfer
 
+    fun readyRotation() = setRotation(OuttakeRotationState.Ready)
     fun transferRotation() = setRotation(OuttakeRotationState.Transfer)
     fun forceRotation() = setRotation(OuttakeRotationState.Force)
     fun depositRotation() = setRotation(OuttakeRotationState.Deposit)
@@ -52,6 +53,7 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
         return clawRotateTo(clawState.position)
     }
 
+    fun readyCoaxial() = setCoaxial(OuttakeCoaxialState.Ready)
     fun transferCoaxial() = setCoaxial(OuttakeCoaxialState.Transfer)
     fun depositCoaxial() = setCoaxial(OuttakeCoaxialState.Deposit)
     fun outsideIntakeCoaxial() = setCoaxial(OuttakeCoaxialState.OutsideIntake)

@@ -35,7 +35,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
             }
 
             navigateTo(Pose(13.27, 31.23, 45.degrees))
-            opMode.robot.intakeComposite.outtakeCompleteAndReturnToOuttakeReady().join()
+            opMode.robot.intakeComposite.outtakeCompleteAndRest().join()
         }
     }
 
@@ -55,7 +55,6 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
         if (!submersible) {
             single("navigate to pickup position") {
                 navigateTo(Pose(22.0, 25.0, 45.degrees))
-                opMode.robot.intakeComposite.exitOuttakeReadyToRest()
                 opMode.robot.intakeComposite.prepareForPickup(wristState, wideOpen = true)
                 navigateTo(at)
 

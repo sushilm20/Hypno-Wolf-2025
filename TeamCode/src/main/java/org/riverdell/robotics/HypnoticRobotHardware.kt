@@ -2,14 +2,11 @@ package org.riverdell.robotics
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.hardware.CRServoImplEx
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
-import com.qualcomm.robotcore.hardware.PwmControl.PwmRange
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap
 import org.riverdell.robotics.subsystems.intake.IntakeState
 import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.intake.v4b.CoaxialState
@@ -135,13 +132,13 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         intakeClawRight.position = IntakeState.Closed.positionRight
 
         outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
-        outtakeRotationRight.position = OuttakeRotationState.Transfer.position
+        outtakeRotationRight.position = OuttakeRotationState.Ready.position
 
         outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
-        outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Transfer.position
+        outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Ready.position
 
         outtakeCoaxial = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeCoaxial")
-        outtakeCoaxial.position = OuttakeCoaxialState.Transfer.position
+        outtakeCoaxial.position = OuttakeCoaxialState.Ready.position
 
         outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
         outtakeClaw.position = OuttakeClawState.Closed.position
