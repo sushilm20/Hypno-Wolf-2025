@@ -72,7 +72,7 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
     private fun clawRotateTo(position: Double) = claw.setTarget(position, ServoBehavior.Direct)
     private fun coaxialRotateTo(position: Double) = coaxial.setTarget(position, ServoBehavior.MotionProfile)
     private fun rotationRotateTo(position: Double) = CompletableFuture.allOf(
-        leftRotation.setTarget(position, ServoBehavior.MotionProfile),
+        leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile),
         rightRotation.setTarget(position, ServoBehavior.MotionProfile)
     )
 

@@ -37,9 +37,7 @@ public class PurePursuitPath {
 
         final ActionWaypoint incomplete = WaypointFilterUtilsKt.findWithIndexIncomplete(actionWaypoints, prev.id);
         if (incomplete != null) {
-            ForkJoinPool.commonPool().execute(() -> {
-                incomplete.getAction().invoke();
-            });
+            incomplete.getAction().invoke();
             incomplete.setHasExecuted(true);
         }
 

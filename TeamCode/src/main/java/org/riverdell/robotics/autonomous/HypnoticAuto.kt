@@ -1,19 +1,14 @@
 package org.riverdell.robotics.autonomous
 
 import io.liftgate.robotics.mono.Mono
-import io.liftgate.robotics.mono.konfig.konfig
 import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.riverdell.robotics.HypnoticOpMode
-import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
-import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 import org.riverdell.robotics.HypnoticRobot
-import org.riverdell.robotics.autonomous.HypnoticAuto.Companion
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
-import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
 abstract class HypnoticAuto(
@@ -144,17 +139,33 @@ abstract class HypnoticAuto(
                )
            }
 
+           var operatingThreadFinishedProperly = false
            ManagedMotorGroup.keepEncoderPositions = true
+
            val operatingThread = thread {
-               executionGroup.executeBlocking()
+               runCatching {
+                   executionGroup.executeBlocking()
+               }.onFailure {
+                   it.printStackTrace()
+               }
+
+               operatingThreadFinishedProperly = true
            }
 
            while (opModeIsActive())
            {
+               if (operatingThreadFinishedProperly)
+               {
+                   break
+               }
+
                Thread.sleep(50L)
            }
 
-           operatingThread.interrupt()
+           if (operatingThreadFinishedProperly)
+           {
+               operatingThread.interrupt()
+           }
        }
    }
 
