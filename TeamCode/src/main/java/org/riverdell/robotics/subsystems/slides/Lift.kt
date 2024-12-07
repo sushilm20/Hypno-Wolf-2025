@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val slides = with(PIDFConfig(LiftConfig.kP, LiftConfig.kI, LiftConfig.kD)) { //0.01, 0.0, 0.0005
+    val slides = with(PIDFConfig(LiftConfig.kP, LiftConfig.kI, LiftConfig.kD)) { //0.01, 0.0, 0.0005
         ManagedMotorGroup(
             this@Lift,
             PIDCoefficients(kP, kI, kD),

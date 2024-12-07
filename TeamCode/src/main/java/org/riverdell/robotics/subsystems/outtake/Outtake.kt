@@ -11,9 +11,9 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     private val claw = motionProfiledServo(robot.hardware.outtakeClaw, Constraint.HALF.scale(10.5))
 
-    private val coaxial = motionProfiledServo(robot.hardware.outtakeCoaxial, Constraint.HALF.scale(20.5))
-    private val leftRotation = motionProfiledServo(robot.hardware.outtakeRotationLeft, Constraint.HALF.scale(20.5))
-    private val rightRotation = motionProfiledServo(robot.hardware.outtakeRotationRight, Constraint.HALF.scale(20.5))
+    private val coaxial = motionProfiledServo(robot.hardware.outtakeCoaxial, Constraint.HALF.scale(50.5))
+    private val leftRotation = motionProfiledServo(robot.hardware.outtakeRotationLeft, Constraint.HALF.scale(50.5))
+    private val rightRotation = motionProfiledServo(robot.hardware.outtakeRotationRight, Constraint.HALF.scale(50.5))
 
     var clawState = OuttakeClawState.Closed
     var coaxialState = OuttakeCoaxialState.Ready

@@ -63,6 +63,18 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         backLeft = opMode.hardwareMap.get(DcMotorEx::class.java, "backLeft")
         backRight = opMode.hardwareMap.get(DcMotorEx::class.java, "backRight")
 
+        outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
+        outtakeRotationRight.position = OuttakeRotationState.Ready.position
+
+        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
+        outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Ready.position
+
+        outtakeCoaxial = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeCoaxial")
+        outtakeCoaxial.position = OuttakeCoaxialState.Ready.position
+
+        outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
+        outtakeClaw.position = OuttakeClawState.Closed.position
+
         liftMotorLeft = opMode.hardwareMap["liftLeft"] as DcMotorEx
         liftMotorLeft.direction = DcMotorSimple.Direction.FORWARD
 
@@ -130,18 +142,6 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
 
         intakeClawRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawRight")
         intakeClawRight.position = IntakeState.Closed.positionRight
-
-        outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
-        outtakeRotationRight.position = OuttakeRotationState.Ready.position
-
-        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
-        outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Ready.position
-
-        outtakeCoaxial = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeCoaxial")
-        outtakeCoaxial.position = OuttakeCoaxialState.Ready.position
-
-        outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
-        outtakeClaw.position = OuttakeClawState.Closed.position
 
         /*hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
         hangLeft.pwmRange = PwmRange(500.0, 2500.0)

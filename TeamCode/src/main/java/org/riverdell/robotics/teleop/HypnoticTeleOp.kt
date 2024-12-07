@@ -20,12 +20,12 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
         private val gp1Commands by lazy { commands(teleOp.gamepad1) }
         private val gp2Commands by lazy { commands(if (teleOp.solo) teleOp.gamepad1 else teleOp.gamepad2) }
 
-        val visionPipeline by lazy { VisionPipeline(teleOp) }
+//        val visionPipeline by lazy { VisionPipeline(teleOp) }
 
-        override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands, visionPipeline)
+        override fun additionalSubSystems() = listOf(gp1Commands, gp2Commands, /*visionPipeline*/)
         override fun initialize() {
-            visionPipeline.sampleDetection.supplyCurrentWristPosition { intake.wrist.unwrapServo().position }
-            visionPipeline.sampleDetection.setDetectionType(SampleType.BLUE)
+//            visionPipeline.sampleDetection.supplyCurrentWristPosition { intake.wrist.unwrapServo().position }
+//            visionPipeline.sampleDetection.setDetectionType(SampleType.BLUE)
 
             multipleTelemetry.addLine("Configured all subsystems. Waiting for start...")
             multipleTelemetry.update()
@@ -48,7 +48,7 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
                 runPeriodics()
 
                 val multiplier =
-                    0.5 + if (intakeComposite.state == InteractionCompositeState.Pickup)
+                    0.5 + if (intakeComposite.state == InteractionCompositeState.Pickup && teleOp.solo)
                         0.0 else (teleOp.gamepad1.right_trigger * 0.5)
                 drivetrain.driveRobotCentric(robotDriver, multiplier)
 

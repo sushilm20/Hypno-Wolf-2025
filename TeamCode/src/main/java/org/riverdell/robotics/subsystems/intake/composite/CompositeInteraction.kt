@@ -97,9 +97,13 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             outtake.openClaw()
             Thread.sleep(125L)
 
-            lift.extendToAndStayAt(0)
-
             outtake.readyRotation()
+                .thenRunAsync {
+                    lift.extendToAndStayAt(0)
+                        .thenRunAsync {
+                            lift.robot.lift.slides.idle()
+                        }
+                }
             outtake.readyCoaxial()
         }
     }
@@ -132,7 +136,9 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             InteractionCompositeState.OuttakeReady
         ) {
             CompletableFuture.allOf(
-                robot.outtake.closeClaw()
+                robot.outtake.closeClaw(),
+                robot.outtake.depositCoaxial(),
+                robot.outtake.depositRotation()
             )
         }
 
@@ -145,7 +151,8 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                             extension.slides.idle()
                         }
 
-                    outtake.transferRotation()
+                    outtake.readyCoaxial()
+                    outtake.readyRotation()
                     outtake.openClaw()
 
                     CompletableFuture.allOf(
@@ -192,6 +199,8 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             InteractionCompositeState.Confirm,
             InteractionCompositeState.OuttakeReady
         ) {
+            outtake.openClaw()
+
             CompletableFuture.allOf(
                 extension.extendToAndStayAt(0),
                 intakeV4B.coaxialRest(),
@@ -199,16 +208,24 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             ).thenRunAsync {
                 intakeV4B.v4bLock().join()
 
-                outtake.transferRotation()
-                outtake.transferCoaxial()
+                CompletableFuture.allOf(
+                    outtake.transferRotation(),
+                    outtake.transferCoaxial()
+                ).join()
 
-                outtake.closeClaw()
+                CompletableFuture.allOf(
+                    outtake.closeClaw(),
+                    intake.openIntake()
+                ).join()
                 Thread.sleep(150)
-                intake.openIntake()
-                Thread.sleep(100)
 
-                outtake.depositRotation()
-                outtake.depositCoaxial()
+                CompletableFuture.allOf(
+                    outtake.depositRotation()
+                        .thenRunAsync {
+                            intake.closeIntake()
+                        },
+                    outtake.depositCoaxial()
+                ).join()
             }
         }
 
