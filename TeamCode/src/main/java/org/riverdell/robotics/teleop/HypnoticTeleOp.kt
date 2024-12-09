@@ -65,7 +65,7 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
                             } else {
                                 extension.slides.supplyPowerToAll(
                                     (wantedPower.toDouble()
-                                        .pow(2) * sign(wantedPower.toDouble())) / 6
+                                        .pow(2) * sign(wantedPower.toDouble())) / 5
                                 )
                             }
                         } else {
@@ -74,7 +74,7 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
                             } else {
                                 extension.slides.supplyPowerToAll(
                                     (wantedPower.toDouble()
-                                        .pow(2) * sign(wantedPower.toDouble())) / 6
+                                        .pow(2) * sign(wantedPower.toDouble())) / 5
                                 )
                             }
                         }
@@ -116,6 +116,13 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
                     .onlyWhen { intakeComposite.state == InteractionCompositeState.Pickup }
                     .triggers {
                         intake.lateralWrist()
+                    }
+                    .whenPressedOnce()
+
+                where(ButtonType.ButtonB)
+                    .onlyWhen { intakeComposite.state == InteractionCompositeState.OuttakeReady }
+                    .triggers {
+                        intakeComposite.reTransferOuttakeReady()
                     }
                     .whenPressedOnce()
 

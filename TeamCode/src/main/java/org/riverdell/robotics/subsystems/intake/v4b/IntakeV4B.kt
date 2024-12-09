@@ -11,7 +11,7 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
 {
     private val leftRotation = motionProfiledServo(robot.hardware.intakeV4BLeft, Constraint.HALF.scale(30.5))
     private val rightRotation = motionProfiledServo(robot.hardware.intakeV4BRight, Constraint.HALF.scale(30.5))
-    private val coaxialRotation = motionProfiledServo(robot.hardware.intakeV4BCoaxial, Constraint.HALF.scale(10.5))
+    private val coaxialRotation = motionProfiledServo(robot.hardware.intakeV4BCoaxial, Constraint.HALF.scale(30.5))
 
     var v4bState = V4BState.Lock
     var coaxialState = CoaxialState.Rest

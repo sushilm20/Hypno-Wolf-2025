@@ -98,13 +98,12 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             Thread.sleep(125L)
 
             outtake.readyRotation()
+            outtake.readyCoaxial().join()
+
+            lift.extendToAndStayAt(0)
                 .thenRunAsync {
-                    lift.extendToAndStayAt(0)
-                        .thenRunAsync {
-                            lift.robot.lift.slides.idle()
-                        }
+                    lift.robot.lift.slides.idle()
                 }
-            outtake.readyCoaxial()
         }
     }
 
@@ -194,38 +193,52 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             )
         }
 
+    private fun HypnoticRobot.performTransferSequence()
+    {
+        outtake.openClaw()
+        CompletableFuture.allOf(
+            outtake.transferRotation(),
+            outtake.transferCoaxial()
+        ).join()
+
+        Thread.sleep(350)
+        CompletableFuture.allOf(
+            outtake.closeClaw(),
+            intake.openIntake()
+        ).join()
+        Thread.sleep(150)
+
+        CompletableFuture.allOf(
+            outtake.depositRotation()
+                .thenRunAsync {
+                    intake.closeIntake()
+                },
+            outtake.depositCoaxial()
+        ).join()
+    }
+
+    fun reTransferOuttakeReady() =
+        stateMachineRestrict(
+            InteractionCompositeState.OuttakeReady,
+            InteractionCompositeState.OuttakeReady
+        ) {
+            CompletableFuture.runAsync {
+                performTransferSequence()
+            }
+        }
+
     fun confirmAndTransferAndReady() =
         stateMachineRestrict(
             InteractionCompositeState.Confirm,
             InteractionCompositeState.OuttakeReady
         ) {
-            outtake.openClaw()
-
             CompletableFuture.allOf(
                 extension.extendToAndStayAt(0),
                 intakeV4B.coaxialRest(),
                 intakeV4B.v4bUnlock()
             ).thenRunAsync {
                 intakeV4B.v4bLock().join()
-
-                CompletableFuture.allOf(
-                    outtake.transferRotation(),
-                    outtake.transferCoaxial()
-                ).join()
-
-                CompletableFuture.allOf(
-                    outtake.closeClaw(),
-                    intake.openIntake()
-                ).join()
-                Thread.sleep(150)
-
-                CompletableFuture.allOf(
-                    outtake.depositRotation()
-                        .thenRunAsync {
-                            intake.closeIntake()
-                        },
-                    outtake.depositCoaxial()
-                ).join()
+                performTransferSequence()
             }
         }
 

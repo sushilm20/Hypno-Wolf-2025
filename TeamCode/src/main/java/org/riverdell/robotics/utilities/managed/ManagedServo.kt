@@ -48,7 +48,7 @@ class ManagedServo(
         } else
         {
             profileState = motionProfile!!.calculate(timer.time())
-            if (profileState!!.v == 0.0) {
+            if (profileState!!.x == target) {
                 return@state true
             }
 
@@ -63,7 +63,7 @@ class ManagedServo(
         behavior: ServoBehavior = ServoBehavior.MotionProfile
     ): CompletableFuture<*> {
         this.behavior = behavior
-        return state.override(target)
+        return state.override(target, 0L)
     }
 
     fun cancelMotionProfile() = state.reset()
