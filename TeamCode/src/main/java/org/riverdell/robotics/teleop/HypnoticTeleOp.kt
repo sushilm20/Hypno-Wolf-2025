@@ -160,6 +160,15 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
                     }
                     .whenPressedOnce()
 
+                where(ButtonType.DPadLeft)
+                    .onlyWhen {
+                        intakeComposite.state == InteractionCompositeState.Outtaking
+                    }
+                    .triggers {
+                        intakeComposite.specimenDepositAndRest()
+                    }
+                    .whenPressedOnce()
+
                 where(ButtonType.DPadUp)
                     .onlyWhen { intakeComposite.state == InteractionCompositeState.Outtaking }
                     .triggers {

@@ -31,14 +31,13 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                     .initialOuttake(OuttakeLevel.HighBasket)
             }
 
-            navigateTo(Pose(15.02, 56.05, 45.degrees))
+            navigateTo(Pose(12.5, 23.5, 39.degrees))
             opMode.robot.intakeComposite.outtakeCompleteAndRest().join()
         }
     }
 
     fun ExecutionGroup.prepareForIntake(
-        at: Pose,
-        wristState: WristState = WristState.Lateral,
+        position: GroundPickupPosition,
         submersible: Boolean = false,
     ) {
         /**
@@ -51,8 +50,14 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
          */
         if (!submersible) {
             single("navigate to pickup position") {
-                opMode.robot.intakeComposite.prepareForPickup(wristState, wideOpen = true)
-                navigateTo(at)
+                opMode.robot.intakeComposite.prepareForPickup(position.wristState, wideOpen = true)
+                if (position.purePursuitPoints != null)
+                {
+                    purePursuitNavigateTo(*position.purePursuitPoints.toTypedArray())
+                } else
+                {
+                    navigateTo(position.pose)
+                }
 
                 Thread.sleep(500L)
             }
@@ -60,12 +65,12 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
             // SUMBERSIBLE! DO NOT TOUCH
             simultaneous("thing") {
                 single("navigate to pickup position") {
-                    navigateTo(at)
+                    navigateTo(position.pose)
                 }
 
                 single("prepare for pickup") {
                     opMode.robot.intakeComposite
-                        .prepareForPickup(wristState)
+                        .prepareForPickup(position.wristState)
                         .join()
                 }
             }
@@ -88,8 +93,8 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     depositToHighBasket()
 
     val pickupPositions = listOf(
-        GroundPickupPosition(pose = Pose(22.31, 50.13, 90.degrees)),
-        GroundPickupPosition(pose = Pose(21.76, 66.14, 90.degrees)),
+        GroundPickupPosition(pose = Pose(22.00, 19.0, 90.degrees)),
+        GroundPickupPosition(pose = Pose(22.00, 36.0, 90.degrees)),
         /*GroundPickupPosition(
             pose = Pose(44.98, 33.8, 180.degrees),
             wristState = WristState.Perpendicular
@@ -98,10 +103,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
 
     // ground pickup positions
     pickupPositions.forEach {
-        prepareForIntake(
-            at = it.pose,
-            wristState = it.wristState
-        )
+        prepareForIntake(it)
         confirmIntakeAndTransfer()
         depositToHighBasket()
     }
