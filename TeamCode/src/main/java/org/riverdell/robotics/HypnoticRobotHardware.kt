@@ -104,7 +104,6 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         intakeV4BLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BLeft")
         intakeV4BRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BRight")
 
-
         if (shouldHardReset)
         {
             intakeV4BLeft.position = 1.0 - V4BState.UnlockedIdleHover.position

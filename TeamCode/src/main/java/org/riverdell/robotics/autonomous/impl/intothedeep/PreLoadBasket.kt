@@ -7,16 +7,24 @@ import io.liftgate.robotics.mono.pipeline.simultaneous
 import io.liftgate.robotics.mono.pipeline.single
 import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.autonomous.movement.degrees
+import org.riverdell.robotics.autonomous.movement.geometry.Point
 import org.riverdell.robotics.autonomous.movement.geometry.Pose
 import org.riverdell.robotics.autonomous.movement.navigateTo
 import org.riverdell.robotics.autonomous.movement.purePursuitNavigateTo
+import org.riverdell.robotics.autonomous.movement.purepursuit.FieldWaypoint
 import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 
 @Autonomous(name = "4+0 Basket & hors", group = "Test")
 class PreLoadBasket : HypnoticAuto({ opMode ->
     val startPose = Pose2d(0.0, 0.0, 0.degrees)
-    val startPoseHypnotic = Pose(startPose.x, startPose.y, startPose.heading)
+    val depositHighBucket = Pose(16.61, 26.33, 47.degrees)
+    val parkSubmersible = listOf(
+        FieldWaypoint(depositHighBucket, 15.0),
+        FieldWaypoint(Pose(55.01, -5.38, (-130).degrees), 15.0),
+        FieldWaypoint(Pose(72.22, -25.44, (-180).degrees), 15.0),
+        FieldWaypoint(Pose(72.22, -25.44, (-180).degrees), 15.0),
+    )
     opMode.robot.drivetrain.localizer.poseEstimate = startPose
 
     var preLoadCompleted = false
@@ -31,7 +39,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                     .initialOuttake(OuttakeLevel.HighBasket)
             }
 
-            navigateTo(Pose(12.5, 23.5, 39.degrees))
+            navigateTo(depositHighBucket)
             opMode.robot.intakeComposite.outtakeCompleteAndRest().join()
         }
     }
@@ -40,40 +48,21 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
         position: GroundPickupPosition,
         submersible: Boolean = false,
     ) {
-        /**
-         * With the submersible pickups, we want to avoid
-         * entering the pickup state until we're perfectly
-         * in the pickup position.
-         *
-         * So, when [submersible] is true, we'll do a consecutive
-         * rather than a simultaneous.
-         */
-        if (!submersible) {
-            single("navigate to pickup position") {
-                opMode.robot.intakeComposite.prepareForPickup(position.wristState, wideOpen = true)
-                if (position.purePursuitPoints != null)
-                {
-                    purePursuitNavigateTo(*position.purePursuitPoints.toTypedArray())
-                } else
-                {
-                    navigateTo(position.pose)
-                }
 
-                Thread.sleep(500L)
-            }
-        } else {
-            // SUMBERSIBLE! DO NOT TOUCH
-            simultaneous("thing") {
-                single("navigate to pickup position") {
-                    navigateTo(position.pose)
+        single("navigate to pickup position") {
+            opMode.robot.intakeComposite.prepareForPickup(position.wristState, wideOpen = true)
+            if (position.purePursuitPoints != null)
+            {
+                purePursuitNavigateTo(*position.purePursuitPoints.toTypedArray()) {
+                    withAutomaticDeath(5000.0)
                 }
+                navigateTo(position.pose)
+            } else
+            {
+                navigateTo(position.pose)
+            }
 
-                single("prepare for pickup") {
-                    opMode.robot.intakeComposite
-                        .prepareForPickup(position.wristState)
-                        .join()
-                }
-            }
+            Thread.sleep(500L)
         }
     }
 
@@ -93,12 +82,17 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     depositToHighBasket()
 
     val pickupPositions = listOf(
-        GroundPickupPosition(pose = Pose(22.00, 19.0, 90.degrees)),
-        GroundPickupPosition(pose = Pose(22.00, 36.0, 90.degrees)),
-        /*GroundPickupPosition(
-            pose = Pose(44.98, 33.8, 180.degrees),
+        GroundPickupPosition(pose = Pose(23.38, 19.08, 90.degrees)),
+        GroundPickupPosition(pose = Pose(22.71, 34.31, 90.degrees)),
+        GroundPickupPosition(
+            pose = Pose(44.16, 14.92, 180.degrees),
+            purePursuitPoints = listOf(
+                FieldWaypoint(depositHighBucket, 15.0),
+                FieldWaypoint(Pose(44.35, 4.53, 180.degrees), 15.0),
+                FieldWaypoint(Pose(44.16, 14.92, 180.degrees), 15.0),
+            ),
             wristState = WristState.Perpendicular
-        ),*/
+        ),
     )
 
     // ground pickup positions
@@ -109,6 +103,11 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     }
 
     single("park near submersible") {
-        navigateTo(startPoseHypnotic)
+        opMode.robot.intakeComposite
+            .initialOuttakeFromRest(OuttakeLevel.Bar1)
+
+        purePursuitNavigateTo(*parkSubmersible.toTypedArray()) {
+            withAutomaticDeath(5000.0)
+        }
     }
 })

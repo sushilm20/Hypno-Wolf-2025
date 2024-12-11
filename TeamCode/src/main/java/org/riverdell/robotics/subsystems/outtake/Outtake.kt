@@ -22,6 +22,7 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
     fun readyRotation() = setRotation(OuttakeRotationState.Ready)
     fun transferRotation() = setRotation(OuttakeRotationState.Transfer)
     fun forceRotation() = setRotation(OuttakeRotationState.Force)
+    fun specimenRotation() = setRotation(OuttakeRotationState.Specimen)
     fun depositRotation() = setRotation(OuttakeRotationState.Deposit)
 
     fun setRotation(state: OuttakeRotationState) = let {
@@ -56,6 +57,7 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
     fun readyCoaxial() = setCoaxial(OuttakeCoaxialState.Ready)
     fun transferCoaxial() = setCoaxial(OuttakeCoaxialState.Transfer)
     fun depositCoaxial() = setCoaxial(OuttakeCoaxialState.Deposit)
+    fun specimenCoaxial() = setCoaxial(OuttakeCoaxialState.Specimen)
     fun outsideIntakeCoaxial() = setCoaxial(OuttakeCoaxialState.OutsideIntake)
 
     fun setCoaxial(state: OuttakeCoaxialState) = let {

@@ -196,7 +196,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 Thread.sleep(125L)
 
                 CompletableFuture.allOf(
-                    intakeV4B.v4bSampleGateway(),
+                    intakeV4B.v4bIntermediate(),
                     intakeV4B.coaxialIntermediate(),
                     intake.setWrist(WristState.Lateral)
                 ).join()
@@ -206,7 +206,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
     fun declineAndIntake() =
         stateMachineRestrict(InteractionCompositeState.Confirm, InteractionCompositeState.Pickup) {
             CompletableFuture.allOf(
-                //intakeV4B.v4bSampleGateway(),
+                intakeV4B.v4bSampleGateway(),
                 intakeV4B.coaxialIntake()
                     .thenCompose {
                         intake.openIntake()

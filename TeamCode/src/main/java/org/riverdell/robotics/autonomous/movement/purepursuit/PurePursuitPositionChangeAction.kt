@@ -11,7 +11,7 @@ class PurePursuitPositionChangeAction(
 {
     init
     {
-        disableAutomaticDeath()
+//        disableAutomaticDeath()
         withCustomPathAlgorithm(PathAlgorithm(
             { currentPose -> purePursuitPath.calculateTargetPose(currentPose) },
             { _, _ -> purePursuitPath.isFinished }

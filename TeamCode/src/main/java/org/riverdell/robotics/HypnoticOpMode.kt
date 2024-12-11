@@ -10,6 +10,9 @@ abstract class HypnoticOpMode : LinearOpMode()
 
     override fun runOpMode()
     {
+        telemetry.speak("skibidi rizz is sigma sigma boy sigma boy sigma boy")
+        telemetry.update()
+
         robot = buildRobot()
         robot.runOpMode()
     }

@@ -2,12 +2,14 @@ package org.riverdell.robotics.subsystems.intake.v4b
 
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
+import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.subsystems.motionProfiledServo
+import org.riverdell.robotics.teleop.HypnoticTeleOp
 import org.riverdell.robotics.utilities.managed.ServoBehavior
 import org.riverdell.robotics.utilities.motionprofile.Constraint
 import java.util.concurrent.CompletableFuture
 
-class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
+class IntakeV4B(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     private val leftRotation = motionProfiledServo(robot.hardware.intakeV4BLeft, Constraint.HALF.scale(30.5))
     private val rightRotation = motionProfiledServo(robot.hardware.intakeV4BRight, Constraint.HALF.scale(30.5))
@@ -65,10 +67,16 @@ class IntakeV4B(robot: HypnoticRobot) : AbstractSubsystem()
     }
 
     private fun coaxialRotateTo(position: Double) = coaxialRotation.setTarget(position, ServoBehavior.Direct)
-    private fun v4bRotateTo(position: Double) = CompletableFuture.allOf(
-        leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile),
-        rightRotation.setTarget(position, ServoBehavior.MotionProfile)
-    )
+    private fun v4bRotateTo(position: Double) = if (robot.opMode is HypnoticTeleOp)
+    {
+        CompletableFuture.allOf(
+            leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile),
+            rightRotation.setTarget(position, ServoBehavior.MotionProfile)
+        )
+    } else
+    {
+        leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile)
+    }
 
     override fun start()
     {

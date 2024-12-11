@@ -8,6 +8,7 @@ import org.riverdell.robotics.HypnoticOpMode
 import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction
+import org.riverdell.robotics.subsystems.intake.composite.InteractionCompositeState
 import org.riverdell.robotics.utilities.managed.ManagedMotorGroup
 import kotlin.concurrent.thread
 
@@ -80,7 +81,25 @@ abstract class HypnoticAuto(
            thread {
                while (!isStopRequested)
                {
-                   runPeriodics()
+                   drivetrain.localizer.update()
+               }
+           }
+
+           thread {
+               while (!isStopRequested)
+               {
+                   runPeriodics()/*
+*//*
+                   if (intakeComposite.state == InteractionCompositeState.InProgress) {
+                       val timeInProgress = System.currentTimeMillis() - intakeComposite.attemptTime
+                       if (timeInProgress > 7500L) {
+                           if (intakeComposite.attemptedState != null) {
+                               intakeComposite.state = intakeComposite.attemptedState!!
+                               intakeComposite.attemptTime = System.currentTimeMillis()
+                               intakeComposite.attemptedState = null
+                           }
+                       }
+                   }*//*
 
                    multipleTelemetry.addLine("--- Autonomous ---")
                    multipleTelemetry.addData(
@@ -123,13 +142,7 @@ abstract class HypnoticAuto(
 //                   )
 
                    multipleTelemetry.addEssentialLines()
-                   multipleTelemetry.update()
-               }
-           }
-
-           thread {
-               while (!isStopRequested) {
-                   drivetrain.localizer.update()
+                   multipleTelemetry.update()*/
                }
            }
 

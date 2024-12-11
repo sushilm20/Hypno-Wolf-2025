@@ -48,7 +48,8 @@ class ManagedServo(
         } else
         {
             profileState = motionProfile!!.calculate(timer.time())
-            if (profileState!!.v == 0.0 && profileState!!.x == target) {
+            if (profileState!!.v == 0.0) {
+                servo.position = target
                 return@state true
             }
 
