@@ -10,7 +10,7 @@ import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 class PoseGetThingOuttake : HypnoticAuto({ opMode ->
     single("Outtake") {
         opMode.robot.intakeComposite
-            .initialOuttakeFromRest(OuttakeLevel.Bar1)
+            .initialOuttakeFromRest(OuttakeLevel.HighBasket)
 
         Thread.sleep(100000L)
     }

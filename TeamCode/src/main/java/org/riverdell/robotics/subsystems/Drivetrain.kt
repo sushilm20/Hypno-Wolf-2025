@@ -15,7 +15,6 @@ import org.riverdell.robotics.autonomous.movement.localization.TwoWheelLocalizer
 class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     private val voltageSensor = robot.opMode.hardwareMap.voltageSensor.first()
-    private val imuState by state(write = { _ -> }, read = { robot.hardware.imu.robotYawPitchRollAngles })
     private val voltageState by state(write = { _ -> }, read = { voltageSensor.voltage })
 
     val localizer by lazy {
@@ -25,7 +24,7 @@ class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
     private lateinit var backingDriveBase: MecanumDrive
 
     fun voltage() = kotlin.runCatching { voltageState.current() }.getOrElse { 0.0 }
-    fun imu() = kotlin.runCatching { imuState.current() }.getOrElse { YawPitchRollAngles(AngleUnit.DEGREES, 0.0, 0.0, 0.0, 0L) }
+    fun imu() = robot.imuProxy.imu()
 
     fun driveRobotCentric(driverOp: GamepadEx, scaleFactor: Double)
     {

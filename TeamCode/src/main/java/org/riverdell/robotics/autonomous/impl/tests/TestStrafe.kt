@@ -11,7 +11,7 @@ class TestStrafe : HypnoticAuto({ opMode ->
     single("strafe") {
         navigateTo(
             Pose(
-                -15.0,
+                -40.0,
                 -0.0,
                 0.0
             )

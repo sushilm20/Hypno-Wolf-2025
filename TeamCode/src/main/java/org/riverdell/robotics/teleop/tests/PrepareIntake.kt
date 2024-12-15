@@ -24,8 +24,8 @@ class PrepareIntake : LinearOpMode()
 
         while (opModeIsActive())
         {
-            left.position = 1.0
-            right.position = 0.0
+            left.position = 0.0
+            right.position = 1.0
             wrist.position = 0.5
             Thread.sleep(50L)
         }

@@ -6,6 +6,7 @@ import org.riverdell.robotics.subsystems.intake.WristState
 
 data class GroundPickupPosition(
     val pose: Pose,
+    val extraPoseBack: Pose? = null,
     val purePursuitPoints: List<WaypointLike>? = null,
     val wristState: WristState = WristState.Lateral
 )

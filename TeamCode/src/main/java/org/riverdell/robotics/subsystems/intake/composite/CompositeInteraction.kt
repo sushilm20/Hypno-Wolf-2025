@@ -2,6 +2,7 @@ package org.riverdell.robotics.subsystems.intake.composite
 
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
+import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 import java.util.concurrent.CompletableFuture
@@ -104,6 +105,8 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 .thenRunAsync {
                     lift.robot.lift.slides.idle()
                 }
+
+            CompletableFuture.completedFuture(null)
         }
     }
 
@@ -163,7 +166,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             )
         }
 
-    fun prepareForPickup(wristState: WristState = WristState.Lateral, wideOpen: Boolean = false) =
+    fun prepareForPickup(wristState: WristState = WristState.Lateral, doNotUseAutoMode: Boolean = false, wideOpen: Boolean = false) =
         stateMachineRestrict(InteractionCompositeState.Rest, InteractionCompositeState.Pickup) {
             intakeV4B.v4bUnlock()
                 .thenAcceptAsync {
@@ -177,7 +180,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                     outtake.openClaw()
 
                     CompletableFuture.allOf(
-                        intakeV4B.v4bSampleGateway(),
+                        intakeV4B.v4bSampleGateway(doNotUseAutoMode),
                         intakeV4B.coaxialIntake()
                             .thenCompose {
                                 intake.openIntake(wideOpen)
@@ -187,7 +190,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 }
         }
 
-    fun intakeAndConfirm() =
+    fun intakeAndConfirm(extras: () -> Unit = {}) =
         stateMachineRestrict(InteractionCompositeState.Pickup, InteractionCompositeState.Confirm) {
 //            intakeV4B.coaxialPickup()
             intakeV4B.v4bSamplePickup().thenRunAsync {
@@ -195,10 +198,15 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 intake.closeIntake()
                 Thread.sleep(125L)
 
+                extras()
+
                 CompletableFuture.allOf(
                     intakeV4B.v4bIntermediate(),
                     intakeV4B.coaxialIntermediate(),
-                    intake.setWrist(WristState.Lateral)
+                    // don't fix wrist
+                    if (robot is HypnoticAuto.HypnoticAutoRobot)
+                        CompletableFuture.completedFuture(null) else
+                            intake.setWrist(WristState.Lateral)
                 ).join()
             }
         }
@@ -218,6 +226,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
     private fun HypnoticRobot.performTransferSequence()
     {
         outtake.openClaw()
+
         CompletableFuture.allOf(
             outtake.transferRotation(),
             outtake.transferCoaxial()
@@ -260,6 +269,11 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 intakeV4B.v4bUnlock()
             ).thenRunAsync {
                 intakeV4B.v4bLock().join()
+                if (robot is HypnoticAuto.HypnoticAutoRobot)
+                {
+                    intake.setWrist(WristState.Lateral).join()
+                }
+
                 performTransferSequence()
             }
         }
@@ -273,10 +287,10 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             return CompletableFuture.completedFuture(null)
         }
 
-        if (!ignoreInProgress) {
-            state = InteractionCompositeState.InProgress
+        state = if (!ignoreInProgress) {
+            InteractionCompositeState.InProgress
         } else {
-            state = to
+            to
         }
 
         attemptedState = to

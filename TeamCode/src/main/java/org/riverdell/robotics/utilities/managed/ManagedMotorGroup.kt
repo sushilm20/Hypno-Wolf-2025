@@ -238,6 +238,10 @@ class ManagedMotorGroup(
     {
         exitIdle()
         return state.override(target, timeout = timeout)
+            .exceptionally {
+                println("cancelled forcefully")
+                return@exceptionally null
+            }
     }
 
     /**

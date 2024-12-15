@@ -81,6 +81,7 @@ abstract class HypnoticAuto(
            thread {
                while (!isStopRequested)
                {
+                   imuProxy.allPeriodic()
                    drivetrain.localizer.update()
                }
            }
@@ -88,7 +89,29 @@ abstract class HypnoticAuto(
            thread {
                while (!isStopRequested)
                {
-                   runPeriodics()/*
+
+                   multipleTelemetry.addData(
+                       "Pose",
+                       "Pose(${
+                           "%.2f".format(drivetrain.localizer.pose.x.toFloat())
+                       }, ${
+                           "%.2f".format(drivetrain.localizer.pose.y.toFloat())
+                       }, (${
+                           "%.2f".format(drivetrain.imu().getYaw(AngleUnit.DEGREES).toFloat())
+                       }).degrees)"
+                   )
+                   multipleTelemetry.update()
+               }
+           }
+
+           thread {
+               while (!isStopRequested)
+               {
+                   kotlin.runCatching {
+                       runPeriodics()
+                   }.onFailure {
+                       it.printStackTrace()
+                   }/*
 *//*
                    if (intakeComposite.state == InteractionCompositeState.InProgress) {
                        val timeInProgress = System.currentTimeMillis() - intakeComposite.attemptTime
@@ -110,10 +133,7 @@ abstract class HypnoticAuto(
                        "IMU",
                        drivetrain.imu().getYaw(AngleUnit.DEGREES)
                    )
-                   multipleTelemetry.addData(
-                       "Pose",
-                       drivetrain.localizer.pose
-                   )
+
 
 //                   multipleTelemetry.addData(
 //                       "H Velocity Error",

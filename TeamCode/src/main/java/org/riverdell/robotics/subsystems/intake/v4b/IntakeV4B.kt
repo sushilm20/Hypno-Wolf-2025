@@ -37,7 +37,7 @@ class IntakeV4B(private val robot: HypnoticRobot) : AbstractSubsystem()
     }
 
     fun v4bLock() = setV4B(V4BState.Lock)
-    fun v4bSampleGateway() = setV4B(V4BState.Gateway)
+    fun v4bSampleGateway(doNotUseAutoMode: Boolean = false) = setV4B(if (robot is HypnoticAuto.HypnoticAutoRobot) (if (doNotUseAutoMode) V4BState.Gateway else V4BState.AutoGateway) else V4BState.Gateway)
 
     //    fun v4bSampleFocus() = setV4B(V4BState.Focus)
     fun v4bIntermediate() = setV4B(V4BState.Intermediate)
