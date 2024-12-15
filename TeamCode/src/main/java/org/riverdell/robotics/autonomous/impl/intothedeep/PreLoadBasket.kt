@@ -19,11 +19,13 @@ import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 @Autonomous(name = "4+0 Basket & hors", group = "Test")
 class PreLoadBasket : HypnoticAuto({ opMode ->
     val startPose = Pose2d(0.0, 0.0, 0.degrees)
-    val depositHighBucket = Pose(16.28, 24.81, (44.15).degrees)
+
+    val depositHighBucket = Pose(15.0, 22.5, (46.48).degrees)
+    val midDepositHighBucket = Pose(24.5, 11.5, (42.95).degrees)
 
     val parkSubmersible = listOf(
         FieldWaypoint(depositHighBucket, 15.0),
-        FieldWaypoint(Pose(70.29, 22.78, (-177.78).degrees), 15.0),
+        FieldWaypoint(Pose(70.29, 22.78, (-177.78).degrees), 25.0),
         FieldWaypoint(
             Pose(70.12, -30.32, (178.92).degrees), 15.0
         ),
@@ -31,10 +33,11 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
             Pose(70.12, -30.32, (178.92).degrees), 15.0
         ),
     )
+
     opMode.robot.drivetrain.localizer.poseEstimate = startPose
 
     var preLoadCompleted = false
-    fun ExecutionGroup.depositToHighBasket(alternatePose: Pose? = null) {
+    fun ExecutionGroup.depositToHighBasket(initial: Boolean = false, alternatePose: Pose? = null) {
         single("high basket deposit") {
             if (!preLoadCompleted) {
                 preLoadCompleted = true
@@ -45,12 +48,19 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                     .initialOuttake(OuttakeLevel.HighBasket)
             }
 
-            if (alternatePose != null)
+            if (initial)
             {
-                navigateTo(alternatePose)
+                navigateTo(midDepositHighBucket)
+                navigateTo(depositHighBucket)
             } else
             {
-                navigateTo(depositHighBucket)
+                if (alternatePose != null)
+                {
+                    navigateTo(alternatePose)
+                } else
+                {
+                    navigateTo(depositHighBucket)
+                }
             }
 
             Thread.sleep(250L)
@@ -117,7 +127,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     }
 
     // preload
-    depositToHighBasket()
+    depositToHighBasket(initial = true)
 
     val pickupPositions = listOf(
         GroundPickupPosition(pose = Pose(15.07, 19.50, (87.93).degrees)),
@@ -140,7 +150,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     pickupPositions.forEach {
         prepareForIntake(it)
         confirmIntakeAndTransfer(it.extraPoseBack)
-        depositToHighBasket(it.alternateHighBasketDriftComp)
+        depositToHighBasket(alternatePose = it.alternateHighBasketDriftComp)
     }
 
     single("park near submersible") {

@@ -37,7 +37,7 @@ public class PositionChangeAction {
 
     public double MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = 0.75;
     public double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;
-    public double AT_TARGET_AUTOMATIC_DEATH = 100;
+    public double AT_TARGET_AUTOMATIC_DEATH = 200;
 
     public static PIDFController xController;
     public static PIDFController yController;

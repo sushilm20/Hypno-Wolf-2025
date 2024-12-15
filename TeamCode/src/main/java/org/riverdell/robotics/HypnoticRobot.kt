@@ -8,6 +8,7 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.IMUProxySubsystem
 import org.riverdell.robotics.subsystems.hang.Hang
@@ -25,6 +26,9 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
     {
         @JvmStatic
         lateinit var instance: HypnoticRobot
+
+        var safeMode = false
+        var resetMode = false
     }
 
     override val subsystems: MutableSet<Subsystem> = mutableSetOf()
@@ -86,8 +90,11 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
     {
         instance = this
 
+        resetMode = opMode.gamepad1.a
+        safeMode = opMode.gamepad1.b || this is HypnoticAuto.HypnoticAutoRobot
+
         hardware = HypnoticRobotHardware(opMode)
-        hardware.initializeHardware(opMode.gamepad1.a)
+        hardware.initializeHardware()
 
         register(
             drivetrain, intake, intakeV4B, outtake, extension, lift,

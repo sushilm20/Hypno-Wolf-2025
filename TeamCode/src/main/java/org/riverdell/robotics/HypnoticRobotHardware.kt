@@ -46,7 +46,7 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
 //    lateinit var hangLeft: CRServoImplEx
 //    lateinit var hangRight: CRServoImplEx
 
-    fun initializeHardware(shouldHardReset: Boolean = false) {
+    fun initializeHardware() {
         imu = opMode.hardwareMap["imu"] as IMU
         imu.initialize(
             IMU.Parameters(
@@ -82,7 +82,7 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         liftMotorRight.direction = DcMotorSimple.Direction.REVERSE
 
         var start = System.currentTimeMillis()
-        if (shouldHardReset) {
+        if (HypnoticRobot.resetMode) {
             while (liftMotorLeft.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 500L) {
                 liftMotorLeft.power = -0.3
                 liftMotorRight.power = -0.3
@@ -104,10 +104,13 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         intakeV4BLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BLeft")
         intakeV4BRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BRight")
 
-        if (shouldHardReset)
+        if (HypnoticRobot.resetMode)
         {
             intakeV4BLeft.position = 1.0 - V4BState.UnlockedIdleHover.position
-            intakeV4BRight.position = V4BState.UnlockedIdleHover.position
+            if (!HypnoticRobot.safeMode)
+            {
+                intakeV4BRight.position = V4BState.UnlockedIdleHover.position
+            }
 
             start = System.currentTimeMillis()
             var hasReset = false
@@ -115,7 +118,10 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
             while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 1000L) {
                 if (System.currentTimeMillis() - start > 500L && !hasReset) {
                     intakeV4BLeft.position = 1.0 - V4BState.Lock.position
-                    intakeV4BRight.position = V4BState.Lock.position
+                    if (!HypnoticRobot.safeMode)
+                    {
+                        intakeV4BRight.position = V4BState.Lock.position
+                    }
                     hasReset = true
                 }
 
