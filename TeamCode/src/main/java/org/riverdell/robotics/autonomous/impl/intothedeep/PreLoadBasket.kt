@@ -34,7 +34,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     opMode.robot.drivetrain.localizer.poseEstimate = startPose
 
     var preLoadCompleted = false
-    fun ExecutionGroup.depositToHighBasket() {
+    fun ExecutionGroup.depositToHighBasket(alternatePose: Pose? = null) {
         single("high basket deposit") {
             if (!preLoadCompleted) {
                 preLoadCompleted = true
@@ -45,9 +45,15 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                     .initialOuttake(OuttakeLevel.HighBasket)
             }
 
-            navigateTo(depositHighBucket)
-            Thread.sleep(250L)
+            if (alternatePose != null)
+            {
+                navigateTo(alternatePose)
+            } else
+            {
+                navigateTo(depositHighBucket)
+            }
 
+            Thread.sleep(250L)
             opMode.robot.intakeComposite.outtakeCompleteAndRest().join()
         }
     }
@@ -57,7 +63,8 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     ) {
 
         single("navigate to pickup position") {
-            opMode.robot.intakeComposite.prepareForPickup(position.wristState,
+            opMode.robot.intakeComposite.prepareForPickup(
+                position.wristState,
                 // needs to go closer into the wall
                 doNotUseAutoMode = position.extraPoseBack != null,
                 wideOpen = true
@@ -77,16 +84,14 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
 
             if (opMode.robot.intakeComposite.state != InteractionCompositeState.Pickup) {
                 val currentPose = opMode.robot.drivetrain.localizer.pose
-                if (position.extraPoseBack != null)
-                {
+                if (position.extraPoseBack != null) {
                     navigateTo(position.extraPoseBack)
                 }
 
                 opMode.robot.intakeV4B.v4bSampleGateway().join()
                 opMode.robot.intakeComposite.state = InteractionCompositeState.Pickup
 
-                if (position.extraPoseBack != null)
-                {
+                if (position.extraPoseBack != null) {
                     navigateTo(currentPose)
                 }
             }
@@ -99,8 +104,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
         single("confirm intake") {
             opMode.robot.intakeComposite
                 .intakeAndConfirm {
-                    if (pose != null)
-                    {
+                    if (pose != null) {
                         navigateTo(pose)
                     }
                 }
@@ -127,6 +131,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                 FieldWaypoint(Pose(44.73, 10.1, (178.44).degrees), 15.0),
                 FieldWaypoint(Pose(44.73, 10.1, (178.44).degrees), 15.0),
             ),
+            alternateHighBasketDriftComp = Pose(11.37, 21.69, (44.66).degrees),
             wristState = WristState.Perpendicular
         ),
     )
@@ -135,7 +140,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
     pickupPositions.forEach {
         prepareForIntake(it)
         confirmIntakeAndTransfer(it.extraPoseBack)
-        depositToHighBasket()
+        depositToHighBasket(it.alternateHighBasketDriftComp)
     }
 
     single("park near submersible") {

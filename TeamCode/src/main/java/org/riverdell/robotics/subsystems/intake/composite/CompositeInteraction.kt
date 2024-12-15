@@ -192,7 +192,6 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
     fun intakeAndConfirm(extras: () -> Unit = {}) =
         stateMachineRestrict(InteractionCompositeState.Pickup, InteractionCompositeState.Confirm) {
-//            intakeV4B.coaxialPickup()
             intakeV4B.v4bSamplePickup().thenRunAsync {
                 Thread.sleep(125L)
                 intake.closeIntake()
@@ -203,10 +202,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 CompletableFuture.allOf(
                     intakeV4B.v4bIntermediate(),
                     intakeV4B.coaxialIntermediate(),
-                    // don't fix wrist
-                    if (robot is HypnoticAuto.HypnoticAutoRobot)
-                        CompletableFuture.completedFuture(null) else
-                            intake.setWrist(WristState.Lateral)
+                    intake.setWrist(WristState.Lateral)
                 ).join()
             }
         }
@@ -269,11 +265,6 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 intakeV4B.v4bUnlock()
             ).thenRunAsync {
                 intakeV4B.v4bLock().join()
-                if (robot is HypnoticAuto.HypnoticAutoRobot)
-                {
-                    intake.setWrist(WristState.Lateral).join()
-                }
-
                 performTransferSequence()
             }
         }
