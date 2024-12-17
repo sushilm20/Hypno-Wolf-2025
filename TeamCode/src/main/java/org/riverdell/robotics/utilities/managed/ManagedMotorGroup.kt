@@ -29,6 +29,7 @@ class ManagedMotorGroup(
     private var stuckProtection: StuckProtection? = null
     private var previousPosition: Int = 0
 
+
     private var stable = System.currentTimeMillis()
     private var pidfController = pidfBuilder()
 
@@ -60,14 +61,14 @@ class ManagedMotorGroup(
             master.currentPosition
         },
         complete = { current, target ->
-//            println("position: ${abs(target - current)}, ${abs(target - current) < 5}")
+            val isAtPoint = (abs(target - current) < tolerance)
 
-            (abs(target - current) < tolerance || if (stuckProtection == null)
+            isAtPoint || if (stuckProtection == null)
             {
                 false
             } else
             {
-                val diffs = abs(current - previousPosition)
+                val diffs = master.velocity
                 previousPosition = current
 
                 if (diffs > stuckProtection!!.minimumRequiredPositionDifference)
@@ -78,7 +79,7 @@ class ManagedMotorGroup(
                 {
                     System.currentTimeMillis() - stable > stuckProtection!!.timeStuckUnderMinimumMillis
                 }
-            })
+            }
         }
     )
 

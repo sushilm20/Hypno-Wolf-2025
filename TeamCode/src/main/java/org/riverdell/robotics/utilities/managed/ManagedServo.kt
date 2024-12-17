@@ -8,7 +8,6 @@ import org.riverdell.robotics.utilities.motionprofile.AsymmetricMotionProfile
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import org.riverdell.robotics.utilities.motionprofile.ProfileState
 import java.util.concurrent.CompletableFuture
-import kotlin.math.abs
 
 /**
  * A [Servo] wrapper that keeps track of motion profile states.
@@ -16,6 +15,7 @@ import kotlin.math.abs
  * @author Subham
  */
 class ManagedServo(
+    private val id: String,
     private val servo: ServoImplEx,
     stateHolder: StateHolder,
     private val constraints: () -> ProfileConstraints
@@ -29,7 +29,7 @@ class ManagedServo(
         timer = ElapsedTime()
         if (behavior == ServoBehavior.MotionProfile)
         {
-            println("Motion profile going from ${servo.position} to $it")
+            println("[${id}] Motion profile from ${servo.position} to $it")
             motionProfile = AsymmetricMotionProfile(
                 servo.position,
                 it,
@@ -37,12 +37,14 @@ class ManagedServo(
             )
         } else
         {
+            println("[${id}] Direct from ${servo.position} to $it")
             motionProfile = null
         }
     }, { _ ->
         servo.position
     }, { _, target ->
         if (behavior == ServoBehavior.Direct) {
+            println("[${id}] Direct COMPLETE to $target")
             servo.position = target
             return@state true
         } else
@@ -50,6 +52,7 @@ class ManagedServo(
             profileState = motionProfile!!.calculate(timer.time())
             if (profileState!!.v == 0.0) {
                 servo.position = target
+                println("[${id}] MP COMPLETE to ${timer.time()}")
                 return@state true
             }
 

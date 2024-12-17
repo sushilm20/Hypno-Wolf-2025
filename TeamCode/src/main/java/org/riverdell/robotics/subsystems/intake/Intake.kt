@@ -9,11 +9,11 @@ import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 import java.util.concurrent.CompletableFuture
 
 class Intake(private val robot: HypnoticRobot) : AbstractSubsystem() {
-    val wrist = motionProfiledServo(robot.hardware.intakeWrist, ProfileConstraints(20.0, 2.0, 2.0))
+    val wrist = motionProfiledServo("intake_wr", robot.hardware.intakeWrist, ProfileConstraints(45.0, 12.0, 12.0))
     private val leftGrip =
-        motionProfiledServo(robot.hardware.intakeClawLeft, Constraint.HALF.scale(10.5))
+        motionProfiledServo("intake_lg", robot.hardware.intakeClawLeft, Constraint.HALF.scale(10.5))
     private val rightGrip =
-        motionProfiledServo(robot.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
+        motionProfiledServo("intake_rg", robot.hardware.intakeClawRight, Constraint.HALF.scale(10.5))
 
     var intakeState = IntakeState.Closed
     var wristState = WristState.Lateral

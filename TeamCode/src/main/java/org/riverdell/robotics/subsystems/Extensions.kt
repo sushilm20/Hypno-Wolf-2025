@@ -5,7 +5,11 @@ import io.liftgate.robotics.mono.states.StateHolder
 import org.riverdell.robotics.utilities.managed.ManagedServo
 import org.riverdell.robotics.utilities.motionprofile.ProfileConstraints
 
-fun StateHolder.motionProfiledServo(servo: ServoImplEx, constraints: ProfileConstraints) = ManagedServo(
+fun StateHolder.motionProfiledServo(
+    id: String, servo: ServoImplEx,
+    constraints: ProfileConstraints
+) = ManagedServo(
+    id,
     servo,
     this
 ) { constraints }

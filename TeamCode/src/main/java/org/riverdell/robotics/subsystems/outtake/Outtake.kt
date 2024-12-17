@@ -9,11 +9,11 @@ import java.util.concurrent.CompletableFuture
 
 class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
-    private val claw = motionProfiledServo(robot.hardware.outtakeClaw, Constraint.HALF.scale(10.5))
+    private val claw = motionProfiledServo("outtake_c", robot.hardware.outtakeClaw, Constraint.HALF.scale(10.5))
 
-    private val coaxial = motionProfiledServo(robot.hardware.outtakeCoaxial, Constraint.HALF.scale(50.5))
-    private val leftRotation = motionProfiledServo(robot.hardware.outtakeRotationLeft, Constraint.HALF.scale(50.5))
-    private val rightRotation = motionProfiledServo(robot.hardware.outtakeRotationRight, Constraint.HALF.scale(50.5))
+    private val coaxial = motionProfiledServo("outtake_cr", robot.hardware.outtakeCoaxial, Constraint.HALF.scale(50.5))
+    private val leftRotation = motionProfiledServo("outtake_lr", robot.hardware.outtakeRotationLeft, Constraint.HALF.scale(50.5))
+    private val rightRotation = motionProfiledServo("outtake_rr", robot.hardware.outtakeRotationRight, Constraint.HALF.scale(50.5))
 
     var clawState = OuttakeClawState.Closed
     var coaxialState = OuttakeCoaxialState.Ready
