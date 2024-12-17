@@ -69,19 +69,8 @@ class IntakeV4B(private val robot: HypnoticRobot) : AbstractSubsystem()
     private fun coaxialRotateTo(position: Double) = coaxialRotation.setTarget(position, ServoBehavior.Direct)
     private fun v4bRotateTo(position: Double) = if (!HypnoticRobot.safeMode)
     {
-//        leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile)
-        CompletableFuture.allOf(
-            leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile)
-                .exceptionally {
-                    it.printStackTrace()
-                    return@exceptionally null
-                },
-            rightRotation.setTarget(position, ServoBehavior.MotionProfile)
-                .exceptionally {
-                    it.printStackTrace()
-                    return@exceptionally null
-                }
-        )
+        leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile)
+        rightRotation.setTarget(position, ServoBehavior.MotionProfile)
     } else
     {
         leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile)

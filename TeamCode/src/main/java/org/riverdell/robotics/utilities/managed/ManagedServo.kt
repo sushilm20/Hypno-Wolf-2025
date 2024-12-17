@@ -59,7 +59,7 @@ class ManagedServo(
 
             if (profileState!!.v == 0.0) {
                 servo.position = target
-                println("[${id}] MP COMPLETE to ${timer.time()}")
+                println("[${id}] MP COMPLETE to ${timer.milliseconds()}")
                 return@state true
             }
 
