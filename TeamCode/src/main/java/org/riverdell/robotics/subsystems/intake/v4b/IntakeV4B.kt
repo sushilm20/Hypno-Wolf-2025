@@ -27,12 +27,10 @@ class IntakeV4B(private val robot: HypnoticRobot) : AbstractSubsystem()
     fun setCoaxial(state: CoaxialState) = let {
         if (state == coaxialState)
         {
-            println("Same state")
             return@let CompletableFuture.completedFuture(null)
         }
 
         coaxialState = state
-        println("Updating coaxil state to $state")
         return@let updateCoaxialState()
     }
 
@@ -51,7 +49,6 @@ class IntakeV4B(private val robot: HypnoticRobot) : AbstractSubsystem()
     fun setV4B(state: V4BState) = let {
         if (state == v4bState)
         {
-            println("Same state! $state and $v4bState")
             return@let CompletableFuture.completedFuture(null)
         }
 

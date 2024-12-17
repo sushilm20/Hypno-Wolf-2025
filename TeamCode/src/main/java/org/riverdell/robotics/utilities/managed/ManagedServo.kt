@@ -49,7 +49,14 @@ class ManagedServo(
             return@state true
         } else
         {
-            profileState = motionProfile!!.calculate(timer.time())
+            profileState = motionProfile?.calculate(timer.time())
+            if (profileState == null)
+            {
+                println("[${id}] REVERTED TO DIRECT FROM MP to $target DUE TO NULL REF")
+                servo.position = target
+                return@state true
+            }
+
             if (profileState!!.v == 0.0) {
                 servo.position = target
                 println("[${id}] MP COMPLETE to ${timer.time()}")
@@ -68,6 +75,11 @@ class ManagedServo(
     ): CompletableFuture<*> {
         this.behavior = behavior
         return state.override(target, 0L)
+            .exceptionally {
+                println("[${id}] FAILED TO OVERRIDE to $target")
+                it.printStackTrace()
+                return@exceptionally null
+            }
     }
 
     fun cancelMotionProfile() = state.reset()

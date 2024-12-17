@@ -54,7 +54,6 @@ class ManagedMotorGroup(
             }
 
             pidfController.targetPosition = it.toDouble()
-            println("Wrote new target position $it for $groupId")
             idle = false
         },
         read = {
@@ -240,7 +239,6 @@ class ManagedMotorGroup(
         exitIdle()
         return state.override(target, timeout = timeout)
             .exceptionally {
-                println("cancelled forcefully")
                 return@exceptionally null
             }
     }
