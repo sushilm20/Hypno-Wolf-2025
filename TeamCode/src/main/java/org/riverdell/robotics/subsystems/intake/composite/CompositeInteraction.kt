@@ -266,6 +266,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             ).thenRunAsync {
                 intakeV4B.v4bLock().join()
                 performTransferSequence()
+                extension.slides.idle()
             }
         }
 
