@@ -13,7 +13,7 @@ class IntakeV4B(private val robot: HypnoticRobot) : AbstractSubsystem()
 {
     private val leftRotation = motionProfiledServo("intake_lr", robot.hardware.intakeV4BLeft, Constraint.HALF.scale(30.5))
     private val rightRotation = motionProfiledServo("intake_rr", robot.hardware.intakeV4BRight, Constraint.HALF.scale(30.5))
-    private val coaxialRotation = motionProfiledServo("intake_cr", robot.hardware.intakeV4BCoaxial, Constraint.HALF.scale(10.5))
+    private val coaxialRotation = motionProfiledServo("intake_cr", robot.hardware.intakeV4BCoaxial, Constraint.HALF.scale(30.5))
 
     var v4bState = V4BState.Lock
     var coaxialState = CoaxialState.Rest
@@ -67,16 +67,10 @@ class IntakeV4B(private val robot: HypnoticRobot) : AbstractSubsystem()
     }
 
     private fun coaxialRotateTo(position: Double) = coaxialRotation.setTarget(position, ServoBehavior.Direct)
-    private fun v4bRotateTo(position: Double) = if (!HypnoticRobot.safeMode)
-    {
-        CompletableFuture.allOf(
-            leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile),
-                    rightRotation.setTarget(position, ServoBehavior.MotionProfile)
-        )
-    } else
-    {
-        leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile)
-    }
+    private fun v4bRotateTo(position: Double) = CompletableFuture.allOf(
+        leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile),
+        rightRotation.setTarget(position, ServoBehavior.MotionProfile)
+    )
 
     override fun start()
     {

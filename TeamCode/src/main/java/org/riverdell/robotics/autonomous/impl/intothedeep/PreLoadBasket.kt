@@ -16,12 +16,11 @@ import org.riverdell.robotics.subsystems.intake.WristState
 import org.riverdell.robotics.subsystems.intake.composite.InteractionCompositeState
 import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
 
-@Autonomous(name = "4+0 Basket & hors", group = "Test")
+@Autonomous(name = "4+0 Basket", group = "Test")
 class PreLoadBasket : HypnoticAuto({ opMode ->
     val startPose = Pose2d(0.0, 0.0, 0.degrees)
 
-    val depositHighBucket = Pose(15.0, 22.5, (46.48).degrees)
-    val midDepositHighBucket = Pose(24.5, 11.5, (42.95).degrees)
+    val depositHighBucket = Pose(12.36, 23.84, (41.65).degrees)
 
     val parkSubmersible = listOf(
         FieldWaypoint(depositHighBucket, 15.0),
@@ -43,6 +42,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                 preLoadCompleted = true
                 opMode.robot.intakeComposite
                     .initialOuttakeFromRest(OuttakeLevel.HighBasket)
+                    .join()
             } else {
                 opMode.robot.intakeComposite
                     .initialOuttake(OuttakeLevel.HighBasket)
@@ -50,7 +50,6 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
 
             if (initial)
             {
-                navigateTo(midDepositHighBucket)
                 navigateTo(depositHighBucket)
             } else
             {
@@ -63,7 +62,6 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                 }
             }
 
-            Thread.sleep(250L)
             opMode.robot.intakeComposite.outtakeCompleteAndRest().join()
         }
     }
@@ -106,7 +104,7 @@ class PreLoadBasket : HypnoticAuto({ opMode ->
                 }
             }
 
-            Thread.sleep(500L)
+            Thread.sleep(250L)
         }
     }
 

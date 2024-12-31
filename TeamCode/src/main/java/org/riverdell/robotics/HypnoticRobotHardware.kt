@@ -107,10 +107,7 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         if (HypnoticRobot.resetMode)
         {
             intakeV4BLeft.position = 1.0 - V4BState.UnlockedIdleHover.position
-            if (!HypnoticRobot.safeMode)
-            {
-                intakeV4BRight.position = V4BState.UnlockedIdleHover.position
-            }
+            intakeV4BRight.position = V4BState.UnlockedIdleHover.position
 
             start = System.currentTimeMillis()
             var hasReset = false
@@ -118,10 +115,7 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
             while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 1000L) {
                 if (System.currentTimeMillis() - start > 500L && !hasReset) {
                     intakeV4BLeft.position = 1.0 - V4BState.Lock.position
-                    if (!HypnoticRobot.safeMode)
-                    {
-                        intakeV4BRight.position = V4BState.Lock.position
-                    }
+                    intakeV4BRight.position = V4BState.Lock.position
                     hasReset = true
                 }
 

@@ -91,7 +91,6 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
         instance = this
 
         resetMode = opMode.gamepad1.a
-        safeMode = opMode.gamepad1.b || this is HypnoticAuto.HypnoticAutoRobot
 
         hardware = HypnoticRobotHardware(opMode)
         hardware.initializeHardware()
