@@ -166,7 +166,11 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             )
         }
 
-    fun prepareForPickup(wristState: WristState = WristState.Lateral, doNotUseAutoMode: Boolean = false, wideOpen: Boolean = false) =
+    fun prepareForPickup(
+        wristState: WristState = WristState.Lateral,
+        doNotUseAutoMode: Boolean = false,
+        wideOpen: Boolean = false
+    ) =
         stateMachineRestrict(InteractionCompositeState.Rest, InteractionCompositeState.Pickup) {
             intakeV4B.v4bUnlock()
                 .thenAcceptAsync {
@@ -219,10 +223,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             )
         }
 
-    private fun HypnoticRobot.performTransferSequence()
-    {
-        outtake.openClaw()
-
+    private fun HypnoticRobot.performTransferSequence() {
         CompletableFuture.allOf(
             outtake.transferRotation(),
             outtake.transferCoaxial()
@@ -230,9 +231,9 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
 
         Thread.sleep(350)
         CompletableFuture.allOf(
-            outtake.closeClaw(),
-            intake.openIntake()
-        ).join()
+            intake.openIntake(),
+            outtake.closeClaw()
+        )
         Thread.sleep(150)
 
         CompletableFuture.allOf(
@@ -260,8 +261,11 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             InteractionCompositeState.OuttakeReady
         ) {
             CompletableFuture.allOf(
-                extension.extendToAndStayAt(0),
-                intakeV4B.coaxialRest(),
+                extension.extendToAndStayAt(-5),
+                CompletableFuture.runAsync {
+                    Thread.sleep(250L)
+                    intakeV4B.coaxialRest().join()
+                },
                 intakeV4B.v4bUnlock()
             ).thenRunAsync {
                 intakeV4B.v4bLock().join()

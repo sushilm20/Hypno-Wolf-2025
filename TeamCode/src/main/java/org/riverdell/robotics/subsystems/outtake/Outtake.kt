@@ -51,7 +51,11 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
 
     private fun updateClawState(): CompletableFuture<*>
     {
-        return clawRotateTo(clawState.position)
+        CompletableFuture.runAsync {
+            clawRotateTo(clawState.position)
+        }
+
+        return CompletableFuture.completedFuture(null)
     }
 
     fun readyCoaxial() = setCoaxial(OuttakeCoaxialState.Ready)
@@ -73,7 +77,10 @@ class Outtake(private val robot: HypnoticRobot) : AbstractSubsystem()
         return coaxialRotateTo(coaxialState.position)
     }
 
-    private fun clawRotateTo(position: Double) = claw.setTarget(position, ServoBehavior.Direct)
+    private fun clawRotateTo(position: Double) {
+        claw.unwrapServo().position = position
+    }
+
     private fun coaxialRotateTo(position: Double) = coaxial.setTarget(position, ServoBehavior.MotionProfile)
     private fun rotationRotateTo(position: Double) = CompletableFuture.allOf(
         leftRotation.setTarget(1.0 - position, ServoBehavior.MotionProfile),

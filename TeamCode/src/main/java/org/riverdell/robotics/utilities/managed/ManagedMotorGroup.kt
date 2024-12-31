@@ -234,11 +234,12 @@ class ManagedMotorGroup(
     /**
      * Overrides current state and goes to a target position.
      */
-    fun goTo(target: Int): CompletableFuture<StateResult>
+    fun goTo(target: Int): CompletableFuture<*>
     {
         exitIdle()
         return state.override(target, timeout = timeout)
             .exceptionally {
+                it.printStackTrace()
                 return@exceptionally null
             }
     }
