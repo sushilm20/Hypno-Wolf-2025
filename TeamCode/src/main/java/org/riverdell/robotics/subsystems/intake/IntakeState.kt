@@ -1,6 +1,6 @@
 package org.riverdell.robotics.subsystems.intake
 
-enum class IntakeState(val positionRight: Double, val positionLeft: Double)
+enum class IntakeState(val positionLeft: Double, val positionRight: Double)
 {
     WideOpen(0.0, 1.0),
     Open(0.2, 0.8),

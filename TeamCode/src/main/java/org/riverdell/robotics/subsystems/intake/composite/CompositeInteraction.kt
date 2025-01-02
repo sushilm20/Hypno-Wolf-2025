@@ -12,6 +12,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
     var attemptedState: InteractionCompositeState? = null
     var attemptTime = System.currentTimeMillis()
     var outtakeLevel = OuttakeLevel.Bar1
+    var lastOuttakeBegin = System.currentTimeMillis()
 
     fun outtakeNext(): CompletableFuture<*> {
         if (state != InteractionCompositeState.Outtaking) {
@@ -66,12 +67,13 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             )
         }
 
-    fun initialOuttake(preferredLevel: OuttakeLevel = OuttakeLevel.Bar1) = stateMachineRestrict(
+    fun initialOuttake(preferredLevel: OuttakeLevel = OuttakeLevel.HighBasket) = stateMachineRestrict(
         InteractionCompositeState.OuttakeReady,
         InteractionCompositeState.Outtaking,
         ignoreInProgress = true
     ) {
         outtakeLevel = preferredLevel
+        lastOuttakeBegin = System.currentTimeMillis()
         CompletableFuture.allOf(robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel))
     }
 
@@ -251,6 +253,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             InteractionCompositeState.OuttakeReady
         ) {
             CompletableFuture.runAsync {
+                outtake.openClaw()
                 performTransferSequence()
             }
         }
@@ -261,7 +264,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             InteractionCompositeState.OuttakeReady
         ) {
             CompletableFuture.allOf(
-                extension.extendToAndStayAt(-5),
+                extension.extendToAndStayAt(0),
                 CompletableFuture.runAsync {
                     Thread.sleep(250L)
                     intakeV4B.coaxialRest().join()
@@ -269,6 +272,19 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 intakeV4B.v4bUnlock()
             ).thenRunAsync {
                 intakeV4B.v4bLock().join()
+                // in case of failed lock
+                if (extension.slides.currentPosition() > 5)
+                {
+                    intakeV4B.v4bUnlock()
+                        .thenRunAsync {
+                            extension.extendToAndStayAt(0).join()
+                        }
+                        .thenRunAsync {
+                            intakeV4B.v4bLock().join()
+                        }
+                        .join()
+                }
+
                 performTransferSequence()
                 extension.slides.idle()
             }

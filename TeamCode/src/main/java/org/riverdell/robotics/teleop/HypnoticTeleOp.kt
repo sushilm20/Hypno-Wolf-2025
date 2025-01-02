@@ -156,6 +156,11 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
                             return@triggers
                         }
 
+                        if (System.currentTimeMillis() - intakeComposite.lastOuttakeBegin < 750L)
+                        {
+                            return@triggers
+                        }
+
                         intakeComposite.outtakeCompleteAndRest()
                     }
                     .whenPressedOnce()

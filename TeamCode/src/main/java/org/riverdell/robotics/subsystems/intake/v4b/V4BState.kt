@@ -3,7 +3,7 @@ package org.riverdell.robotics.subsystems.intake.v4b
 enum class V4BState(val position: Double)
 {
     Lock(0.21),
-    UnlockedIdleHover(0.25),
+    UnlockedIdleHover(0.3),
     Transfer(0.23),
     Intermediate(0.5), //0.5
     AutoGateway(0.77),
