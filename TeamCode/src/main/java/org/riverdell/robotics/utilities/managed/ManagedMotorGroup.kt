@@ -237,6 +237,9 @@ class ManagedMotorGroup(
     fun goTo(target: Int): CompletableFuture<*>
     {
         exitIdle()
+        kotlin.runCatching {
+            state.reset()
+        }
         return state.override(target, timeout = timeout)
             .exceptionally {
                 it.printStackTrace()

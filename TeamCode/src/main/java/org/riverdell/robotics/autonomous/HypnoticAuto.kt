@@ -35,9 +35,15 @@ abstract class HypnoticAuto(
            while (opModeInInit())
            {
                runPeriodics()
+
+               imuProxy.allPeriodic()
                drivetrain.localizer.update()
 
                multipleTelemetry.addLine("--- Initialization ---")
+
+               multipleTelemetry.addLine("Alternative IMU: ${drivetrain.alternativeImu().getYaw(AngleUnit.DEGREES)}")
+               multipleTelemetry.addLine("Normal IMU: ${drivetrain.imu().getYaw(AngleUnit.DEGREES)}")
+
                multipleTelemetry.addData(
                    "Voltage",
                    drivetrain.voltage()
@@ -89,6 +95,8 @@ abstract class HypnoticAuto(
            thread {
                while (!isStopRequested)
                {
+                   multipleTelemetry.addLine("Alternative IMU: ${drivetrain.alternativeImu().getYaw(AngleUnit.DEGREES)}")
+                   multipleTelemetry.addLine("Normal IMU: ${drivetrain.imu().getYaw(AngleUnit.DEGREES)}")
 
                    multipleTelemetry.addData(
                        "Pose",

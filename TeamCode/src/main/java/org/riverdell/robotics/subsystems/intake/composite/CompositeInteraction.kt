@@ -56,7 +56,7 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         stateMachineRestrict(
             InteractionCompositeState.Rest,
             InteractionCompositeState.Outtaking,
-            ignoreInProgress = true
+            ignoreInProgress = robot !is HypnoticAuto.HypnoticAutoRobot
         ) {
             outtakeLevel = preferredLevel
             robot.outtake.depositRotation()
@@ -70,11 +70,13 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
     fun initialOuttake(preferredLevel: OuttakeLevel = OuttakeLevel.HighBasket) = stateMachineRestrict(
         InteractionCompositeState.OuttakeReady,
         InteractionCompositeState.Outtaking,
-        ignoreInProgress = true
+        ignoreInProgress = robot !is HypnoticAuto.HypnoticAutoRobot
     ) {
         outtakeLevel = preferredLevel
         lastOuttakeBegin = System.currentTimeMillis()
-        CompletableFuture.allOf(robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel))
+        CompletableFuture.allOf(
+            robot.lift.extendToAndStayAt(outtakeLevel.encoderLevel)
+        )
     }
 
     fun outtakeCompleteAndRestFromOuttakeReady() = stateMachineRestrict(
@@ -104,33 +106,27 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             outtake.readyCoaxial().join()
 
             lift.extendToAndStayAt(0)
-                .thenRunAsync {
-                    lift.robot.lift.slides.idle()
-                }
-
             CompletableFuture.completedFuture(null)
         }
     }
 
-    fun specimenDepositAndRest() = stateMachineRestrict(
-        InteractionCompositeState.Outtaking,
+    fun specimenCompleteAndRest() = stateMachineRestrict(
+        InteractionCompositeState.OuttakeReady,
         InteractionCompositeState.Rest,
         ignoreInProgress = true
     ) {
         CompletableFuture.runAsync {
-            outtake.depositRotation()
-            outtake.depositCoaxial().join()
-
+            lift.extendToAndStayAt(1000)
+            Thread.sleep(750L)
             outtake.openClaw()
             Thread.sleep(125L)
 
             lift.extendToAndStayAt(0)
-                .thenRunAsync {
-                    lift.robot.lift.slides.idle()
-                }
 
-            outtake.readyCoaxial()
             outtake.readyRotation()
+            outtake.readyCoaxial()
+
+            CompletableFuture.completedFuture(null)
         }
     }
 
@@ -272,19 +268,6 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
                 intakeV4B.v4bUnlock()
             ).thenRunAsync {
                 intakeV4B.v4bLock().join()
-                // in case of failed lock
-                if (extension.slides.currentPosition() > 5)
-                {
-                    intakeV4B.v4bUnlock()
-                        .thenRunAsync {
-                            extension.extendToAndStayAt(0).join()
-                        }
-                        .thenRunAsync {
-                            intakeV4B.v4bLock().join()
-                        }
-                        .join()
-                }
-
                 performTransferSequence()
                 extension.slides.idle()
             }
@@ -322,5 +305,20 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
     }
 
     override fun start() {
+    }
+
+    fun waitForState(state: InteractionCompositeState,
+                     timeout: Long = 10000L): Boolean {
+        val start = System.currentTimeMillis()
+        while (this.state != state)
+        {
+            if (System.currentTimeMillis() - start > timeout)
+            {
+                return false
+            }
+            Thread.sleep(50L)
+        }
+
+        return true
     }
 }

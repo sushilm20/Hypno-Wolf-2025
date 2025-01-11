@@ -26,14 +26,14 @@ public class PositionChangeAction {
 
     public double K_STATIC = 1.85;
 
-    public static double xP = 0.05;
-    public static double xD = 0.007;
+    public static double xP = 0.016;
+    public static double xD = 0.0018;
 
-    public static double yP = 0.125;
-    public static double yD = 0.02;
+    public static double yP = xP;
+    public static double yD = xD;
 
-    public static double hP = 0.82;
-    public static double hD = 0.07;
+    public static double hP = 0.35;
+    public static double hD = 0.02;
 
     public double MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = 0.75;
     public double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;

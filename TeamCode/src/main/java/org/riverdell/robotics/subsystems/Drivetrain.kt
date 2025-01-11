@@ -24,7 +24,8 @@ class Drivetrain(private val robot: HypnoticRobot) : AbstractSubsystem()
     private lateinit var backingDriveBase: MecanumDrive
 
     fun voltage() = kotlin.runCatching { voltageState.current() }.getOrElse { 0.0 }
-    fun imu() = robot.imuProxy.imu()
+    fun imu() = robot.imuProxy.alternativeImu()
+    fun alternativeImu() = robot.imuProxy.imu()
 
     fun driveRobotCentric(driverOp: GamepadEx, scaleFactor: Double)
     {

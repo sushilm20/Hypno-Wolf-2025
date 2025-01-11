@@ -29,6 +29,7 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
     lateinit var backLeft: DcMotorEx
 
     lateinit var imu: IMU
+    lateinit var imuLol: IMU
 
     lateinit var intakeV4BLeft: ServoImplEx
     lateinit var intakeV4BRight: ServoImplEx
@@ -57,6 +58,17 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
             )
         )
         imu.resetYaw()
+
+        imuLol = opMode.hardwareMap["lol"] as IMU
+        imuLol.initialize(
+            IMU.Parameters(
+                RevHubOrientationOnRobot(
+                    RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                    RevHubOrientationOnRobot.UsbFacingDirection.LEFT
+                )
+            )
+        )
+        imuLol.resetYaw()
 
         frontLeft = opMode.hardwareMap.get(DcMotorEx::class.java, "frontLeft")
         frontRight = opMode.hardwareMap.get(DcMotorEx::class.java, "frontRight")
