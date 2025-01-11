@@ -10,12 +10,7 @@ import org.riverdell.robotics.autonomous.movement.navigateTo
 @Autonomous(name = "Test | Turn", group = "Test")
 class TestTurn : HypnoticAuto({ opMode ->
     single("turn") {
-        navigateTo(
-            Pose(
-                -0.0,
-                -0.0,
-                90.degrees
-            )
-        )
+        navigateTo(Pose(0.0, 0.0, TestConfig.turn.degrees))
+        navigateTo(Pose(TestConfig.x, TestConfig.y, TestConfig.turn.degrees))
     }
 })

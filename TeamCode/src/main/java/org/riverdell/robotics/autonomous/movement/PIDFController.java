@@ -16,7 +16,7 @@ import java.util.LinkedList;
  */
 public class PIDFController {
 
-    private double kP, kI, kD, kF;
+    private double kP, kI, kD, v_Static; // No F term, replaced it with a v_Static term which represents speed at which static friction takes over
     private double setPoint;
     private double measuredValue;
     private double minIntegral, maxIntegral;
@@ -39,8 +39,8 @@ public class PIDFController {
     /**
      * The base constructor for the PIDF controller
      */
-    public PIDFController(double kp, double ki, double kd, double kf) {
-        this(kp, ki, kd, kf, 0, 0);
+    public PIDFController(double kp, double ki, double kd, double v_static) {
+        this(kp, ki, kd, v_static, 0, 0);
     }
 
     /**
@@ -52,11 +52,11 @@ public class PIDFController {
      * @param pv The measured value of he pid control loop. We want sp = pv, or to the degree
      *           such that sp - pv, or e(t) < tolerance.
      */
-    public PIDFController(double kp, double ki, double kd, double kf, double sp, double pv) {
+    public PIDFController(double kp, double ki, double kd, double v_static, double sp, double pv) {
         kP = kp;
         kI = ki;
         kD = kd;
-        kF = kf;
+        v_Static = v_static;
 
         setPoint = sp;
         measuredValue = pv;
@@ -134,7 +134,7 @@ public class PIDFController {
      * @return the PIDF coefficients
      */
     public double[] getCoefficients() {
-        return new double[]{kP, kI, kD, kF};
+        return new double[]{kP, kI, kD, v_Static};
     }
 
     /**
@@ -227,14 +227,14 @@ public class PIDFController {
         totalError = totalError < minIntegral ? minIntegral : Math.min(maxIntegral, totalError);
 
         // returns u(t)
-        return kP * errorVal_p + kI * totalError + kD * errorVal_v + kF * setPoint;
+        return kP * errorVal_p + kI * totalError + kD * (errorVal_v - Math.signum(errorVal_v)* v_Static);
     }
 
     public void setPIDF(double kp, double ki, double kd, double kf) {
         kP = kp;
         kI = ki;
         kD = kd;
-        kF = kf;
+        v_Static = kf;
     }
 
     public void setIntegrationBounds(double integralMin, double integralMax) {
@@ -259,7 +259,7 @@ public class PIDFController {
     }
 
     public void setF(double kf) {
-        kF = kf;
+        v_Static = kf;
     }
 
     public double getP() {
@@ -275,7 +275,7 @@ public class PIDFController {
     }
 
     public double getF() {
-        return kF;
+        return v_Static;
     }
 
     public double getPeriod() {

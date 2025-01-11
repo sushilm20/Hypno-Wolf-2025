@@ -15,7 +15,7 @@ public class MecanumTranslations {
 
     public static DrivetrainUpdates getPowers(double strafeSpeed, double forwardSpeed,
                               double turnSpeed, double gyroAngle) {
-        Vector2d input = new Vector2d(strafeSpeed, forwardSpeed).rotateBy(-gyroAngle);
+        Vector2d input = new Vector2d(strafeSpeed, forwardSpeed)/*.rotateBy(-gyroAngle)*/;
 
         strafeSpeed = Range.clip(input.getX(), -1, 1);
         forwardSpeed = Range.clip(input.getY(), -1, 1);
@@ -30,13 +30,14 @@ public class MecanumTranslations {
         // 1.06, 1.04
 
         // feedforward & voltage comp
-        double correction = 12 / HypnoticAuto.getInstance().getRobot().getDrivetrain().voltage();
+        double correction = 13 / HypnoticAuto.getInstance().getRobot().getDrivetrain().voltage();
         for (int i = 0; i < wheelSpeeds.length; i++) {
             wheelSpeeds[i] = Math.abs(wheelSpeeds[i]) < 0.01 ?
                     wheelSpeeds[i] * correction :
                     (wheelSpeeds[i] + Math.signum(wheelSpeeds[i]) * 0.085) * correction;
         }
 
+        //Normalize values
         double max = 1;
         for (double wheelSpeed : wheelSpeeds) max = Math.max(max, Math.abs(wheelSpeed));
 

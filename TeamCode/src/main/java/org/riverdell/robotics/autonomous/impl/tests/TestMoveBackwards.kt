@@ -10,6 +10,6 @@ import org.riverdell.robotics.autonomous.movement.navigateTo
 @Autonomous(name = "Test | Movement", group = "Test")
 class TestMoveBackwards : HypnoticAuto({ opMode ->
     single("go to position") {
-        navigateTo(Pose(TestConfig.x, TestConfig.y, TestConfig.turn.degrees))
+        navigateTo(Pose(TestConfig.x, TestConfig.y, TestConfig.turn.degrees)) {withAutomaticDeath(TestConfig.automaticDeath)}
     }
 })
