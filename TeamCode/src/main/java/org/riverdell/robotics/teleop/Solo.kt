@@ -7,3 +7,5 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
     group = "Drive"
 )
 class Solo : HypnoticTeleOp(true)
+
+//sigma sigma boy sigma boy sigma boy
