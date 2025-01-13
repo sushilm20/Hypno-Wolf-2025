@@ -5,7 +5,6 @@ import io.liftgate.robotics.mono.pipeline.RootExecutionGroup
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.riverdell.robotics.HypnoticOpMode
-import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig
 import org.riverdell.robotics.HypnoticRobot
 import org.riverdell.robotics.autonomous.movement.PositionChangeAction
 import org.riverdell.robotics.subsystems.intake.composite.InteractionCompositeState
@@ -24,7 +23,6 @@ abstract class HypnoticAuto(
 
    inner class HypnoticAutoRobot : HypnoticRobot(this@HypnoticAuto)
    {
-       val navigationConfig = NavigationConfig()
 //       val visionPipeline by lazy { VisionPipeline(this@HypnoticAuto) } // TODO: new season
 
        override fun additionalSubSystems() = listOf<AbstractSubsystem>(/*visionPipeline*/)
@@ -41,7 +39,6 @@ abstract class HypnoticAuto(
 
                multipleTelemetry.addLine("--- Initialization ---")
 
-               multipleTelemetry.addLine("Alternative IMU: ${drivetrain.alternativeImu().getYaw(AngleUnit.DEGREES)}")
                multipleTelemetry.addLine("Normal IMU: ${drivetrain.imu().getYaw(AngleUnit.DEGREES)}")
 
                multipleTelemetry.addData(
@@ -95,7 +92,6 @@ abstract class HypnoticAuto(
            thread {
                while (!isStopRequested)
                {
-                   multipleTelemetry.addLine("Alternative IMU: ${drivetrain.alternativeImu().getYaw(AngleUnit.DEGREES)}")
                    multipleTelemetry.addLine("Normal IMU: ${drivetrain.imu().getYaw(AngleUnit.DEGREES)}")
 
                    multipleTelemetry.addData(

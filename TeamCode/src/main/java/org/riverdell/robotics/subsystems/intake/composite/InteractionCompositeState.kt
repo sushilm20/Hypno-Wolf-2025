@@ -2,12 +2,9 @@ package org.riverdell.robotics.subsystems.intake.composite
 
 enum class InteractionCompositeState
 {
+    Initial,
     Rest,
     Pickup,
-    Confirm,
-    WallIntakeViaOuttake,
-    OuttakeReady,
-    Outtaking,
+    Deposit,
     InProgress
-
 }

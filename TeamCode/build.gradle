@@ -15,7 +15,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'io.liftgate:fast-load-plugin:0.2.0'
+//        classpath 'io.liftgate:fast-load-plugin:0.2.0'
     }
 }
 
@@ -28,7 +28,7 @@ plugins {
 // Include common definitions from above.
 apply from: "../build.common.gradle"
 apply from: "../build.dependencies.gradle"
-apply plugin: "io.liftgate.fast-load-plugin"
+//apply plugin: "io.liftgate.fast-load-plugin"/
 
 android {
     namespace = "org.firstinspires.ftc.teamcode"

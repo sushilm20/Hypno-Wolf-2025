@@ -1,7 +1,6 @@
 package org.riverdell.robotics.autonomous.movement;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.arcrobotics.ftclib.geometry.Vector2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -9,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.riverdell.robotics.autonomous.HypnoticAuto;
 import org.riverdell.robotics.autonomous.movement.geometry.Pose;
-import org.riverdell.robotics.autonomous.movement.konfig.NavigationConfig;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,24 +25,21 @@ public class PositionChangeAction {
 
     public double K_STATIC = 1.85;
 
-    public static double strafeP = 0.04;
-    public static double strafeD = 0.0025;
-    public static double strafe_v_static = 12;
+    public static double xP = 0.05;
+    public static double xD = 0.007;
 
-    public static double straightP = 0.0135;
-    public static double straightD = 0.0022;
-    public static double straight_v_static = 8;
+    public static double yP = 0.125;
+    public static double yD = 0.02;
 
-    public static double hP = 0.4;
-    public static double hD = 0.02;
-    public static double h_v_static = 0.6;
+    public static double hP = 0.82;
+    public static double hD = 0.07;
 
     public double MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = 0.75;
     public double MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = 0.02;
     public double AT_TARGET_AUTOMATIC_DEATH = 200;
 
-    public static PIDFController strafeController;
-    public static PIDFController straightController;
+    public static PIDFController xController;
+    public static PIDFController yController;
     public static PIDFController hController;
 
     private final ElapsedTime activeTimer = new ElapsedTime();
@@ -68,27 +63,9 @@ public class PositionChangeAction {
 
 //        populateDefaults();
 
-        strafeController = new PIDFController(strafeP, 0.0, strafeD, strafe_v_static);
-        straightController = new PIDFController(straightP, 0.0, straightD, straight_v_static);
-        hController = new PIDFController(hP, 0.0, hD, h_v_static);
-    }
-
-    private void populateDefaults() {
-        final NavigationConfig config = ((HypnoticAuto.HypnoticAutoRobot) instance.getRobot()).getNavigationConfig();
-        K_STATIC = config.getKStatic();
-
-        MINIMUM_ROTATIONAL_DIFF_FROM_TARGET = config.getMinimumRotationalDifferenceFromTarget();
-        MINIMUM_TRANSLATIONAL_DIFF_FROM_TARGET = config.getMinimumTranslationDifferenceFromTarget();
-        AT_TARGET_AUTOMATIC_DEATH = config.getAutomaticDeathMillis();
-
-        strafeP = config.getXP();
-        strafeD = config.getXD();
-
-        straightP = config.getYP();
-        straightD = config.getYD();
-
-        hP = config.getHP();
-        hD = config.getHD();
+        xController = new PIDFController(xP, 0.0, xD, 0);
+        yController = new PIDFController(yP, 0.0, yD, 0);
+        hController = new PIDFController(hP, 0.0, hD, 0);
     }
 
     private @Nullable PathAlgorithm pathAlgorithm = null;
@@ -267,22 +244,17 @@ public class PositionChangeAction {
         if (headingError > Math.PI) targetPose.setHeading(targetPose.getHeading() - 2 * Math.PI);
         if (headingError < -Math.PI) targetPose.setHeading(targetPose.getHeading() + 2 * Math.PI);
 
-        Vector2d error = new Vector2d(targetPose.x - robotPose.x, targetPose.y - robotPose.y).rotateBy(-Math.toDegrees(robotPose.getHeading()));
-
-        double xPower = strafeController.calculate(robotPose.x, robotPose.x + error.getX());
-        double yPower = straightController.calculate(robotPose.y, robotPose.y + error.getY());
-
+        double xPower = xController.calculate(robotPose.x, targetPose.x);
+        double yPower = yController.calculate(robotPose.y, targetPose.y);
         double hPower = hController.calculate(robotPose.getHeading(), targetPose.getHeading());
 
-//        double x_rotated = xPower * Math.cos(-robotPose.getHeading()) - yPower * Math.sin(-robotPose.getHeading());
-//        double y_rotated = xPower * Math.sin(-robotPose.getHeading()) + yPower * Math.cos(-robotPose.getHeading());
+        double x_rotated = xPower * Math.cos(-robotPose.getHeading()) - yPower * Math.sin(-robotPose.getHeading());
+        double y_rotated = xPower * Math.sin(-robotPose.getHeading()) + yPower * Math.cos(-robotPose.getHeading());
 
         hPower = Range.clip(hPower, -maxRotationalSpeed, maxRotationalSpeed);
-//        x_rotated = Range.clip(x_rotated, -maxTranslationalSpeed / K_STATIC, maxTranslationalSpeed / K_STATIC);
-//        y_rotated = Range.clip(y_rotated, -maxTranslationalSpeed, maxTranslationalSpeed);
-        xPower = Range.clip(xPower, -maxRotationalSpeed, maxTranslationalSpeed);
-        yPower = Range.clip(yPower, -maxRotationalSpeed, maxTranslationalSpeed);
+        x_rotated = Range.clip(x_rotated, -maxTranslationalSpeed / K_STATIC, maxTranslationalSpeed / K_STATIC);
+        y_rotated = Range.clip(y_rotated, -maxTranslationalSpeed, maxTranslationalSpeed);
 
-        return new Pose(xPower, yPower, hPower);
+        return new Pose(x_rotated * K_STATIC, y_rotated, hPower);
     }
 }

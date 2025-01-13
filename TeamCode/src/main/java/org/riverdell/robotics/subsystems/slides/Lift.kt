@@ -16,20 +16,6 @@ class Lift(val robot: HypnoticRobot) : AbstractSubsystem()
             PIDCoefficients(kP, kI, kD),
             kV, kA, kStatic,
             tolerance = 10,
-            kF = { position, targetPosition, velocity ->
-                val error = position - targetPosition
-                if (targetPosition > 50.0) // If going up, always resist gravity
-                {
-                    0.17
-                } else { // If going near 0, give extra push down
-                    if (error > -20 && error < 90) // When elevator is just above the target position
-                    {
-                        (0.01 * error * abs(error)).coerceIn(-0.2, 0.2)
-                    } else {
-                        0.0 // Don't pull down when very far from target
-                    }
-                }
-            },
             master = robot.hardware.liftMotorLeft,
             slaves = listOf(robot.hardware.liftMotorRight)
         ).withTimeout(5000L)

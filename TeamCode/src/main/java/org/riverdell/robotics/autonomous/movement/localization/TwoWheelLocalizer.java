@@ -53,8 +53,8 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
         ));
 
         this.hypnoticRobot = hypnoticRobot;
-        lateral = hypnoticRobot.getHardware().getFrontLeft()::getCurrentPosition;
-        perpendicular = hypnoticRobot.getHardware().getBackLeft()::getCurrentPosition;
+        lateral = hypnoticRobot.getHardware().getBackRight()::getCurrentPosition;
+        perpendicular = hypnoticRobot.getHardware().getFrontRight()::getCurrentPosition;
     }
 
     public static double encoderTicksToInches(double ticks) {
@@ -89,6 +89,6 @@ public class TwoWheelLocalizer extends TwoTrackingWheelLocalizer {
 
     public Pose getPose() {
         Pose2d pose = getPoseEstimate();
-        return new Pose(-pose.getY(), pose.getX(), pose.getHeading());
+        return new Pose(pose.getY(), -pose.getX(), pose.getHeading());
     }
 }

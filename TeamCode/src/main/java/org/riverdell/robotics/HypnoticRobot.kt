@@ -8,16 +8,11 @@ import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import io.liftgate.robotics.mono.subsystem.Subsystem
 import io.liftgate.robotics.mono.subsystem.System
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.riverdell.robotics.autonomous.HypnoticAuto
 import org.riverdell.robotics.subsystems.Drivetrain
 import org.riverdell.robotics.subsystems.IMUProxySubsystem
-import org.riverdell.robotics.subsystems.hang.Hang
-import org.riverdell.robotics.subsystems.slides.Extension
 import org.riverdell.robotics.subsystems.slides.Lift
-import org.riverdell.robotics.subsystems.intake.Intake
 import org.riverdell.robotics.subsystems.intake.composite.CompositeInteraction
-import org.riverdell.robotics.subsystems.intake.v4b.IntakeV4B
-import org.riverdell.robotics.subsystems.outtake.Outtake
+import org.riverdell.robotics.subsystems.outtake.Sushil
 import org.riverdell.robotics.teleop.HypnoticTeleOp
 
 abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
@@ -27,7 +22,6 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
         @JvmStatic
         lateinit var instance: HypnoticRobot
 
-        var safeMode = false
         var resetMode = false
     }
 
@@ -35,13 +29,9 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
     lateinit var hardware: HypnoticRobotHardware
 
     val drivetrain by lazy { Drivetrain(this) }
-    val intake by lazy { Intake(this) }
-    val intakeV4B by lazy { IntakeV4B(this) }
     val intakeComposite by lazy { CompositeInteraction(this) }
-    val extension by lazy { Extension(this) }
     val lift by lazy { Lift(this) }
-    val hang by lazy { Hang(this) }
-    val outtake by lazy { Outtake(this) }
+    val outtake by lazy { Sushil(this) }
 
     val imuProxy by lazy { IMUProxySubsystem(opMode) }
 
@@ -64,21 +54,12 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
 
     fun Telemetry.addEssentialLines()
     {
-        addLine("Intake State: ${intake.intakeState}")
-        addLine("Wrist State: ${intake.wristState}")
-        addLine("4BR State: ${intakeV4B.v4bState}")
-        addLine("Coaxial State: ${intakeV4B.coaxialState}")
         addLine("Composite State: ${intakeComposite.state}")
 
         addLine("LIFT Left Position: ${hardware.liftMotorLeft.currentPosition}")
         addLine("LIFT Left Power: ${hardware.liftMotorLeft.power}")
         addLine("LIFT Right Position: ${hardware.liftMotorRight.currentPosition}")
         addLine("LIFT Right Power: ${hardware.liftMotorRight.power}")
-
-        addLine("EXTENDO Left Position: ${hardware.extensionMotorLeft.currentPosition}")
-        addLine("EXTENDO Left Power: ${hardware.extensionMotorLeft.power}")
-        addLine("EXTENDO Right Position: ${hardware.extensionMotorRight.currentPosition}")
-        addLine("EXTENDO Right Power: ${hardware.extensionMotorRight.power}")
     }
     
     open fun additionalSubSystems(): List<AbstractSubsystem>
@@ -96,7 +77,7 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
         hardware.initializeHardware()
 
         register(
-            drivetrain, intake, intakeV4B, outtake, extension, lift,
+            drivetrain, outtake, lift,
             *additionalSubSystems().toTypedArray()
         )
 

@@ -7,21 +7,14 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import org.riverdell.robotics.subsystems.intake.IntakeState
-import org.riverdell.robotics.subsystems.intake.WristState
-import org.riverdell.robotics.subsystems.intake.v4b.CoaxialState
-import org.riverdell.robotics.subsystems.intake.v4b.V4BState
-import org.riverdell.robotics.subsystems.outtake.OuttakeClawState
-import org.riverdell.robotics.subsystems.outtake.OuttakeCoaxialState
-import org.riverdell.robotics.subsystems.outtake.OuttakeRotationState
+import org.riverdell.robotics.subsystems.outtake.ClawState
+import org.riverdell.robotics.subsystems.outtake.PivotState
+import org.riverdell.robotics.subsystems.outtake.WristState
 import kotlin.math.absoluteValue
 
 class HypnoticRobotHardware(private val opMode: LinearOpMode) {
     lateinit var liftMotorLeft: DcMotorEx
     lateinit var liftMotorRight: DcMotorEx
-
-    lateinit var extensionMotorLeft: DcMotorEx
-    lateinit var extensionMotorRight: DcMotorEx
 
     lateinit var frontRight: DcMotorEx
     lateinit var frontLeft: DcMotorEx
@@ -29,63 +22,29 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
     lateinit var backLeft: DcMotorEx
 
     lateinit var imu: IMU
-    lateinit var imuLol: IMU
 
-    lateinit var intakeV4BLeft: ServoImplEx
-    lateinit var intakeV4BRight: ServoImplEx
-    lateinit var intakeV4BCoaxial: ServoImplEx
+    lateinit var claw: ServoImplEx
+    lateinit var wrist: ServoImplEx
 
-    lateinit var intakeWrist: ServoImplEx
-    lateinit var intakeClawLeft: ServoImplEx
-    lateinit var intakeClawRight: ServoImplEx
-
-    lateinit var outtakeRotationLeft: ServoImplEx
-    lateinit var outtakeRotationRight: ServoImplEx
-    lateinit var outtakeCoaxial: ServoImplEx
-    lateinit var outtakeClaw: ServoImplEx
-
-//    lateinit var hangLeft: CRServoImplEx
-//    lateinit var hangRight: CRServoImplEx
+    lateinit var pivotRight: ServoImplEx
+    lateinit var pivotLeft: ServoImplEx
 
     fun initializeHardware() {
         imu = opMode.hardwareMap["imu"] as IMU
         imu.initialize(
             IMU.Parameters(
                 RevHubOrientationOnRobot(
-                    RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                    RevHubOrientationOnRobot.UsbFacingDirection.RIGHT
+                    RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                    RevHubOrientationOnRobot.UsbFacingDirection.UP
                 )
             )
         )
         imu.resetYaw()
 
-        imuLol = opMode.hardwareMap["lol"] as IMU
-        imuLol.initialize(
-            IMU.Parameters(
-                RevHubOrientationOnRobot(
-                    RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                    RevHubOrientationOnRobot.UsbFacingDirection.LEFT
-                )
-            )
-        )
-        imuLol.resetYaw()
-
         frontLeft = opMode.hardwareMap.get(DcMotorEx::class.java, "frontLeft")
         frontRight = opMode.hardwareMap.get(DcMotorEx::class.java, "frontRight")
         backLeft = opMode.hardwareMap.get(DcMotorEx::class.java, "backLeft")
         backRight = opMode.hardwareMap.get(DcMotorEx::class.java, "backRight")
-
-        outtakeRotationRight = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationRight")
-        outtakeRotationRight.position = OuttakeRotationState.Ready.position
-
-        outtakeRotationLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeRotationLeft")
-        outtakeRotationLeft.position = 1.0 - OuttakeRotationState.Ready.position
-
-        outtakeCoaxial = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeCoaxial")
-        outtakeCoaxial.position = OuttakeCoaxialState.Ready.position
-
-        outtakeClaw = opMode.hardwareMap.get(ServoImplEx::class.java, "outtakeClaw")
-        outtakeClaw.position = OuttakeClawState.Closed.position
 
         liftMotorLeft = opMode.hardwareMap["liftLeft"] as DcMotorEx
         liftMotorLeft.direction = DcMotorSimple.Direction.FORWARD
@@ -107,57 +66,16 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         liftMotorLeft.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         liftMotorRight.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
 
-        extensionMotorLeft = opMode.hardwareMap["extendoLeft"] as DcMotorEx
-        extensionMotorLeft.direction = DcMotorSimple.Direction.REVERSE
+        claw = opMode.hardwareMap.get(ServoImplEx::class.java, "claw")
+        claw.position = ClawState.Closed.position
 
-        extensionMotorRight = opMode.hardwareMap["extendoRight"] as DcMotorEx
-        extensionMotorRight.direction = DcMotorSimple.Direction.FORWARD
+        wrist = opMode.hardwareMap.get(ServoImplEx::class.java, "clawRotation")
+        wrist.position = WristState.Lateral.position
 
-        intakeV4BLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BLeft")
-        intakeV4BRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BRight")
+        pivotRight = opMode.hardwareMap.get(ServoImplEx::class.java, "pivotRight")
+        pivotRight.position = PivotState.Initialize.rightPosition
 
-        if (HypnoticRobot.resetMode)
-        {
-            intakeV4BLeft.position = 1.0 - V4BState.UnlockedIdleHover.position
-            intakeV4BRight.position = V4BState.UnlockedIdleHover.position
-
-            start = System.currentTimeMillis()
-            var hasReset = false
-
-            while (extensionMotorRight.velocity.absoluteValue > 0.1 || System.currentTimeMillis() - start < 1000L) {
-                if (System.currentTimeMillis() - start > 500L && !hasReset) {
-                    intakeV4BLeft.position = 1.0 - V4BState.Lock.position
-                    intakeV4BRight.position = V4BState.Lock.position
-                    hasReset = true
-                }
-
-                extensionMotorLeft.power = -0.20
-                extensionMotorRight.power = -0.20
-            }
-
-            extensionMotorLeft.power = 0.0
-            extensionMotorRight.power = 0.0
-        }
-
-        extensionMotorRight.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        extensionMotorLeft.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-
-        intakeV4BCoaxial = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeV4BCoaxial")
-        intakeV4BCoaxial.position = CoaxialState.Rest.position
-
-        intakeWrist = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeWrist")
-        intakeWrist.position = WristState.Lateral.position
-
-        intakeClawLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawLeft")
-        intakeClawLeft.position = IntakeState.Closed.positionLeft
-
-        intakeClawRight = opMode.hardwareMap.get(ServoImplEx::class.java, "intakeClawRight")
-        intakeClawRight.position = IntakeState.Closed.positionRight
-
-        /*hangLeft = hardwareMap.get(CRServoImplEx::class.java, "hangLeft")
-        hangLeft.pwmRange = PwmRange(500.0, 2500.0)
-
-        hangRight = hardwareMap.get(CRServoImplEx::class.java, "hangRight")
-        hangRight.pwmRange = PwmRange(500.0, 2500.0)*/
+        pivotLeft = opMode.hardwareMap.get(ServoImplEx::class.java, "pivotLeft")
+        pivotLeft.position = 1.0 - PivotState.Initialize.rightPosition
     }
 }
