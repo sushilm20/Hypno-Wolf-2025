@@ -9,6 +9,10 @@ import org.riverdell.robotics.autonomous.detection.SampleType
 import org.riverdell.robotics.autonomous.detection.VisionPipeline
 import org.riverdell.robotics.subsystems.intake.composite.InteractionCompositeState
 import org.riverdell.robotics.subsystems.intake.composite.IntakeConfig
+import org.riverdell.robotics.subsystems.outtake.ClawState
+import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
+import org.riverdell.robotics.subsystems.outtake.PivotState
+import java.util.concurrent.CompletableFuture
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -42,15 +46,18 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
             multipleTelemetry.addLine("Started!")
             multipleTelemetry.update()
 
+            intakeComposite.fromInitialToRest()
+
             var loopTime: Long
             while (teleOp.opModeIsActive()) {
                 loopTime = System.nanoTime()
                 runPeriodics()
 
                 val multiplier =
-                    0.5 + if (intakeComposite.state == InteractionCompositeState.Pickup && teleOp.solo)
+                    0.5 + if (intakeComposite.state == InteractionCompositeState.Hover && teleOp.solo)
                         0.0 else (teleOp.gamepad1.right_trigger * 0.5)
                 drivetrain.driveRobotCentric(robotDriver, multiplier)
+
 
                 gp1Commands.run()
                 gp2Commands.run()
@@ -76,6 +83,51 @@ abstract class HypnoticTeleOp(internal val solo: Boolean = false) : HypnoticOpMo
         }
 
         private fun buildCommands() {
+            gp1Commands.where(ButtonType.ButtonA)
+                .triggers {
+                    if (intakeComposite.state == InteractionCompositeState.DepositReady)
+                    {
+                        intakeComposite.scoreAndRest()
+                        return@triggers
+                    }
+
+                    if (intakeComposite.state == InteractionCompositeState.Hover)
+                    {
+                        intakeComposite.fromHoverToDepositReady()
+                        return@triggers
+                    }
+
+                    intakeComposite.fromRestToHover()
+                }
+                .whenPressedOnce()
+
+            gp1Commands.where(ButtonType.BumperRight)
+                .onlyWhen { intakeComposite.state == InteractionCompositeState.DepositReady }
+                .triggers {
+                    intakeComposite.outtakeNext()
+                }
+                .whenPressedOnce()
+
+            gp1Commands.where(ButtonType.BumperLeft)
+                .onlyWhen { intakeComposite.state == InteractionCompositeState.DepositReady }
+                .triggers {
+                    intakeComposite.outtakePrevious()
+                }
+                .whenPressedOnce()
+
+            gp1Commands.where(ButtonType.BumperRight)
+                .onlyWhen { intakeComposite.state == InteractionCompositeState.Hover }
+                .triggers(50L) {
+                    hardware.wrist.position = min(hardware.wrist.position + 0.02, 1.0)
+                }
+                .repeatedlyWhilePressed()
+
+            gp1Commands.where(ButtonType.BumperLeft)
+                .onlyWhen { intakeComposite.state == InteractionCompositeState.Hover }
+                .triggers(50L) {
+                    hardware.wrist.position = max(hardware.wrist.position - 0.02, 0.0)
+                }
+                .repeatedlyWhilePressed()
 
             gp1Commands.doButtonUpdatesManually()
             gp2Commands.doButtonUpdatesManually()

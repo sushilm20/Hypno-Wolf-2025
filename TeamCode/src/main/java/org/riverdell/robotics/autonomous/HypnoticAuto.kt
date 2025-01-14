@@ -81,6 +81,9 @@ abstract class HypnoticAuto(
 
        override fun opModeStart()
        {
+
+           intakeComposite.fromInitialToRest()
+
            thread {
                while (!isStopRequested)
                {

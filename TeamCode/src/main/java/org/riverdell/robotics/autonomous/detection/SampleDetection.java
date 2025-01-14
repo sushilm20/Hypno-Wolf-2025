@@ -40,6 +40,7 @@ public class SampleDetection implements CameraStreamSource, VisionProcessor {
      * TURN_FACTOR: The P parameter.
      * TURN_FACTOR_D_GAIN: The D parameter.
      */
+    //SIGMA SUBHAM
     public static double TURN_FACTOR = 0.001;
     public static double TURN_FACTOR_D_GAIN = -0.0001;
 

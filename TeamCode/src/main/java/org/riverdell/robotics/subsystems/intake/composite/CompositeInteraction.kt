@@ -2,21 +2,20 @@ package org.riverdell.robotics.subsystems.intake.composite
 
 import io.liftgate.robotics.mono.subsystem.AbstractSubsystem
 import org.riverdell.robotics.HypnoticRobot
+import org.riverdell.robotics.subsystems.outtake.ClawState
 import org.riverdell.robotics.subsystems.outtake.OuttakeLevel
+import org.riverdell.robotics.subsystems.outtake.PivotState
+import org.riverdell.robotics.subsystems.outtake.WristState
 import java.util.concurrent.CompletableFuture
 
 class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem() {
-    var state = InteractionCompositeState.Rest
+    var state = InteractionCompositeState.Initial
     var attemptedState: InteractionCompositeState? = null
     var attemptTime = System.currentTimeMillis()
-    var outtakeLevel = OuttakeLevel.Bar1
+    var outtakeLevel = OuttakeLevel.Rest
     var lastOuttakeBegin = System.currentTimeMillis()
 
     fun outtakeNext(): CompletableFuture<*> {
-        if (state != InteractionCompositeState.Deposit) {
-            return CompletableFuture.completedFuture(null)
-        }
-
         if (outtakeLevel.next() == null) {
             return CompletableFuture.completedFuture(null)
         }
@@ -27,10 +26,6 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
     }
 
     fun outtakePrevious(): CompletableFuture<*> {
-        if (state != InteractionCompositeState.Deposit) {
-            return CompletableFuture.completedFuture(null)
-        }
-
         if (outtakeLevel.previous() == null) {
             return CompletableFuture.completedFuture(null)
         }
@@ -40,14 +35,10 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
             .exceptionally { return@exceptionally null }
     }
 
-    fun outtakeLevel(newLevel: OuttakeLevel): CompletableFuture<*> {
-        if (state != InteractionCompositeState.Deposit) {
-            return CompletableFuture.completedFuture(null)
-        }
-
+    fun outtakeLevel(newLevel: OuttakeLevel): CompletableFuture<Void> {
         outtakeLevel = newLevel
         return robot.lift.extendToAndStayAt(newLevel.encoderLevel)
-            .exceptionally { return@exceptionally null }
+            .thenRun {  }
     }
 
     private fun stateMachineRestrict(
@@ -97,5 +88,53 @@ class CompositeInteraction(private val robot: HypnoticRobot) : AbstractSubsystem
         }
 
         return true
+    }
+
+    fun fromHoverToDepositReady() = stateMachineRestrict(
+        InteractionCompositeState.Hover,
+        InteractionCompositeState.DepositReady
+    ) {
+        robot.outtake.setPivotState(PivotState.Pickup)
+            .thenAcceptAsync {
+                robot.outtake.setClawState(ClawState.Closed).join()
+                Thread.sleep(125L)
+            }
+            .thenAcceptAsync {
+                robot.outtake.setWrist(WristState.Lateral)
+                robot.outtake.setPivotState(PivotState.Scoring).join()
+            }
+    }
+
+    fun fromRestToHover() = stateMachineRestrict(
+        InteractionCompositeState.Rest,
+        InteractionCompositeState.Hover
+    ) {
+        robot.outtake.setPivotState(PivotState.Hover)
+        robot.outtake.setClawState(ClawState.Open)
+        CompletableFuture.completedFuture(null)
+    }
+
+    fun fromInitialToRest() = stateMachineRestrict(
+        InteractionCompositeState.Initial,
+        InteractionCompositeState.Rest
+    ) {
+        robot.outtake.setPivotState(PivotState.Scoring)
+        CompletableFuture.completedFuture(null)
+    }
+
+    fun scoreAndRest() = stateMachineRestrict(
+        InteractionCompositeState.DepositReady,
+        InteractionCompositeState.Rest
+    ) {
+        robot.outtake.setClawState(ClawState.Open)
+            .thenComposeAsync {
+                robot.outtake.setPivotState(PivotState.PostScore).join()
+                outtakeLevel(OuttakeLevel.Rest)
+            }
+            .thenRun {
+                robot.outtake.setClawState(ClawState.Closed)
+            }
+
+        CompletableFuture.completedFuture(null)
     }
 }

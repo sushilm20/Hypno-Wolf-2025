@@ -47,10 +47,10 @@ class HypnoticRobotHardware(private val opMode: LinearOpMode) {
         backRight = opMode.hardwareMap.get(DcMotorEx::class.java, "backRight")
 
         liftMotorLeft = opMode.hardwareMap["liftLeft"] as DcMotorEx
-        liftMotorLeft.direction = DcMotorSimple.Direction.FORWARD
+        liftMotorLeft.direction = DcMotorSimple.Direction.REVERSE
 
         liftMotorRight = opMode.hardwareMap["liftRight"] as DcMotorEx
-        liftMotorRight.direction = DcMotorSimple.Direction.REVERSE
+        liftMotorRight.direction = DcMotorSimple.Direction.FORWARD
 
         var start = System.currentTimeMillis()
         if (HypnoticRobot.resetMode) {

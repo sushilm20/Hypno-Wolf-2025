@@ -55,6 +55,10 @@ abstract class HypnoticRobot(val opMode: HypnoticOpMode) : System
     fun Telemetry.addEssentialLines()
     {
         addLine("Composite State: ${intakeComposite.state}")
+        addLine("Claw State: ${opMode.robot.outtake.clawState}")
+        addLine("Pivot State: ${opMode.robot.outtake.pivotState}")
+        addLine("Wrist State: ${opMode.robot.outtake.wristState}")
+        addLine("Wrist State: ${opMode.robot.intakeComposite.outtakeLevel}")
 
         addLine("LIFT Left Position: ${hardware.liftMotorLeft.currentPosition}")
         addLine("LIFT Left Power: ${hardware.liftMotorLeft.power}")

@@ -4,7 +4,7 @@ enum class InteractionCompositeState
 {
     Initial,
     Rest,
-    Pickup,
-    Deposit,
+    Hover,
+    DepositReady,
     InProgress
 }

@@ -4,7 +4,7 @@ import org.riverdell.robotics.subsystems.slides.LiftConfig
 
 enum class OuttakeLevel(val encoderPercentage: Double)
 {
-    Bar1(0.2), Bar2(0.32), HighBasket(0.93);
+    Rest(0.0), Bar2(0.58), HighBasket(1.0);
 
     val encoderLevel: Int
         get() = (encoderPercentage * LiftConfig.MAX_EXTENSION).toInt()
