@@ -167,6 +167,7 @@ public class BadWolfOpMode extends LinearOpMode {
                 // Move servos to specific positions. This is the hover point
                 pivotRight.setPosition(0.27);//real low to hover. Make higher to hover higher and make lower to hover lower
                 pivotLeft.setPosition(0.73);//these two numbers should always add up to hundred. otherwise u are breaking the servos
+                claw.setPosition(0.0);
             }
 
             if (gamepad1.x || gamepad2.x) {
